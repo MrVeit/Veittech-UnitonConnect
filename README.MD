@@ -1,20 +1,8 @@
-## Unity TonConnect 2.0 Asset
+# UNITON CONNECT 2.0
+[![License](https://img.shields.io/github/license/mrveit/unity-ton-connect?color=318CE7&style=flat-square)](LICENSE)
+[![Unity](https://img.shields.io/badge/Unity-2021.1+-2296F3.svg?color=318CE7&style=flat-square)](https://unity.com/releases/editor/archive)
 
-Source code of TonSDK - https://github.com/continuation-team/TonSdk.NET
-#### Warning! This asset using LTS Unity version (2022.3 or newer)
+**UNITON CONNECT 2.0** - a library for working with the Ton Connect ecosystem on Unity. Authorize, link TON wallets via deeplink or QR-code to your dApps and more.
 
-### Documentation
-
-https://docs.tonsdk.net/user-manual/unity-tonconnect-2.0/getting-started
-
-## Support
-
-https://t.me/+3yl5C5aFeJRhN2My
-
-## Donation
-
-`continuation.ton`
-
-## License
-
-MIT License
+.NET Source Code: https://github.com/continuation-team/TonSdk.NET
+Documentation: https://docs.tonsdk.net/user-manual/unity-tonconnect-2.0/getting-started
