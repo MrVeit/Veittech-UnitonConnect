@@ -58,3 +58,12 @@ $RECYCLE.BIN/
 # VS Code directories
 .vscode/
 .history/
+Resources/Ton Connect/dAppsRuntimeData.asset
+Resources/Ton Connect.meta
+Resources/Ton Connect/dAppsRuntimeData.asset.meta
+Resources.meta
+Ton Connect/Editor/Internal Resources.meta
+Ton Connect/Editor/Internal Resources/dAppsData.asset
+Ton Connect/Editor/Internal Resources/dAppsData.asset.meta
+Ton Connect/Editor.meta
+Ton Connect.meta
