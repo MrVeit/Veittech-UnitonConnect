@@ -6,8 +6,6 @@
 
 # Installation
 
-As source:
-
 [Download a latest version via .unityPackage here](https://github.com/MrVeit/unity-ton-connect/releases)
 
 # Documentation
