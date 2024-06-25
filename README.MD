@@ -6,7 +6,7 @@
 
 # Installation
 
-**As source:**
+As source:
 
 [Download a latest version via .unityPackage here](https://github.com/MrVeit/unity-ton-connect/releases)
 
@@ -17,5 +17,5 @@ After bug fixes are made in the official repository, the current documentation f
 
 # Source Code
 
-Aplha Official Repo: https://github.com/continuation-team/unity-ton-connect
-.NET Source Code: https://github.com/continuation-team/TonSdk.NET
+**[Alpha Official Repo](https://github.com/continuation-team/unity-ton-connect)**
+**[.NET Source Code](https://github.com/continuation-team/TonSdk.NET)**
