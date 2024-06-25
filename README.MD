@@ -17,5 +17,12 @@ After bug fixes are made in the official repository, the current documentation f
 
 # Source Code
 
-**[Alpha Official Repo](https://github.com/continuation-team/unity-ton-connect)**
-**[.NET Source Code](https://github.com/continuation-team/TonSdk.NET)**
+Alpha Official Repo: 
+```
+https://github.com/continuation-team/unity-ton-connect
+```
+
+.NET Source Code:
+```
+https://github.com/continuation-team/TonSdk.NET
+```
