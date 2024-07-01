@@ -11,7 +11,7 @@
 - Download the latest version of the SDK via [the .unityPackage file here](https://github.com/MrVeit/unity-ton-connect/releases),
 - Install the [WebGL Threding Patcher plugin](https://github.com/VolodymyrBS/WebGLThreadingPatcher) in your project, which allows you to run asynchronous shuffles in a single thread in WebGL builds. Initially they don't work due to lack of multithreading support there.
 
-**WebGL Threding Patcher plugin**
+**Link to install the plugin:**
 ```
 https://github.com/VolodymyrBS/WebGLThreadingPatcher.git
 ```
@@ -23,6 +23,10 @@ Before you can use all the features of the SDK, you must initialize it in **one 
 #### The first way is to activate `automatic initialization`:
 The `UnitonConnectSDK` component has an option called `Initialize On Awake`. When you activate it, the SDK will initialize automatically. You only need to subscribe to the necessary events and start working with it.
 
+<p align="center">
+ <img width="700px" src="Assets/sdkOverview.png" alt="qr"/>
+</p>
+
 #### The second way is `manual initialization` in your own script:
 Below is a test example of how it can look like.
 
@@ -33,21 +37,21 @@ public sealed class EntryPoint : MonoBehaviour
     
     private void OnDisable()
     {
-        _unitonSDK.OnInitialized -= UnitonSDKInitialized;        
+        _unitonSDK.OnInitialized -= UnitonConnectSDKInitialized;        
     }
 
     private void Start()
     {
         _unitonSDK = UnitonConnectSDK.Instance;
 
-        _unitonSDK.OnInitialized += UnitonSDKInitialized;        
+        _unitonSDK.OnInitialized += UnitonConnectSDKInitialized;        
 
         _unitonSDK.Initialize();
     }
 
-    private void UnitonSDKInitialized()
+    private void UnitonConnectSDKInitialized()
     {
-        Debug.Log("Success initialize UnitonSDK");
+        Debug.Log("Success initialize Uniton Connect SDK");
     }
 }
 ```
@@ -71,7 +75,8 @@ The next step is to build the project in its current form. Before that you need 
 After successful build, **2 files will be created** in the build directory: `icon.png` and `dAppData.json`. They will contain all the information you entered earlier in the `dApp Config` window.
 Now you can publish your project anywhere you want. After publishing your project, go back to the `dApp Config` window and specify the correct link for the SDK to work with your project correctly.
 
-For test mode, `I recommend using Github Actions` with their `Static Page` feature. The tutorial for deploying a WebGL build to Unity can be found on the Internet, as there is no need to describe it here.
+For test mode, **I recommend** using `Github Actions` with their `Static Page` feature. The tutorial for deploying a WebGL build to Unity can be found on the Internet, as there is no need to describe it here.
+Now you can work with the SDK without any problems if you followed the second method. Anyway, this will be an additional guide when your project is ready to be published.
 
 # Source Code
 
