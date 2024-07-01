@@ -1,5 +1,9 @@
 # UNITON CONNECT
 
+<p align="center">
+ <img width="700px" src="Assets/sdkBackgroundLogo.png" alt="qr"/>
+</p>
+
 [![License](https://img.shields.io/github/license/mrveit/unity-ton-connect?color=318CE7&style=flat-square)](LICENSE)
 [![Version](https://img.shields.io/github/package-json/v/mrveit/unity-ton-connect?color=318CE7&style=flat-square)](package.json)
 [![Unity](https://img.shields.io/badge/Unity-2020.1+-2296F3.svg?color=318CE7&style=flat-square)](https://unity.com/releases/editor/archive)
@@ -112,7 +116,7 @@ After successful initialization, you can request from the SDK a list of availabl
 
 P.S: At this point, the library links to the **official repository with a json file** that lists the currently available wallets in the `Ton Connect ecosystem`. In future updates, you will have the option **to filter this list and generate**, similar to the configuration of your dApp, a json file with the crypto wallets used in the project.
 
-### Loading and processing wallet configurations
+### Loading and processing wallet configurations:
 
 An example of a method call and processing its result is shown below:
 ```c#
