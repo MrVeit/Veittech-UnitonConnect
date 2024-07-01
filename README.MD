@@ -24,7 +24,7 @@ Before you can use all the features of the SDK, you must initialize it in **one 
 The `UnitonConnectSDK` component has an option called `Initialize On Awake`. When you activate it, the SDK will initialize automatically. You only need to subscribe to the necessary events and start working with it.
 
 <p align="center">
- <img width="700px" src="Assets/sdkOverview.png" alt="qr"/>
+ <img width="350px" src="Assets/sdkOverview.png" alt="qr"/>
 </p>
 
 #### The second way is `manual initialization` in your own script:
