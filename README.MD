@@ -24,7 +24,7 @@ Before you can use all the features of the SDK, you must initialize it in **one 
 The `UnitonConnectSDK` component has an option called `Initialize On Awake`. When you activate it, the SDK will initialize automatically. You only need to subscribe to the necessary events and start working with it.
 
 <p align="center">
- <img width="350px" src="Assets/sdkOverview.png" alt="qr"/>
+ <img width="500px" src="Assets/sdkOverview.png" alt="qr"/>
 </p>
 
 #### The second way is `manual initialization` in your own script:
@@ -62,7 +62,7 @@ If you just want to test the SDK, activate the `Test Mode` option of the `Uniton
 In case you want your application name, its logo and a link to the project itself to be displayed when connecting to the wallets. You need to enter these data in the `dApp Config` window, which is located at the `Uniton Connect -> dApp Config` path.
 
 <p align="center">
- <img width="700px" src="Assets/dAppConfigWindow.png" alt="qr"/>
+ <img width="500px" src="Assets/dAppConfigWindow.png" alt="qr"/>
 </p>
 
 Here you need to select your game/application logo, enter a title and provide a link to the site where it will be published.
