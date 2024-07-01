@@ -32,7 +32,7 @@ The `UnitonConnectSDK` component has an option called `Initialize On Awake`. Whe
 Below is a test example of how it can look like.
 
 ```c#
-public sealed class EntryPoint : MonoBehaviour
+public sealed class InitializationUsageTemplate : MonoBehaviour
 {
     private UnitonConnectSDK _unitonSDK;
     
@@ -95,7 +95,7 @@ P.S: At this point, the library links to the **official repository with a json f
 
 An example of a method call and processing its result is shown below:
 ```c#
-public sealed class UsageTemplate: MonoBehaviour
+public sealed class InitializationUsageTemplate: MonoBehaviour
 {
     private UnitonConnectSDK _unitonSDK;
 
@@ -112,15 +112,6 @@ public sealed class UsageTemplate: MonoBehaviour
 
         _unitonSDK.OnInitialized += UnitonConnectSDKInitialized;  
 
-        if (_unitonSDK.IsWalletConnected)
-        {
-             UnitonConnectLogger.Log("SDK is already initialized, " +
-                "there is no need to reconnect the wallet. To reconnect, " +
-                "you need to disconnect the previously connected wallet");
-
-             return;
-        }
-      
         _unitonSDK.Initialize();
 
         _unitonSDK.GetWalletsConfigs(ProjectStorageConsts.
@@ -134,11 +125,11 @@ public sealed class UsageTemplate: MonoBehaviour
     {
         var walletsConfigs = WalletConnectUtils.GetSupportedWalletsListForUse(wallets);
 
-        UnitonConnectLogger.Log($"Created {walletsConfigs.Capacity} wallets");
+        Debug.Log($"Created {walletsConfigs.Capacity} wallets");
 
         _loadedWallets = walletsConfigs;
 
-        UnitonConnectLogger.Log($"List of available wallet configurations: {JsonConvert.SerializeObject(walletsConfigs)}"); 
+        Debug.Log($"List of available wallet configurations: {JsonConvert.SerializeObject(walletsConfigs)}"); 
     }
 
     private void UnitonConnectSDKInitialized()
@@ -152,7 +143,193 @@ You can now process the filtered wallet configurations for later display in the 
 All code available for use in the library is fully documented. If you have any questions when working with the library API,
 you can always see the implementation of all available functions in the `Example scene`.
 
+### Connecting the wallet to the application
 
+Now we need to add callbacks to get the connection status of the wallet in the app.
+
+```c#
+public sealed class ConnectionWalletUsageTemplate: MonoBehaviour
+{
+    [SerializeField, Space] private Button _connectTestWallet;
+    [SerializeField, Space] private RawImage _qrCodePlace;
+
+    private UnitonConnectSDK _unitonSDK;
+
+    private List<WalletConfig> _loadedWallets;
+
+    private WalletConfig _currentWalletForConnect;
+    
+    public WalletConfig LatestAuthorizedWallet { get; private set; }
+
+    private stirng _connectURL;
+    
+    private void OnDisable()
+    {
+        _unitonSDK.OnInitialized -= UnitonConnectSDKInitialized;  
+
+        _unitonSDK.OnWalletConnectionFinished -= WalletConnectionFinished;
+        _unitonSDK.OnWalletConnectionFailed -= WalletConnectionFailed;  
+
+        _connectTestWallet.onClick.RemoveListener(ConnectWallet);    
+    }
+
+    private void Start()
+    {
+        _connectTestWallet.onClick.AddListener(ConnectWallet);
+
+        _unitonSDK = UnitonConnectSDK.Instance;
+
+        _unitonSDK.OnInitialized += UnitonConnectSDKInitialized; 
+
+        _unitonSDK.OnWalletConnectionFinished += WalletConnectionFinished;
+        _unitonSDK.OnWalletConnectionFailed += WalletConnectionFailed; 
+
+        _unitonSDK.Initialize();
+
+        _unitonSDK.GetWalletsConfigs(ProjectStorageConsts.
+            START_TON_WALLETS_LINK, (walletsConfigs) =>
+            {
+                CreateWalletsList(walletsConfigs);
+            });
+    }
+
+    private void CreateWalletsList(IReadOnlyList<WalletConfig> wallets)
+    {
+        var walletsConfigs = WalletConnectUtils.GetSupportedWalletsListForUse(wallets);
+
+        Debug.Log($"Created {walletsConfigs.Capacity} wallets");
+
+        _loadedWallets = walletsConfigs;
+
+        Debug.Log($"List of available wallet configurations: {JsonConvert.SerializeObject(walletsConfigs)}"); 
+
+        GenerateQRCode();
+    }
+
+    private async void GenerateQRCode()
+    {
+        _currentWalletForConnect = _loadedWallets[0];
+
+        _connectURL = await _unitonSDK.GenerateConnectURL(_currentWalletForConnect);
+        _qrCodePlace.texture = WalletVisualUtils.GetQRCodeFromUrl(_connectURL);
+    }
+
+    private void ConnectWallet()
+    {
+        if (WalletConnectUtils.HasHttpBridge(_currentWalletForConnect))
+        {
+            _unitonSDK.ConnectHttpBridgeWalletViaDeepLink(_currentWalletForConnect, _connectURL);
+        }
+        else if (WalletConnectUtils.HasJSBridge(_currentWalletForConnect) && _unitonSDK.IsUseWebWallets)
+        {
+            _unitonSDK.ConnectJavaScriptBridgeWalletViaDeeplink(_currentWalletForConnect);
+        }
+    }
+
+    private void UnitonConnectSDKInitialized()
+    {
+        Debug.Log("Success initialize Uniton Connect SDK");
+    }
+
+    private void WalletConnectionFinished(Wallet wallet)
+    {
+        if (UnitonConnectSDK.Instance.IsWalletConnected)
+        {
+           var successConnectMessage = $"Wallet is connected, full account address: {wallet.Account.Address}, \n" +
+               $"Platform: {wallet.Device.Platform}, " +
+               $"Name: {wallet.Device.AppName}, " +
+               $"Version: {wallet.Device.AppVersion}";
+
+           var shortWalletAddress = WalletVisualUtils.ProcessWalletAddress(
+               wallet.Account.Address.ToString(AddressType.Base64), 6);
+
+           Debug.Log($"Connected wallet short address: {shortWalletAddress}");
+
+           if (_loadedWallets != null)
+           {
+                 LatestAuthorizedWallet = WalletConnectUtils.GetConfigOfSpecifiedWallet(
+                   _loadedWallets, wallet.Device.AppName);
+
+                 Debug.Log($"The current wallet in the list is detected: " +
+                   $"{JsonConvert.SerializeObject(LatestAuthorizedWallet)}");
+           }
+
+           return;
+        }
+
+        Debug.LogWarning($"Connect status: {UnitonConnectSDK.Instance.IsWalletConnected}");
+    }
+
+    private void WalletConnectionFailed(string message)
+    {
+        Debug.LogError($"Failed to connect " +
+          $"the wallet due to the following reason: {message}");
+    }
+}
+```
+
+In this example, we create a link to connect to the current wallet in the `GenerateQRCode()` method, and generate a QR code to display on the connection panel.
+Then, in the `ConnectWallet()` method to which the button was subscribed, the current configuration is checked for a specific bridge and further connection is made when the connect button is clicked.
+
+P.S: HTTP and JavaScript connection bridges are differentiated by the way the deep links are navigated to the cryptocurrency wallet application/extension in the browser.
+
+After successful connection via QR code or deep link, you will have connection status messages displayed in the console.
+Here you can process the connected wallet **to get its configuration** and use it when sending a transaction later.
+To nicely display the wallet address, the SDK has a method `WalletVisualUtils.ProcessWalletAddress(string address, int value)` that allows only the first and last characters of the address to be displayed.
+
+IMPORTANT:
+The `UnitonConnectSDK` has a `RestoreConnectionOnAwake` option that restores the last automatically saved session to the wallet. If it is activated, you can subscribe to the result of this event `UnitonConnectSDK.OnWalletConnectionRestored` and process the result if the response is successful.
+
+### Generation and sending of transaction
+
+After we plugged the wallet into the app. Now you can perform various operations with it.
+At the moment (version 0.2.6), from the list of interactions with the wallet there is `only sending toncoin` to the desired address. Therefore, below we will show an example of implementing only this function.
+
+P.S: When the wallet functionality in `SDK Uniton Connect` is updated, the examples in the documentation will be updated.
+
+```c#
+public sealed class TransactionUsageTemplate : MonoBehaviour
+{
+    [SerializeField, Space] private ConnectionWalletUsageTemplate _walletEntryPoint;
+    [SerializeField, Space] private Button _sendTransaction;
+
+    private const string CREATOR_WALLET_ADDRESS = "UQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4Ursw6";
+    private const double START_TON_AMOUNT = 0.01f;
+
+    private void Start()
+    {
+        UnitonConnectSDK.Instance.OnSendTransactionFinished += TransactionSuccessfullySended;
+
+        Init();
+    }
+
+    private void OnDisable()
+    {
+        UnitonConnectSDK.Instance.OnSendTransactionFinished -= TransactionSuccessfullySended;
+    }
+
+    private void Init()
+    {
+        _sendTransaction.onClick.AddListener(Send);
+    }
+
+    private async void Send()
+    {
+        await UnitonConnectSDK.Instance.SendTransaction(_walletEntryPoint.LatestAuthorizedWallet,
+            CREATOR_WALLET_ADDRESS, START_TON_AMOUNT);
+    }
+
+    private void TransactionSuccessfullySended(bool isSuccess)
+    {
+        Debug.Log($"Transaction sending was completed with status: {isSuccess}");
+    }
+}
+```
+
+This example shows a test implementation of sending TonCoin to my TON address.
+In the `UnitonConnectSDK.Instance.SendTransaction()` method you need to pass the configuration of the last authorized wallet, the recipient address and the quantity in `double`. 
+
+P.S: The wallet configuration is used **to automatically redirect** when creating a transaction, for its subsequent confirmation.
 
 # Source Code
 
@@ -160,6 +337,10 @@ you can always see the implementation of all available functions in the `Example
 ```
 https://github.com/continuation-team/TonSdk.NET
 ```
+
+# Donations
+
+
 
 # Support
 
