@@ -8,9 +8,7 @@
 
 # Installation
 
-**As source:**
-
-1. Download the latest version of the SDK via [the .unityPackage file here](https://github.com/MrVeit/unity-ton-connect/releases)
+1. Download the latest version of the SDK via [the .unityPackage file here](https://github.com/MrVeit/unity-ton-connect/releases),
 2. Install the [WebGL Threding Patcher plugin](https://github.com/VolodymyrBS/WebGLThreadingPatcher) in your project, which allows you to run asynchronous shuffles in a single thread in WebGL builds. Initially they don't work due to lack of multithreading support there.
 
 **WebGL Threding Patcher plugin**
@@ -65,14 +63,13 @@ In case you want your application name, its logo and a link to the project itsel
 
 Here you need to select your game/application logo, enter a title and provide a link to the site where it will be published.
 
-The next step will be to build the project in its current form. Beforehand, you need to configure a few things in the `Player Settings` window.
-
+The next step is to build the project in its current form. Before that you need to configure several parameters in the `Player Settings` window.
 1. Install the custom `TC_Minimal` build template, which is available after importing the library into the project. It can be installed in `Build Settings -> Player Settings -> Resolution and Presentation -> WebGL Template`,
-2. Then you should turn off the `Strip Engine Code` option, which is located in `Player Settings -> Othet Settings` and switch the `Managed Stripping Level` property type to Minimal, so that the library functionality is not cut out during unit build and it works correctly.
-3. Now the final touches, in the `Player Settings -> Publish Settings` section you need to switch the `Enable Exception` property to any value except `Explicitly Thrown Exceptions Only`. Since in case of any errors in the build, you may freeze or even crash the project.
+2. Then you should turn off the `Strip Engine Code` option, which is located in `Player Settings -> Othet Settings` and switch the `Managed Stripping Level` property type to **Minimal**, so that the library functionality is not cut out during unit build and it works correctly,
+3. Now the final touches, in the `Player Settings -> Publish Settings` section you need to switch the `Enable Exception` property to any value except `Explicitly Thrown Exceptions Only`. Since in case of any errors in the build, you may **freeze or even crash** the project.
 
-After successful build, you will have 2 files created in the build directory: `icon.png` and `dAppData.json`, where all the information you entered earlier in the `dApp Config` window will be located.
-Now you can publish your project anywhere you want, so you can go back to the `dApp Config` window and specify a valid link.
+After successful build, **2 files will be created** in the build directory: `icon.png` and `dAppData.json`. They will contain all the information you entered earlier in the `dApp Config` window.
+Now you can publish your project anywhere you want. After publishing your project, go back to the `dApp Config` window and specify the correct link for the SDK to work with your project correctly.
 
 For test mode, `I recommend using Github Actions` with their `Static Page` feature. The tutorial for deploying a WebGL build to Unity can be found on the Internet, as there is no need to describe it here.
 
