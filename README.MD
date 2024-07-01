@@ -17,9 +17,9 @@ You can test the SDK without installation on a demo app [in your browser](https:
 # Supported Platforms & Wallets
 
 |                Wallet Provider                | WebGL Desktop | WebGL Mobile |
-| --------------------------------------------- |   :-------:   |   :-------:  | 
+| --------------------------------------------- |   :-------:   |   :-------:  |
 | **Telegram Wallet**                           | ✔️           | ✔️           |
-| **Ton Keeper**                                | ✔️           | ✔️           |
+| **Ton Keeper**                                | ❌           | ✔️           |
 | **My Ton Wallet**                             | ✔️           | ✔️           |
 | **Ton Wallet**                                | ⚠️           | ⚠️           |
 | **xTon Wallet**                               | ⚠️           | ⚠️           |
