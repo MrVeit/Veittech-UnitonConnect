@@ -15,10 +15,17 @@ You can test the SDK without installation on a demo app [in your browser](https:
 |                Wallet Provider                | WebGL Desktop | WebGL Mobile |
 | --------------------------------------------- |   :-------:   |   :-------:  | 
 | **Telegram Wallet**                           | ✔️           | ✔️           |
-| **Ton Keeper**                                | ✔️           | ✔️           | 
+| **Ton Keeper**                                | ✔️           | ✔️           |
 | **My Ton Wallet**                             | ✔️           | ✔️           |
+| **Ton Wallet**                                | ⚠️           | ⚠️           |
+| **xTon Wallet**                               | ⚠️           | ⚠️           |
+| **Ton Hub**                                   | ⚠️           | ⚠️           |
+| **Open Mask**                                 | ⚠️           | ⚠️           |
+| **DeWallet**                                  | ⚠️           | ⚠️           |
+| **Bitget Wallet**                             | ⚠️           | ⚠️           |
+| **Safe Pal Wallet**                           | ⚠️           | ⚠️           |
  
-<sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>— Not Applicable</sub>
+<sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
 # Dependencies
 
