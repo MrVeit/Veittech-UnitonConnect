@@ -6,6 +6,20 @@
 
 **UNITON CONNECT** - library for working with the Ton Connect ecosystem in Unity. Authorization through TON wallets via deeplink or QR code to your dApps, making transactions and more.
 
+# Technical Demo
+
+You can test the SDK without installation on a demo app [in your browser]https://mrveit.github.io/Uniton-Connect/() or directly [in the Telegram bot](https://t.me/UnitonConnect_bot/dAppStart).
+
+# Supported Platforms & Wallets
+
+|                Wallet Provider                | WebGL Desktop | WebGL Mobile |
+| --------------------------------------------- |   :-------:   |   :-------:  | 
+| **Telegram Wallet**                           | ✔️           | ✔️           |
+| **Ton Keeper**                                | ✔️           | ✔️           | 
+| **My Ton Wallet**                             | ✔️           | ✔️           |
+ 
+<sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>— Not Applicable</sub>
+
 # Dependencies
 
 For the library to work correctly, the following dependencies **must be installed** in the project before use:
