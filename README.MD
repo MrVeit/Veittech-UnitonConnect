@@ -1,7 +1,7 @@
 # UNITON CONNECT
 
 <p align="center">
- <img width="700px" src="Assets/sdkBackgroundLogo.png" alt="qr"/>
+ <img width="600px" src="Assets/sdkBackgroundLogo.png" alt="qr"/>
 </p>
 
 [![License](https://img.shields.io/github/license/mrveit/unity-ton-connect?color=318CE7&style=flat-square)](LICENSE)
