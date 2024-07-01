@@ -12,6 +12,7 @@
 
 1. Download the latest version of the SDK via [the .unityPackage file here](https://github.com/MrVeit/unity-ton-connect/releases)
 2. Install the [WebGL Threding Patcher plugin](https://github.com/VolodymyrBS/WebGLThreadingPatcher) in your project, which allows you to run asynchronous shuffles in a single thread in WebGL builds. Initially they don't work due to lack of multithreading support there.
+
 **WebGL Threding Patcher plugin**
 ```
 https://github.com/VolodymyrBS/WebGLThreadingPatcher.git
@@ -22,9 +23,9 @@ https://github.com/VolodymyrBS/WebGLThreadingPatcher.git
 Before you can use all the features of the SDK, you must initialize it in **one of two available ways**.
 
 #### The first way is to activate `automatic initialization`:
-The `UnitonConnectSDK` component has an option called "Initialize On Awake". When you activate it, the SDK will initialize automatically. You only need to subscribe to the necessary events and start working with it.
+The `UnitonConnectSDK` component has an option called `Initialize On Awake`. When you activate it, the SDK will initialize automatically. You only need to subscribe to the necessary events and start working with it.
 
-#### The second way is manual initialization in your own script:
+#### The second way is `manual initialization` in your own script:
 Below is a test example of how it can look like.
 
 ```c#
@@ -53,10 +54,27 @@ public sealed class EntryPoint : MonoBehaviour
 }
 ```
 
-At this point, you may encounter errors because your dApp application has not yet been configured. 
+**At this point, you may encounter errors because your dApp application has not yet been configured.**
 
-If you just want to test the SDK, activate the `Test Mode` option of the UnitonConnectSDK component. In this case, the SDK will initialize the library's test application.
+If you just want to test the SDK, activate the `Test Mode` option of the `UnitonConnectSDK` component. In this case, the SDK will initialize the library's test application.
 In case you want your application name, its logo and a link to the project itself to be displayed when connecting to the wallets. You need to enter these data in the `dApp Config` window, which is located at the `Uniton Connect -> dApp Config` path.
+
+<p align="center">
+ <img width="700px" src="Assets/dAppConfigWindow.png" alt="qr"/>
+</p>
+
+Here you need to select your game/application logo, enter a title and provide a link to the site where it will be published.
+
+The next step will be to build the project in its current form. Beforehand, you need to configure a few things in the `Player Settings` window.
+
+1. Install the custom `TC_Minimal` build template, which is available after importing the library into the project. It can be installed in `Build Settings -> Player Settings -> Resolution and Presentation -> WebGL Template`,
+2. Then you should turn off the `Strip Engine Code` option, which is located in `Player Settings -> Othet Settings` and switch the `Managed Stripping Level` property type to Minimal, so that the library functionality is not cut out during unit build and it works correctly.
+3. Now the final touches, in the `Player Settings -> Publish Settings` section you need to switch the `Enable Exception` property to any value except `Explicitly Thrown Exceptions Only`. Since in case of any errors in the build, you may freeze or even crash the project.
+
+After successful build, you will have 2 files created in the build directory: `icon.png` and `dAppData.json`, where all the information you entered earlier in the `dApp Config` window will be located.
+Now you can publish your project anywhere you want, so you can go back to the `dApp Config` window and specify a valid link.
+
+For test mode, `I recommend using Github Actions` with their `Static Page` feature. The tutorial for deploying a WebGL build to Unity can be found on the Internet, as there is no need to describe it here.
 
 # Source Code
 
