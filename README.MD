@@ -4,7 +4,7 @@
 [![Version](https://img.shields.io/github/package-json/v/mrveit/unity-ton-connect?color=318CE7&style=flat-square)](package.json)
 [![Unity](https://img.shields.io/badge/Unity-2020.1+-2296F3.svg?color=318CE7&style=flat-square)](https://unity.com/releases/editor/archive)
 
-**UNITON CONNECT** - library for working with the Ton Connect ecosystem in Unity. Authorization through TON wallets via deeplink or QR code to your dApps, making transactions and more.
+**UNITON CONNECT** is a convenient solution for working with the Ton Connect ecosystem right in Unity and has the following features: authorization via TON wallets (QR code or via Deep Link), making transactions and much more.
 
 # Technical Demo
 
