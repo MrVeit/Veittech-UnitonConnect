@@ -21,14 +21,14 @@ Initially they do not work due to lack of multithreading support in them,
 
 Before you can use all the features of the SDK, you must initialize it in **one of two available ways**.
 
-#### The first way is to activate `automatic initialization`:
+#### Аutomatic initialization:
 The `UnitonConnectSDK` component has an option called `Initialize On Awake`. When you activate it, the SDK will initialize automatically. You only need to subscribe to the necessary events and start working with it.
 
 <p align="center">
  <img width="500px" src="Assets/sdkOverview.png" alt="qr"/>
 </p>
 
-#### The second way is `manual initialization` in your own script:
+#### Manual initialization:
 Below is a test example of how it can look like.
 
 ```c#
@@ -70,9 +70,9 @@ In case you want your application name, its logo and a link to the project itsel
 
 Here you need to select your game/application logo, enter a title and provide a link to the site where it will be published.
 
-### Set up a project for build
+### Set up a project for build:
 
-The next step is to build the project in its current form. Before that you need to configure several parameters in the `Player Settings` window.
+The next step is to build the project in its current form. Before that you need to configure several parameters in the `Player Settings` window:
 1. Install the custom `TC_Minimal` build template, which is available after importing the library into the project. It can be installed in `Build Settings -> Player Settings -> Resolution and Presentation -> WebGL Template`,
 2. Then you should turn off the `Strip Engine Code` option, which is located in `Player Settings -> Othet Settings` and switch the `Managed Stripping Level` property type to **Minimal**, so that the library functionality is not cut out during unit build and it works correctly,
 3. Now the final touches, in the `Player Settings -> Publish Settings` section you need to switch the `Enable Exception` property to any value except `Explicitly Thrown Exceptions Only`. Since in case of any errors in the build, you may **freeze or even crash** the project.
@@ -143,7 +143,7 @@ You can now process the filtered wallet configurations for later display in the 
 All code available for use in the library is fully documented. If you have any questions when working with the library API,
 you can always see the implementation of all available functions in the `Example scene`.
 
-### Connecting the wallet to the application
+### Connecting the wallet to the application:
 
 Now we need to add callbacks to get the connection status of the wallet in the app.
 
@@ -271,21 +271,21 @@ public sealed class ConnectionWalletUsageTemplate: MonoBehaviour
 In this example, we create a link to connect to the current wallet in the `GenerateQRCode()` method, and generate a QR code to display on the connection panel.
 Then, in the `ConnectWallet()` method to which the button was subscribed, the current configuration is checked for a specific bridge and further connection is made when the connect button is clicked.
 
-P.S: HTTP and JavaScript connection bridges are differentiated by the way the deep links are navigated to the cryptocurrency wallet application/extension in the browser.
+**P.S:** HTTP and JavaScript connection bridges are differentiated by the way the deep links are navigated to the cryptocurrency wallet application/extension in the browser.
 
 After successful connection via QR code or deep link, you will have connection status messages displayed in the console.
 Here you can process the connected wallet **to get its configuration** and use it when sending a transaction later.
 To nicely display the wallet address, the SDK has a method `WalletVisualUtils.ProcessWalletAddress(string address, int value)` that allows only the first and last characters of the address to be displayed.
 
-IMPORTANT:
+**IMPORTANT:**
 The `UnitonConnectSDK` has a `RestoreConnectionOnAwake` option that restores the last automatically saved session to the wallet. If it is activated, you can subscribe to the result of this event `UnitonConnectSDK.OnWalletConnectionRestored` and process the result if the response is successful.
 
-### Generation and sending of transaction
+### Generation and sending of transaction:
 
 After we plugged the wallet into the app. Now you can perform various operations with it.
 At the moment (version 0.2.6), from the list of interactions with the wallet there is `only sending toncoin` to the desired address. Therefore, below we will show an example of implementing only this function.
 
-P.S: When the wallet functionality in `SDK Uniton Connect` is updated, the examples in the documentation will be updated.
+**P.S:** When the wallet functionality in `SDK Uniton Connect` is updated, the examples in the documentation will be updated.
 
 ```c#
 public sealed class TransactionUsageTemplate : MonoBehaviour
@@ -300,17 +300,14 @@ public sealed class TransactionUsageTemplate : MonoBehaviour
     {
         UnitonConnectSDK.Instance.OnSendTransactionFinished += TransactionSuccessfullySended;
 
-        Init();
+        _sendTransaction.onClick.AddListener(Send);
     }
 
     private void OnDisable()
     {
         UnitonConnectSDK.Instance.OnSendTransactionFinished -= TransactionSuccessfullySended;
-    }
 
-    private void Init()
-    {
-        _sendTransaction.onClick.AddListener(Send);
+        _sendTransaction.onClick.RemoveListener(Send);  
     }
 
     private async void Send()
@@ -329,7 +326,7 @@ public sealed class TransactionUsageTemplate : MonoBehaviour
 This example shows a test implementation of sending TonCoin to my TON address.
 In the `UnitonConnectSDK.Instance.SendTransaction()` method you need to pass the configuration of the last authorized wallet, the recipient address and the quantity in `double`. 
 
-P.S: The wallet configuration is used **to automatically redirect** when creating a transaction, for its subsequent confirmation.
+**P.S:** The wallet configuration is used **to automatically redirect** when creating a transaction, for its subsequent confirmation.
 
 # Source Code
 
@@ -340,7 +337,12 @@ https://github.com/continuation-team/TonSdk.NET
 
 # Donations
 
+If you want to support my work you can send TonCoin to this address:
+```
+UQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4Ursw6
+```
 
+Thanks for your support!
 
 # Support
 
