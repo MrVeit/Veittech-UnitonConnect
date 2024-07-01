@@ -11,8 +11,7 @@
 **As source:**
 
 1. Download the latest version of the SDK via [the .unityPackage file here](https://github.com/MrVeit/unity-ton-connect/releases)
-2. Install the WebGL Threding Patcher plugin in your project, which allows you to run asynchronous shuffles in a single thread in WebGL builds. Initially they don't work due to lack of multithreading support there.
-
+2. Install the [WebGL Threding Patcher plugin](https://github.com/VolodymyrBS/WebGLThreadingPatcher) in your project, which allows you to run asynchronous shuffles in a single thread in WebGL builds. Initially they don't work due to lack of multithreading support there.
 **WebGL Threding Patcher plugin**
 ```
 https://github.com/VolodymyrBS/WebGLThreadingPatcher.git
