@@ -8,7 +8,7 @@
 
 # Technical Demo
 
-You can test the SDK without installation on a demo app [in your browser]https://mrveit.github.io/Uniton-Connect/() or directly [in the Telegram bot](https://t.me/UnitonConnect_bot/dAppStart).
+You can test the SDK without installation on a demo app [in your browser](https://mrveit.github.io/Uniton-Connect/) or directly [in the Telegram bot](https://t.me/UnitonConnect_bot/dAppStart).
 
 # Supported Platforms & Wallets
 
