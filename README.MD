@@ -308,7 +308,7 @@ The `UnitonConnectSDK` has a `RestoreConnectionOnAwake` option that restores the
 ### Generation and sending of transaction:
 
 After we plugged the wallet into the app. Now you can perform various operations with it.
-At the moment (version 0.2.6), from the list of interactions with the wallet there is `only sending toncoin` to the desired address. Therefore, below we will show an example of implementing only this function.
+At the moment `in version 0.2.6`, from the list of interactions with the wallet there is `only sending Toncoin` to the desired address. Therefore, below we will show an example of implementing only this function.
 
 **P.S:** When the wallet functionality in `SDK Uniton Connect` is updated, the examples in the documentation will be updated.
 
@@ -362,12 +362,12 @@ https://github.com/continuation-team/TonSdk.NET
 
 # Donations
 
-If you want to support my work you can send TonCoin to this address:
+If you want to support my work you can send Toncoins to this address:
 ```
 UQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4Ursw6
 ```
 
-Thanks for your support!
+**Thanks for your support!**
 
 # Support
 
