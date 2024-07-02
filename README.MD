@@ -139,8 +139,8 @@ public sealed class InitializationUsageTemplate: MonoBehaviour
 
         _unitonSDK.Initialize();
 
-        _unitonSDK.GetWalletsConfigs(ProjectStorageConsts.
-            START_TON_WALLETS_LINK, (walletsConfigs) =>
+        _unitonSDK.LoadWalletsConfigs(ProjectStorageConsts.
+            TEST_SUPPORTED_WALLETS_LINK, (walletsConfigs) =>
             {
                 CreateWalletsList(walletsConfigs);
             });
@@ -323,14 +323,14 @@ public sealed class TransactionUsageTemplate : MonoBehaviour
 
     private void Start()
     {
-        UnitonConnectSDK.Instance.OnSendTransactionFinished += TransactionSuccessfullySended;
+        UnitonConnectSDK.Instance.OnTransactionSendingFinished += TransactionSendingFinished;
 
         _sendTransaction.onClick.AddListener(Send);
     }
 
     private void OnDisable()
     {
-        UnitonConnectSDK.Instance.OnSendTransactionFinished -= TransactionSuccessfullySended;
+        UnitonConnectSDK.Instance.OnTransactionSendingFinished -= TransactionSendingFinished;
 
         _sendTransaction.onClick.RemoveListener(Send);  
     }
@@ -341,15 +341,19 @@ public sealed class TransactionUsageTemplate : MonoBehaviour
             CREATOR_WALLET_ADDRESS, START_TON_AMOUNT);
     }
 
-    private void TransactionSuccessfullySended(bool isSuccess)
+    private void TransactionSendingFinished(SendTransactionResult? transactionResult, bool isSuccess)
     {
-        Debug.Log($"Transaction sending was completed with status: {isSuccess}");
+        if (isSuccess || transactionResult.HasValue)
+        {
+            Debug.Log($"Transaction sending was completed with status: {isSuccess}");
+        }
     }
 }
 ```
 
 This example shows a test implementation of sending TonCoin to my TON address.
 In the `UnitonConnectSDK.Instance.SendTransaction()` method you need to pass the configuration of the last authorized wallet, the recipient address and the quantity in `double`. 
+If the transaction succeeds or fails, an `OnTransactionSendingFinished` event will be called, the result of which you can process.
 
 **P.S:** The wallet configuration is used **to automatically redirect** when creating a transaction, for its subsequent confirmation.
 
