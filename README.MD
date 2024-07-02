@@ -318,7 +318,7 @@ public sealed class TransactionUsageTemplate : MonoBehaviour
     [SerializeField, Space] private ConnectionWalletUsageTemplate _walletEntryPoint;
     [SerializeField, Space] private Button _sendTransaction;
 
-    private const string CREATOR_WALLET_ADDRESS = "UQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4Ursw6";
+    private const string CREATOR_WALLET_ADDRESS = "EQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4UrpH_";
     private const double START_TON_AMOUNT = 0.01f;
 
     private void Start()
