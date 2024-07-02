@@ -20,7 +20,8 @@ namespace UnitonConnect.Core
     [SelectionBase]
     [DisallowMultipleComponent]
     [HelpURL("https://github.com/MrVeit/Uniton-Connect")]
-    public sealed class UnitonConnectSDK : MonoBehaviour, IUnitonConnectSDKCallbacks
+    public sealed class UnitonConnectSDK : MonoBehaviour, IUnitonConnectSDKCallbacks,
+        IUnitonConnectWalletCallbacks, IUnitonConnectTransactionCallbacks
     {
         private static readonly object _lock = new();
 
@@ -71,6 +72,8 @@ namespace UnitonConnect.Core
         private AdditionalConnectOptions _additionalConnectOptions;
         private RemoteStorage _remoteStorage;
 
+        public TonConnect TonConnect => _tonConnect;
+
         public List<WalletProviderConfig> SupportedWallets => _supportedWallets.Config;
 
         public bool IsTestMode => _testMode;
@@ -88,37 +91,37 @@ namespace UnitonConnect.Core
         /// <summary>
         /// Callback in case of successful initialization of sdk and loading of wallet configurations for further connection
         /// </summary>
-        public event IUnitonConnectSDKCallbacks.OnWalletConnectionFinish OnWalletConnectionFinished;
+        public event IUnitonConnectWalletCallbacks.OnWalletConnectionFinish OnWalletConnectionFinished;
 
         /// <summary>
         /// Callback for error handling, in case of unsuccessful loading of wallet configurations
         /// </summary>
-        public event IUnitonConnectSDKCallbacks.OnWalletConnectionFail OnWalletConnectionFailed;
+        public event IUnitonConnectWalletCallbacks.OnWalletConnectionFail OnWalletConnectionFailed;
 
         /// <summary>
         /// Callback for processing the status of restored connection to the wallet
         /// </summary>
-        public event IUnitonConnectSDKCallbacks.OnWalletConnectionRestore OnWalletConnectionRestored;
+        public event IUnitonConnectWalletCallbacks.OnWalletConnectionRestore OnWalletConnectionRestored;
 
         /// <summary>
         /// Callback to handle the status of pausing the connection to the wallet
         /// </summary>
-        public event IUnitonConnectSDKCallbacks.OnWalletConnectionPause OnWalletConnectionPaused;
+        public event IUnitonConnectWalletCallbacks.OnWalletConnectionPause OnWalletConnectionPaused;
 
         /// <summary>
         /// Callback to handle the shutdown status of a previously activated connection pause
         /// </summary>
-        public event IUnitonConnectSDKCallbacks.OnWalletConnectionUnPause OnWalletConnectonUnPaused;
-
-        /// <summary>
-        /// Callback to process the status of a recently sent transaction
-        /// </summary>
-        public event IUnitonConnectSDKCallbacks.OnSendTransactionFinish OnSendTransactionFinished;
+        public event IUnitonConnectWalletCallbacks.OnWalletConnectionUnPause OnWalletConnectonUnPaused;
 
         /// <summary>
         /// Callback to handle wallet connection disconnection status
         /// </summary>
-        public event IUnitonConnectSDKCallbacks.OnWalletDisconnect OnWalletDisconnected;
+        public event IUnitonConnectWalletCallbacks.OnWalletDisconnect OnWalletDisconnected;
+
+        /// <summary>
+        /// Callback to process the status of a recently sent transaction
+        /// </summary>
+        public event IUnitonConnectTransactionCallbacks.OnTransactionSendingFinish OnTransactionSendingFinished;
 
         private void Awake()
         {
@@ -192,9 +195,9 @@ namespace UnitonConnect.Core
         /// <summary>
         /// Start downloading wallet configurations by the specified link to the json file
         /// </summary>
-        /// <param name="supportedWalletsUrl">Link to a list of wallets to get their configuration, example: https://raw.githubusercontent.com/ton-blockchain/wallets-list/main/wallets-v2.json</param>
+        /// <param name="supportedWalletsUrl">Link to a list of all supported wallets to get their configurations. Use ProjectStorageConsts.TEST_SUPPORTED_WALLETS_LINK to get the whole list of available wallets, or bind your manifest</param>
         /// <param name="walletsClaimed">Callback to retrieve successfully downloaded wallet configurations</param>
-        public void GetWalletsConfigs(string supportedWalletsUrl,
+        public void LoadWalletsConfigs(string supportedWalletsUrl,
             Action<List<WalletConfig>> walletsClaimed)
         {
             StartCoroutine(LoadWallets(supportedWalletsUrl, walletsClaimed));
@@ -216,7 +219,7 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            Application.OpenURL(Uri.EscapeUriString(connectUrl));
+            OpenWalletViaDeepLink(Uri.EscapeUriString(connectUrl));
         }
 
         /// <summary>
@@ -248,28 +251,40 @@ namespace UnitonConnect.Core
             var transactionMessages = GetTransactionMessages(recipientAddress, amount);
             var transactionRequest = GetTransactionRequest(transactionMessages);
 
+            SendTransactionResult? transactionResult = null;
+
             try
             {
                 UnitonConnectLogger.Log($"Created a request to send a TON" +
                     $" to the recipient: {recipientAddress} in amount {amount}");
 
-                Application.OpenURL(currentWallet.UniversalUrl);
+                if (WalletConnectUtils.IsAddressesMatch(recipientAddress))
+                {
+                    UnitonConnectLogger.LogWarning("Transaction canceled because the recipient and sender addresses match");
 
-                var transactionResult = await _tonConnect.SendTransaction(transactionRequest);
+                    return;
+                }
 
-                UnitonConnectLogger.Log($"Transaction successfully completed: {transactionResult.Value.Boc}");
+                OpenWalletViaDeepLink(currentWallet.UniversalUrl);
 
-                OnSendTransactionFinish(true);
+                transactionResult = await _tonConnect.SendTransaction(transactionRequest);
+
+                UnitonConnectLogger.Log($"Transaction successfully completed, Boc: {transactionResult.Value.Boc}");
+
+                OnTransactionSendingFinish(transactionResult, true);
             }
             catch (WalletNotConnectedError connectionError)
             {
-                UnitonConnectLogger.LogError($"Failed to send tokens due" +
-                    $" to the following reason: {connectionError.Message}");
+                UnitonConnectLogger.LogError($"{connectionError.Message}");
+
+                OnTransactionSendingFinish(transactionResult, false);
             }
             catch (Exception exception)
             {
                 UnitonConnectLogger.LogError($"Failed to send tokens due" +
                     $" to the following reason: {exception.Message}");
+
+                OnTransactionSendingFinish(transactionResult, false);
             }
         }
 
@@ -425,7 +440,7 @@ namespace UnitonConnect.Core
                 {
                     if (!string.IsNullOrEmpty(line))
                     {
-                        Debug.Log(line);
+                        UnitonConnectLogger.Log(line);
 
                         listenerData.Provider(line);
                     }
@@ -435,6 +450,8 @@ namespace UnitonConnect.Core
 
                 yield return null;
             }
+
+            request.Dispose();
         }
 
         private IEnumerator ActivateGatewaySenderRoutine(GatewayMessageData gatewayMessage)
@@ -451,18 +468,21 @@ namespace UnitonConnect.Core
 
             WebRequestUtils.SetRequestHeader(request, contentTypeHeader, textPlainValue);
 
-            UnitonConnectLogger.Log($"Sending POST request to URL: {url}");
-
             yield return request.SendWebRequest();
 
             if (request.result != WebRequestUtils.SUCCESS)
             {
-                UnitonConnectLogger.LogError($"Failed to send Gateway message with error: {request.error}, response code: {request.responseCode}");
+                UnitonConnectLogger.LogError($"Failed to send Gateway message with error:" +
+                    $" {request.error}, response code: {request.responseCode}");
             }
             else
             {
                 UnitonConnectLogger.Log("Gateway message successfully sended");
             }
+
+            yield return null;
+
+            request.Dispose();
         }
 
         private void ActivateInitializationSDKListener(CancellationToken token,
@@ -515,6 +535,7 @@ namespace UnitonConnect.Core
             Action<List<WalletConfig>> walletsClaimed)
         {
             var walletNameWithBugBridgeURL = "MyTonWallet";
+
             var loadedWallets = new List<WalletConfig>();
 
             foreach (var wallet in walletsList)
@@ -567,6 +588,11 @@ namespace UnitonConnect.Core
             ProjectStorageConsts.DeleteConnectionKey(lastEventId);
 
             OnWalletConnectionRestore(false);
+        }
+
+        private void OpenWalletViaDeepLink(string deepLinkURL)
+        {
+            Application.OpenURL(deepLinkURL);
         }
 
         private TonConnect GetTonConnectInstance(TonConnectOptions options,
@@ -645,6 +671,8 @@ namespace UnitonConnect.Core
             OnWalletConnectionFinished?.Invoke(wallet);
         }
 
+        private void OnInjectedWalletMessageReceive(string message) => _tonConnect.ParseInjectedProviderMessage(message);
+
         private void OnWalletConnectionFail(string errorMessage) => OnWalletConnectionFailed?.Invoke(errorMessage);
 
         private void OnWalletConnectionRestore(bool isRestored) => OnWalletConnectionRestored?.Invoke(isRestored);
@@ -653,10 +681,9 @@ namespace UnitonConnect.Core
 
         private void OnWalletConnectionUnPause() => OnWalletConnectonUnPaused?.Invoke();
 
-        private void OnSendTransactionFinish(bool isSuccess) => OnSendTransactionFinished?.Invoke(isSuccess);
-
-        private void OnInjectedWalletMessageReceived(string message) => _tonConnect.ParseInjectedProviderMessage(message);
-    
         private void OnWalletDisconnect() => OnWalletDisconnected?.Invoke();
+
+        private void OnTransactionSendingFinish(SendTransactionResult? transactionResult,
+            bool isSuccess) => OnTransactionSendingFinished?.Invoke(transactionResult, isSuccess);
     }
 }

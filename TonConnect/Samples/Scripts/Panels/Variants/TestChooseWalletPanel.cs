@@ -1,8 +1,4 @@
-
 namespace UnitonConnect.Core.Demo
 {
-    public sealed class TestChooseWalletPanel : TestBasePanel
-    {
-
-    }
+    public sealed class TestChooseWalletPanel : TestBasePanel { }
 }

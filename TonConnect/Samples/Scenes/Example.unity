@@ -1496,7 +1496,7 @@ GameObject:
   - component: {fileID: 515026108}
   - component: {fileID: 515026109}
   m_Layer: 0
-  m_Name: TestUI
+  m_Name: TestUIAdapter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

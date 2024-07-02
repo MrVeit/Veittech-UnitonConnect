@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using TonSdk.Connect;
@@ -6,7 +5,6 @@ using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.View;
 using UnitonConnect.Core.Utils.Debugging;
-using System;
 
 namespace UnitonConnect.Core.Demo
 {
