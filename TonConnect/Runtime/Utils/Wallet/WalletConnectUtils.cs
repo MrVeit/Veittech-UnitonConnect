@@ -35,6 +35,27 @@ namespace UnitonConnect.Core.Utils
         }
 
         /// <summary>
+        /// Checks if the recipient and sender addresses match
+        /// </summary>
+        /// <param name="recipientAddress">Recipient's address for sending tokens</param>
+        /// <returns></returns>
+        public static bool IsAddressesMatch(string recipientAddress)
+        {
+            var wallet = UnitonConnectSDK.Instance.TonConnect.Wallet;
+            var authorizedWalletAddress = $"{wallet.Account.Address}";
+
+            if (authorizedWalletAddress == recipientAddress)
+            {
+                UnitonConnectLogger.LogWarning("The recipient and sender address match, " +
+                    "the transaction will be canceled when you try to send it");
+
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Checks the wallet configuration for the presence of an http bridge
         /// </summary>
         /// <param name="config">Wallet configuration to check. Call `OnWalletConnectionFinished` to get all available configurations.</param>
@@ -95,7 +116,7 @@ namespace UnitonConnect.Core.Utils
         }
 
         /// <summary>
-        /// Gets the configuration with the specified bridge if it does not have a second bridge
+        /// Get the configuration with the specified bridge if it does not have a second bridge
         /// </summary>
         /// <param name="bridgeType">Required bridge type to get the configuration</param>
         /// <param name="walletName">Name of the required wallet</param>

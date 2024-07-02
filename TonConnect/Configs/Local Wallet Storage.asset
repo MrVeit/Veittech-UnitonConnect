@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 52a4c942b899ada49b71afcd3e41796f, type: 3}
-  m_Name: Wallets Storage
+  m_Name: Local Wallet Storage
   m_EditorClassIdentifier: 
   <Config>k__BackingField:
   - {fileID: 11400000, guid: c69b524f148f126489865d875b1fc07d, type: 2}

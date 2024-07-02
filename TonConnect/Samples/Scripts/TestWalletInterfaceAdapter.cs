@@ -10,7 +10,6 @@ using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.View;
 using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.Editor.Common;
-using System.Collections;
 
 namespace UnitonConnect.Core.Demo
 {
@@ -64,14 +63,28 @@ namespace UnitonConnect.Core.Demo
         {
             CreateInstance();
 
+            _unitonSDK.OnInitialized += Initialize;
+
             _unitonSDK.OnWalletConnectionFinished += WalletConnectionFinished;
             _unitonSDK.OnWalletConnectionFailed += WalletConnectionFailed;
+
+            if (_activeWallets.Count < 1)
+            {
+                _unitonSDK.OnWalletDisconnected += Initialize;
+            }
         }
 
         private void OnDestroy()
         {
+            _unitonSDK.OnInitialized -= Initialize;
+
             _unitonSDK.OnWalletConnectionFinished -= WalletConnectionFinished;
             _unitonSDK.OnWalletConnectionFailed -= WalletConnectionFailed;
+
+            if (_activeWallets.Count < 1)
+            {
+                _unitonSDK.OnWalletDisconnected -= Initialize;
+            }
         }
 
         private void Start()
@@ -83,8 +96,6 @@ namespace UnitonConnect.Core.Demo
                 _disconnectButton.interactable = false;
                 _sendTransactionButton.interactable = false;
             }
-
-            Invoke(nameof(Initialize), 1f);
         }
 
         private void CreateInstance()
@@ -117,8 +128,8 @@ namespace UnitonConnect.Core.Demo
                 return;
             }
 
-            _unitonSDK.GetWalletsConfigs(ProjectStorageConsts.
-                START_TON_WALLETS_LINK, (walletsConfigs) =>
+            _unitonSDK.LoadWalletsConfigs(ProjectStorageConsts.
+                TEST_SUPPORTED_WALLETS_LINK, (walletsConfigs) =>
                 {
                     CreateWalletsList(walletsConfigs);
                 });
@@ -200,7 +211,8 @@ namespace UnitonConnect.Core.Demo
                 _debugMessage.text = string.Empty;
                 _shortWalletAddress.text = string.Empty;
 
-                UnitonConnectLogger.LogWarning($"Connect status: {UnitonConnectSDK.Instance.IsWalletConnected}");
+                UnitonConnectLogger.LogWarning($"Connect status: " +
+                    $"{UnitonConnectSDK.Instance.IsWalletConnected}");
             }
         }
 

@@ -1,7 +1,6 @@
 using UnityEngine;
-using UnitonConnect.Runtime.Data;
 using TonSdk.Connect;
-using JetBrains.Annotations;
+using UnitonConnect.Runtime.Data;
 
 namespace UnitonConnect.Editor.Common
 {
@@ -25,14 +24,14 @@ namespace UnitonConnect.Editor.Common
         public const string APP_ICON_FILE_NAME = "icon.png";
         public const string APP_DATA_FILE_NAME = "dAppData.json";
 
-        public const string START_TEST_URL = "https://mrveit.github.io/Uniton-Connect/";
-        public const string START_TEST_NAME = "Uniton Connect";
+        public const string TEST_APP_URL = "https://mrveit.github.io/Uniton-Connect/";
+        public const string TEST_APP_NAME = "Uniton Connect";
 
-        public const string START_TON_WALLETS_LINK = "https://raw.githubusercontent.com/ton-blockchain/wallets-list/main/wallets-v2.json";
+        public const string TEST_SUPPORTED_WALLETS_LINK = "https://raw.githubusercontent.com/ton-blockchain/wallets-list/main/wallets-v2.json";
 
         public static string GetTestAppManifest()
         {
-            return GetAppManifest(START_TEST_URL, APP_DATA_FILE_NAME);
+            return GetAppManifest(TEST_APP_URL, APP_DATA_FILE_NAME);
         }
 
         public static string GetAppManifest(string url, string manifestFileName)

@@ -4,7 +4,7 @@ using UnitonConnect.Core.Demo;
 
 namespace UnitonConnect.Core.Data
 {
-    public sealed class TestConnectButton : TestBaseButton
+    public sealed class TestOpenChooseWalletPanelButton : TestBaseButton
     {
         [SerializeField] private TestChooseWalletPanel _panel;
        

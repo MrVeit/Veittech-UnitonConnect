@@ -1,9 +1,8 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 namespace UnitonConnect.Core.Utils
 {
-    public sealed class QRGenerator : MonoBehaviour
+    public sealed class QRGenerator
     {
         // Resolution
         const int PIXELS_PER_MODULE = 20;
@@ -48,7 +47,8 @@ namespace UnitonConnect.Core.Utils
         /// <param name="lightColor"></param>
         /// <param name="errorCorrectionLevel"></param>
         /// <returns></returns>
-        public static Texture2D EncodeString(string text, Color darkColor, Color lightColor, QRCodeGenerator.ECCLevel errorCorrectionLevel)
+        public static Texture2D EncodeString(string text, Color darkColor, 
+            Color lightColor, QRCodeGenerator.ECCLevel errorCorrectionLevel)
         {
             QRCodeGenerator qrGenerator = new QRCodeGenerator();
             QRCodeGenerator.QRCode qrCode = qrGenerator.CreateQrCode(text, errorCorrectionLevel);

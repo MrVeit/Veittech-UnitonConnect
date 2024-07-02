@@ -4,9 +4,6 @@ namespace UnitonConnect.Core.Data
 {
     public sealed class TestOpenDeepLinkWalletConnectionButton : TestBaseButton
     {
-        public sealed override void OnClick()
-        {
-
-        }
+        public sealed override void OnClick() { }
     }
 }

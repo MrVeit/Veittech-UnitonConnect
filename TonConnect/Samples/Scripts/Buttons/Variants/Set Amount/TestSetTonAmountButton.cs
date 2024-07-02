@@ -1,8 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System.Text.RegularExpressions;
-using System;
 
 namespace UnitonConnect.Core.Demo
 {
