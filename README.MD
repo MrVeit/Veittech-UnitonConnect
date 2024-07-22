@@ -366,12 +366,15 @@ https://github.com/continuation-team/TonSdk.NET
 
 # Donations
 
-If you want to support my work you can send Toncoins to this address:
+Ton Wallet (TON/NOT/USDt):
 ```
 UQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4Ursw6
 ```
 
-**Thanks for your support!**
+Multichain Wallet (BTC/ETH/BNB/MATIC)
+```
+0x231803Df809C207FaA330646BB5547fD087FEcA1
+```
 
 # Support
 
