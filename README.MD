@@ -1,12 +1,12 @@
 # UNITON CONNECT
 
-<p align="center">
- <img width="600px" src="Assets/sdkBackgroundLogo.png" alt="qr"/>
-</p>
-
 [![License](https://img.shields.io/github/license/mrveit/unity-ton-connect?color=318CE7&style=flat-square)](LICENSE)
 [![Version](https://img.shields.io/github/package-json/v/mrveit/unity-ton-connect?color=318CE7&style=flat-square)](package.json)
 [![Unity](https://img.shields.io/badge/Unity-2020.1+-2296F3.svg?color=318CE7&style=flat-square)](https://unity.com/releases/editor/archive)
+
+<p align="left">
+ <img width="500px" src="Assets/sdkBackgroundLogo.png" alt="qr"/>
+</p>
 
 **UNITON CONNECT** is a convenient solution for working with the Ton Connect ecosystem right in Unity and has the following features: authorization via TON wallets (QR code or via Deep Link), making transactions and much more.
 
