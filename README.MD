@@ -23,11 +23,13 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **My Ton Wallet**                             | ✔️           | ✔️           |
 | **Ton Wallet**                                | ⚠️           | ⚠️           |
 | **xTon Wallet**                               | ⚠️           | ⚠️           |
-| **Ton Hub**                                   | ⚠️           | ⚠️           |
+| **Ton Hub**                                   | ⚠️           | ✔️           |
 | **Open Mask**                                 | ⚠️           | ⚠️           |
 | **DeWallet**                                  | ⚠️           | ⚠️           |
-| **Bitget Wallet**                             | ⚠️           | ⚠️           |
-| **Safe Pal Wallet**                           | ⚠️           | ⚠️           |
+| **Bitget Wallet**                             | ⚠️           | ✔️           |
+| **Safe Pal Wallet**                           | ⚠️           | ✔️           |
+| **OKX Wallet**                                | ⚠️           | ✔️           |
+| **OKX TR Wallet**                             | ❌           | ❌           |
  
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
