@@ -33,6 +33,18 @@ You can test the SDK without installation on a demo app [in your browser](https:
  
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
+# Supported tokens 
+
+|           Tokens        |   Status   |
+| ----------------------- | :--------: |
+| **Toncoin**             | ✔️         |
+| **Notcoin**             | ⚠️         |
+| **Jetton**              | ⚠️         |
+| **NFT**                 | ⚠️         |
+| **Your Token**          | ⚠️         |
+ 
+<sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
+
 # Dependencies
 
 For the library to work correctly, the following dependencies **must be installed** in the project before use:
