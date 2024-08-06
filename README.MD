@@ -21,15 +21,12 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **Telegram Wallet**                           | ✔️           | ✔️           |
 | **Ton Keeper**                                | ❌           | ✔️           |
 | **My Ton Wallet**                             | ✔️           | ✔️           |
-| **Ton Wallet**                                | ⚠️           | ⚠️           |
-| **xTon Wallet**                               | ⚠️           | ⚠️           |
 | **Ton Hub**                                   | ⚠️           | ✔️           |
-| **Open Mask**                                 | ⚠️           | ⚠️           |
 | **DeWallet**                                  | ⚠️           | ⚠️           |
 | **Bitget Wallet**                             | ⚠️           | ✔️           |
 | **Safe Pal Wallet**                           | ⚠️           | ✔️           |
 | **OKX Wallet**                                | ⚠️           | ✔️           |
-| **OKX TR Wallet**                             | ❌           | ❌           |
+| **OKX TR Wallet (Turkiye)**                   | ⚠️           | ⚠️           |
  
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
@@ -39,7 +36,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | ----------------------- | :--------: |
 | **Toncoin**             | ✔️         |
 | **Notcoin**             | ⚠️         |
-| **USDT (TON)**          | ⚠️         |
+| **USDT**                | ⚠️         |
 | **Jetton**              | ⚠️         |
 | **NFT**                 | ⚠️         |
 | **Custom Token**        | ⚠️         |
