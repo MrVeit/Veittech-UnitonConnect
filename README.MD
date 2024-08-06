@@ -1,12 +1,12 @@
 # UNITON CONNECT
 
-<p align="center">
- <img width="600px" src="Assets/sdkBackgroundLogo.png" alt="qr"/>
-</p>
-
 [![License](https://img.shields.io/github/license/mrveit/unity-ton-connect?color=318CE7&style=flat-square)](LICENSE)
 [![Version](https://img.shields.io/github/package-json/v/mrveit/unity-ton-connect?color=318CE7&style=flat-square)](package.json)
 [![Unity](https://img.shields.io/badge/Unity-2020.1+-2296F3.svg?color=318CE7&style=flat-square)](https://unity.com/releases/editor/archive)
+
+<p align="left">
+ <img width="600px" src="Assets/sdkBackgroundLogo.png" alt="qr"/>
+</p>
 
 **UNITON CONNECT** is a convenient solution for working with the Ton Connect ecosystem right in Unity and has the following features: authorization via TON wallets (QR code or via Deep Link), making transactions and much more.
 
@@ -21,13 +21,25 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **Telegram Wallet**                           | ✔️           | ✔️           |
 | **Ton Keeper**                                | ❌           | ✔️           |
 | **My Ton Wallet**                             | ✔️           | ✔️           |
-| **Ton Wallet**                                | ⚠️           | ⚠️           |
-| **xTon Wallet**                               | ⚠️           | ⚠️           |
-| **Ton Hub**                                   | ⚠️           | ⚠️           |
-| **Open Mask**                                 | ⚠️           | ⚠️           |
+| **Ton Hub**                                   | ⚠️           | ✔️           |
 | **DeWallet**                                  | ⚠️           | ⚠️           |
-| **Bitget Wallet**                             | ⚠️           | ⚠️           |
-| **Safe Pal Wallet**                           | ⚠️           | ⚠️           |
+| **Bitget Wallet**                             | ⚠️           | ✔️           |
+| **Safe Pal Wallet**                           | ⚠️           | ✔️           |
+| **OKX Wallet**                                | ⚠️           | ✔️           |
+| **OKX TR Wallet (Turkiye)**                   | ⚠️           | ⚠️           |
+ 
+<sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
+
+# Supported tokens 
+
+|           Token         |   Status   |
+| ----------------------- | :--------: |
+| **Toncoin**             | ✔️         |
+| **Notcoin**             | ⚠️         |
+| **USDT**                | ⚠️         |
+| **Jetton**              | ⚠️         |
+| **NFT**                 | ⚠️         |
+| **Custom Token**        | ⚠️         |
  
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
@@ -366,14 +378,17 @@ https://github.com/continuation-team/TonSdk.NET
 
 # Donations
 
-If you want to support my work you can send Toncoins to this address:
+Ton Wallet (TON/NOT/USDt):
 ```
 UQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4Ursw6
 ```
 
-**Thanks for your support!**
+Multichain Wallet (BTC/ETH/BNB/MATIC)
+```
+0x231803Df809C207FaA330646BB5547fD087FEcA1
+```
 
 # Support
 
 [![Email](https://img.shields.io/badge/-gmail-090909?style=for-the-badge&logo=gmail)](https://mail.google.com/mail/?view=cm&fs=1&to=misster.veit@gmail.com)
-[![Telegram](https://img.shields.io/badge/-Telegram-090909?style=for-the-badge&logo=telegram)](https://t.me/MrVeit)
+[![Telegram](https://img.shields.io/badge/-Telegram-090909?style=for-the-badge&logo=telegram)](https://t.me/unigram_tools)
