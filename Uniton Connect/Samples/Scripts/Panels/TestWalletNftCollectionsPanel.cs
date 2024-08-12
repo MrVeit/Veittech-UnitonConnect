@@ -86,6 +86,17 @@ namespace UnitonConnect.Core.Demo
 
         private async Task<List<NftViewData>> CreateNftViewContainer(NftCollectionData collections)
         {
+#if !UNITY_EDITOR || UNITY_WEBGL
+            if (!IsSupportedWebServer())
+            {
+                UnitonConnectLogger.LogWarning("CORS header reads are not available via" +
+                    " Github Pages for downloading images from NFT collections." +
+                    " Deploy the web build to your server and configure the CORS header there.");
+
+                return null;
+            }
+#endif
+
             List<NftViewData> nftVisual = new();
 
             foreach (var nft in collections.Items)
@@ -162,6 +173,18 @@ namespace UnitonConnect.Core.Demo
             _warningMessage.gameObject.SetActive(true);
 
             _loadAnimation.SetActive(false);
+        }
+
+        private bool IsSupportedWebServer()
+        {
+            string currentURL = Application.absoluteURL;
+
+            if (currentURL.Contains("github"))
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

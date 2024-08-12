@@ -11,8 +11,6 @@ namespace UnitonConnect.Core.Utils.View
 {
     public sealed class WalletVisualUtils
     {
-        private const string PROXY_SERVER = "https://corsproxy.io/?";
-
         /// <summary>
         /// Return the first and last characters of the wallet address
         /// </summary>
@@ -41,16 +39,7 @@ namespace UnitonConnect.Core.Utils.View
         {
             Texture2D walletIcon = null;
 
-            string targetImageUrl = imageUrl;
-
-            if (UnitonConnectSDK.Instance.LoadWithoutCORSHeader)
-            {
-                targetImageUrl = PROXY_SERVER + Uri.EscapeUriString(imageUrl);
-
-                Debug.Log(targetImageUrl);
-            }
-
-            using (UnityWebRequest request = UnityWebRequestTexture.GetTexture(targetImageUrl))
+            using (UnityWebRequest request = UnityWebRequestTexture.GetTexture(imageUrl))
             {
                 var operation = request.SendWebRequest();
 
