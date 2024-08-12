@@ -4,8 +4,10 @@ namespace UnitonConnect.Core.Common
 {
     public interface IUnitonConnectTransactionCallbacks
     {
+        delegate void OnTonBalanceClaim(decimal tonBalance);
         delegate void OnTransactionSendingFinish(SendTransactionResult? transactionResult, bool isSuccess);
 
         event OnTransactionSendingFinish OnTransactionSendingFinished;
+        event OnTonBalanceClaim OnTonBalanceClaimed;
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using TonSdk.Core;
 using TonSdk.Connect;
 using UnitonConnect.Core.Data.Common;
 using UnitonConnect.Core.Utils.Debugging;
@@ -10,6 +11,8 @@ namespace UnitonConnect.Core.Utils
 {
     public sealed class WalletConnectUtils
     {
+        private static readonly UnitonConnectSDK _unitonConnect = UnitonConnectSDK.Instance;
+
         /// <summary>
         /// Returns the full wallet configuration if its name is found in the list
         /// </summary>
@@ -41,7 +44,7 @@ namespace UnitonConnect.Core.Utils
         /// <returns></returns>
         public static bool IsAddressesMatch(string recipientAddress)
         {
-            var wallet = UnitonConnectSDK.Instance.TonConnect.Wallet;
+            var wallet = _unitonConnect.TonConnect.Wallet;
             var authorizedWalletAddress = $"{wallet.Account.Address}";
 
             if (authorizedWalletAddress == recipientAddress)
@@ -183,7 +186,7 @@ namespace UnitonConnect.Core.Utils
         {
             List<WalletConfig> wallets = new();
 
-            if (UnitonConnectSDK.Instance.IsUseWebWallets)
+            if (_unitonConnect.IsUseWebWallets)
             {
                 var jsBridgeWallets = loadedWallets.Where(
                     wallet => wallet.JsBridgeKey != null ||
@@ -211,7 +214,7 @@ namespace UnitonConnect.Core.Utils
             List<WalletConfig> uniqueWallets;
             List<WalletConfig> walletsConfigs;
 
-            if (UnitonConnectSDK.Instance.IsUseWebWallets)
+            if (_unitonConnect.IsUseWebWallets)
             {
                 foreach (var wallet in httpBridgeWallets)
                 {
@@ -221,7 +224,7 @@ namespace UnitonConnect.Core.Utils
                 UnitonConnectLogger.Log($"Created wallet list: {JsonConvert.SerializeObject(jsBridgeWallets)}");
             }
 
-            if (UnitonConnectSDK.Instance.IsUseWebWallets)
+            if (_unitonConnect.IsUseWebWallets)
             {
                 uniqueWallets = jsBridgeWallets.GroupBy(wallet => wallet.Name).
                     Select(group => group.First()).ToList();
@@ -235,6 +238,66 @@ namespace UnitonConnect.Core.Utils
             walletsConfigs = uniqueWallets.Take(uniqueWallets.Capacity).ToList();
 
             return walletsConfigs;
+        }
+
+        /// <summary>
+        /// Convert wallet address to HEX/RAW format, example:
+        /// 0:c1da9d221d87032b762ad647658a2b5115a38af4b2329d4824fb25cb65799cd9
+        /// </summary>
+        /// <returns></returns>
+        public static string GetHEXAddress(string address)
+        {
+            string rawAddress = ConvertAddressByType(address, AddressType.Raw);
+
+            return rawAddress;
+        }
+
+        /// <summary>
+        /// Convert wallet address to Bounceable format (base64), example:
+        /// EQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk+yXLZXmc2QON
+        /// </summary>
+        /// <returns></returns>
+        public static string GetBounceableAddress(string address)
+        {
+            string bounceableAddress = ConvertAddressByType(address, 
+                AddressType.Base64, new AddressStringifyOptions(true, false, false));
+
+            return bounceableAddress;
+        }
+
+        /// <summary>
+        /// Convert wallet address to Non Bounceable format (base64), example:
+        /// UQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk+yXLZXmc2V5I
+        /// </summary>
+        /// <returns></returns>
+        public static string GetNonBounceableAddress(string address)
+        {
+            string NonBounceableAddress = ConvertAddressByType(address, 
+                AddressType.Base64, new AddressStringifyOptions(false, false, false));
+
+            return NonBounceableAddress;
+        }
+
+        private static string ConvertAddressByType(string address, AddressType type,
+            AddressStringifyOptions options = null)
+        {
+            string convertedAddress = GetAddress(address).ToString(type, options);
+
+            return convertedAddress;
+        }
+
+        private static Address GetAddress(string walletAddress)
+        {
+            if (!_unitonConnect.IsWalletConnected)
+            {
+                UnitonConnectLogger.LogWarning("Wallet is not connected");
+
+                return null;
+            }
+
+            var address = new Address(walletAddress);
+
+            return address;
         }
     }
 }

@@ -9,6 +9,8 @@ using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.View;
 using UnitonConnect.Core.Utils.Debugging;
+using UnitonConnect.Runtime.Data;
+using UnitonConnect.DeFi;
 using UnitonConnect.Editor.Common;
 
 namespace UnitonConnect.Core.Demo
@@ -47,8 +49,10 @@ namespace UnitonConnect.Core.Demo
         [SerializeField, Space] private Button _connectButton;
         [SerializeField] private Button _disconnectButton;
         [SerializeField] private Button _sendTransactionButton;
+        [SerializeField] private Button _openNftCollectionButton;
         [SerializeField, Space] private TestChooseWalletPanel _chooseWalletPanel;
         [SerializeField] private TestSelectedWalletConnectionPanel _connectPanel;
+        [SerializeField] private TestWalletNftCollectionsPanel _nftCollectionPanel;
         [SerializeField, Space] private TestWalletView _walletViewPrefab;
         [SerializeField] private Transform _walletsParent;
         [SerializeField, Space] private List<TestWalletView> _activeWallets;
@@ -59,6 +63,8 @@ namespace UnitonConnect.Core.Demo
 
         private string _connectUrl;
 
+        private UserAssets.NFT _nftModule => _unitonSDK.Assets.Nft;
+
         private void Awake()
         {
             CreateInstance();
@@ -67,6 +73,8 @@ namespace UnitonConnect.Core.Demo
 
             _unitonSDK.OnWalletConnectionFinished += WalletConnectionFinished;
             _unitonSDK.OnWalletConnectionFailed += WalletConnectionFailed;
+
+            _unitonSDK.OnWalletDisconnected += WalletDisconnected;
 
             if (_activeWallets.Count < 1)
             {
@@ -80,6 +88,11 @@ namespace UnitonConnect.Core.Demo
 
             _unitonSDK.OnWalletConnectionFinished -= WalletConnectionFinished;
             _unitonSDK.OnWalletConnectionFailed -= WalletConnectionFailed;
+
+            _unitonSDK.OnWalletDisconnected += WalletDisconnected;
+
+            _nftModule.OnNftCollectionsClaimed -= NftCollectionsLoaded;
+            _nftModule.OnTargetNftCollectionClaimed -= TargetNftCollectionLoaded;
 
             if (_activeWallets.Count < 1)
             {
@@ -95,7 +108,11 @@ namespace UnitonConnect.Core.Demo
             {
                 _disconnectButton.interactable = false;
                 _sendTransactionButton.interactable = false;
+                _openNftCollectionButton.interactable = false;
             }
+
+            _nftModule.OnNftCollectionsClaimed += NftCollectionsLoaded;
+            _nftModule.OnTargetNftCollectionClaimed += TargetNftCollectionLoaded;
         }
 
         private void CreateInstance()
@@ -179,6 +196,8 @@ namespace UnitonConnect.Core.Demo
                 $"Name: {wallet.Device.AppName}, " +
                 $"Version: {wallet.Device.AppVersion}";
 
+                var userAddress = $"{wallet.Account.Address}";
+
                 var shortWalletAddress = WalletVisualUtils.ProcessWalletAddress(
                     wallet.Account.Address.ToString(AddressType.Base64), 6);
 
@@ -190,6 +209,7 @@ namespace UnitonConnect.Core.Demo
                 _connectButton.interactable = false;
                 _disconnectButton.interactable = true;
                 _sendTransactionButton.interactable = true;
+                _openNftCollectionButton.interactable = true;
 
                 _chooseWalletPanel.Close();
 
@@ -207,6 +227,7 @@ namespace UnitonConnect.Core.Demo
                 _connectButton.interactable = true;
                 _disconnectButton.interactable = false;
                 _sendTransactionButton.interactable = false;
+                _openNftCollectionButton.interactable = false;
 
                 _debugMessage.text = string.Empty;
                 _shortWalletAddress.text = string.Empty;
@@ -220,6 +241,33 @@ namespace UnitonConnect.Core.Demo
         {
             UnitonConnectLogger.LogError($"Failed to connect " +
                 $"the wallet due to the following reason: {message}");
+        }
+
+        private void NftCollectionsLoaded(NftCollectionData collections)
+        {
+            UnitonConnectLogger.Log($"Loaded nft collections: {collections.Items.Count}");
+        }
+
+        private void TargetNftCollectionLoaded(NftItemData nftCollection)
+        {
+            UnitonConnectLogger.Log($"Loaded target nft collection: {nftCollection.Collection.Name}");
+        }
+
+        private void WalletDisconnected()
+        {
+            _nftCollectionPanel.RemoveNftCollectionStorage();
+
+            if (_activeWallets.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var wallet in _activeWallets)
+            {
+                Destroy(wallet.gameObject);
+            }
+
+            _activeWallets.Clear();
         }
     }
 }
