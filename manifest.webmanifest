@@ -1,13 +1,13 @@
 {
-    "name": {{{ JSON.stringify(PRODUCT_NAME) }}},
-    "short_name": {{{ JSON.stringify(PRODUCT_NAME) }}},
+    "name": "Uniton Connect",
+    "short_name": "Uniton Connect",
     "start_url": "index.html",
     "display": "fullscreen",
-    "background_color": "{{{ BACKGROUND_COLOR }}}",
-    "theme_color": "{{{  SPLASH_SCREEN_STYLE.toLowerCase() === 'light' ? '#fff' : '#000' }}}",
-    "description": {{{ JSON.stringify(PRODUCT_DESCRIPTION) }}},
+    "background_color": "#000000",
+    "theme_color": "#000",
+    "description": "",
     "icons": [{
-      "src": "TemplateData/icons/unity-logo-{{{ SPLASH_SCREEN_STYLE.toLowerCase() }}}.png",
+      "src": "TemplateData/icons/unity-logo-dark.png",
       "sizes": "144x144",
       "type": "image/png",
       "purpose": "any maskable"
