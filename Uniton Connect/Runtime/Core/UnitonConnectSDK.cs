@@ -59,6 +59,8 @@ namespace UnitonConnect.Core
         [SerializeField, Space] private bool _initializeOnAwake;
         [Tooltip("Enable if you want to restore a saved connection from storage (recommended)")]
         [SerializeField] private bool _restoreConnectionOnAwake;
+        [Tooltip("Enable, if it is not possible to configure your server to CORS header, to load pictures from NFT collections.")]
+        [SerializeField, Space] private bool _loadWithoutCORS;
         [Header("Ton Connect Settings"), Space]
         [SerializeField, Space] private WalletsListData _walletsListConfig;
         [Tooltip("[Temporarily unsupported] Disable if you want to use Injected/Web wallets. This only works in WebGL builds!")]
@@ -89,6 +91,8 @@ namespace UnitonConnect.Core
 
         public bool IsUseWebWallets => _useWebWallets;
         public bool IsUseCachedWalletsIcons => _useCachedWalletsIcons;
+
+        public bool LoadWithoutCORSHeader => _loadWithoutCORS;
 
         /// <summary>
         /// Callback if sdk initialization is successful
