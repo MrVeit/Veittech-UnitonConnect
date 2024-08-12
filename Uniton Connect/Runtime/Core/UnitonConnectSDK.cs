@@ -5,15 +5,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
+using Newtonsoft.Json;
 using TonSdk.Core;
 using TonSdk.Connect;
-using Newtonsoft.Json;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Data.Common;
 using UnitonConnect.Core.Common;
 using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.Debugging;
+using UnitonConnect.DeFi;
 using UnitonConnect.Editor.Common;
+using UnitonConnect.ThirdParty.TonAPI;
 
 namespace UnitonConnect.Core
 {
@@ -57,12 +59,13 @@ namespace UnitonConnect.Core
         [SerializeField, Space] private bool _initializeOnAwake;
         [Tooltip("Enable if you want to restore a saved connection from storage (recommended)")]
         [SerializeField] private bool _restoreConnectionOnAwake;
-        [Header("TonConnect Settings"), Space]
+        [Header("Ton Connect Settings"), Space]
         [SerializeField, Space] private WalletsListData _walletsListConfig;
         [Tooltip("[Temporarily unsupported] Disable if you want to use Injected/Web wallets. This only works in WebGL builds!")]
-        [SerializeField, Space] private bool _useWebWallets;
+        //[SerializeField, Space] 
+        private bool _useWebWallets;
         [Tooltip("Enable if you want to instantly receive wallet icons in your interface without waiting for them to be downloaded from the server")]
-        [SerializeField] private bool _useCachedWalletsIcons;
+        [SerializeField, Space] private bool _useCachedWalletsIcons;
         [Tooltip("Configuration of supported wallets for your dApp. You can change their order and number, and override the way their configurations are loaded by hosting it yourself")]
         [SerializeField, Space] private WalletsProvidersData _supportedWallets;
 
@@ -74,7 +77,11 @@ namespace UnitonConnect.Core
 
         public TonConnect TonConnect => _tonConnect;
 
+        public UserAssets Assets { get; private set; }
+
         public List<WalletProviderConfig> SupportedWallets => _supportedWallets.Config;
+
+        public decimal TonBalance { get; private set; }
 
         public bool IsTestMode => _testMode;
         public bool IsDebugMode => _debugMode;
@@ -123,6 +130,11 @@ namespace UnitonConnect.Core
         /// </summary>
         public event IUnitonConnectTransactionCallbacks.OnTransactionSendingFinish OnTransactionSendingFinished;
 
+        /// <summary>
+        /// Callback to get the current amount of TON on the wallet
+        /// </summary>
+        public event IUnitonConnectTransactionCallbacks.OnTonBalanceClaim OnTonBalanceClaimed;
+
         private void Awake()
         {
             CreateInstance();
@@ -164,6 +176,8 @@ namespace UnitonConnect.Core
 
             _tonConnect = GetTonConnectInstance(_tonConnectOptions,
                 _remoteStorage, _additionalConnectOptions);
+
+            Assets = new UserAssets(this);
 
             _tonConnect.OnStatusChange(OnWalletConnectionFinish, OnWalletConnectionFail);
 
@@ -228,7 +242,7 @@ namespace UnitonConnect.Core
         /// Connection to a JavaScript bridged wallet via deep links
         /// </summary>
         /// <param name="wallet">Wallet configuration for connection</param>
-        public async void ConnectJavaScriptBridgeWalletViaDeeplink(WalletConfig wallet)
+        public async Task ConnectJavaScriptBridgeWalletViaDeeplink(WalletConfig wallet)
         {
             if (!WalletConnectUtils.HasJSBridge(wallet))
             {
@@ -247,7 +261,7 @@ namespace UnitonConnect.Core
         /// <param name="currentWallet">Current authorized wallet for the transaction</param>
         /// <param name="recipientAddress">Token recipient address</param>
         /// <param name="amount">Number of tokens to send</param>
-        public async Task SendTransaction(WalletConfig currentWallet,
+        public async Task SendTon(WalletConfig currentWallet,
             string recipientAddress, double amount)
         {
             var transactionMessages = GetTransactionMessages(recipientAddress, amount);
@@ -340,6 +354,39 @@ namespace UnitonConnect.Core
             }
 
             return connectUrl;
+        }
+
+        /// <summary>
+        /// Getting the address of the recently connected wallet
+        /// </summary>
+        /// <returns></returns>
+        public string GetWalletAddress()
+        {
+            if (!IsWalletConnected)
+            {
+                UnitonConnectLogger.LogWarning("Wallet is not connected");
+
+                return string.Empty;
+            }
+
+            return $"{TonConnect.Wallet.Account.Address}";
+        }
+
+        /// <summary>
+        /// Loading TON balance of a recently connected wallet. Subscribe to `OnTonBalanceClaimed` event to get the result.
+        /// </summary>
+        public void UpdateTonBalance()
+        {
+            StartCoroutine(TonApiBridge.GetBalance((nanotonBalance) =>
+            {
+                var tonBalance = UserAssetsUtils.FromNanoton(nanotonBalance);
+
+                TonBalance = tonBalance;
+
+                OnTonBalanceClaimed?.Invoke(tonBalance);
+
+                Debug.Log($"Current TON balance: {Instance.TonBalance}");
+            }));
         }
 
         private void CreateInstance()
@@ -656,7 +703,10 @@ namespace UnitonConnect.Core
             return messages;
         }
 
-        private void OnInitialize() => OnInitialized?.Invoke();
+        private void OnInitialize()
+        {
+            OnInitialized?.Invoke();
+        }
 
         private void OnWalletConnectionFinish(Wallet wallet)
         {
@@ -686,6 +736,14 @@ namespace UnitonConnect.Core
         private void OnWalletDisconnect() => OnWalletDisconnected?.Invoke();
 
         private void OnTransactionSendingFinish(SendTransactionResult? transactionResult,
-            bool isSuccess) => OnTransactionSendingFinished?.Invoke(transactionResult, isSuccess);
+            bool isSuccess)
+        {
+            OnTransactionSendingFinished?.Invoke(transactionResult, isSuccess);
+
+            if (isSuccess)
+            {
+                UpdateTonBalance();
+            }
+        }
     }
 }

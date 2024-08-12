@@ -5,6 +5,7 @@ using UnityEngine.Networking;
 using TonSdk.Connect;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils.Debugging;
+using System;
 
 namespace UnitonConnect.Core.Utils.View
 {

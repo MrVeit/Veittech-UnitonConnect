@@ -3,7 +3,7 @@ using System;
 namespace UnitonConnect.Core.Data
 {
     [Serializable]
-    public sealed class WalletViewData : ItemViewData
+    public sealed class NftViewData : ItemViewData
     {
 
     }

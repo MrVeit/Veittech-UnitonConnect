@@ -3,6 +3,7 @@ using UnitonConnect.Core.Data;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.Editor.Common;
 using UnitonConnect.Core.Utils.Debugging;
+using UnityEditor;
 
 namespace UnitonConnect.Core.Utils
 {
@@ -18,9 +19,11 @@ namespace UnitonConnect.Core.Utils
 
         public const string HEADER_CONTENT_TYPE = "Content-Type";
         public const string HEADER_ACCEPT = "Accept";
+        public const string HEADER_AUTHORIZATION = "Authorization";
 
         public const string HEADER_VALUE_TEXT_EVENT_STREAM = "text/event-stream";
         public const string HEADER_VALUE_TEXT_PLAIN = "text/plain";
+        public const string HEADER_VALUNE_CONTENT_TYPE_JSON = "application/json";
 
         public static void SetRequestHeader(UnityWebRequest webRequest,
             string header, string headerValue)

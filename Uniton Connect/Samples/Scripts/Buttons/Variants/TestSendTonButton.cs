@@ -5,14 +5,14 @@ namespace UnitonConnect.Core.Demo
 {
     public sealed class TestSendTonButton : TestBaseButton
     {
-        [SerializeField, Space] private TextMeshProUGUI _amountBar;
+        [SerializeField, Space] private TMP_InputField _amountBar;
         [SerializeField] private TestWalletAddressBarView _addressBar;
 
         public sealed override async void OnClick()
         {
             var latestWallet = TestWalletInterfaceAdapter.Instance.LatestAuthorizedWallet;
 
-            await UnitonConnectSDK.Instance.SendTransaction(latestWallet,
+            await UnitonConnectSDK.Instance.SendTon(latestWallet,
                 _addressBar.FullAddress, ParseAmountFromBar(_amountBar.text));
         }
 
