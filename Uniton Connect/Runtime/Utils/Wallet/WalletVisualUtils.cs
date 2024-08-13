@@ -5,7 +5,7 @@ using UnityEngine.Networking;
 using TonSdk.Connect;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils.Debugging;
-using System;
+using UnitonConnect.Editor.Common;
 
 namespace UnitonConnect.Core.Utils.View
 {
@@ -58,6 +58,58 @@ namespace UnitonConnect.Core.Utils.View
                 walletIcon = DownloadHandlerTexture.GetContent(request);
 
                 return walletIcon;
+            }
+        }
+
+        /// <summary>
+        /// Uploading a webp icon, which is converted to jpeg/png on the api server for further use in the project
+        /// </summary>
+        /// <param name="imageUrl">Link to cached webp image from NFT collection</param>
+        /// <returns></returns>
+        public static async Task<Texture2D> GetIconFromProxyServerAsync(string imageUrl)
+        {
+            var dAppData = ProjectStorageConsts.GetRuntimeAppStorage();
+
+            if (string.IsNullOrEmpty(dAppData.Data.ServerApiLink))
+            {
+                UnitonConnectLogger.LogError("For loading nft or wallet icon from the cache storage," +
+                    " you need to run the API Server to successfully convert to the desired format");
+
+                return null;
+            }
+
+            string apiUrl = ProjectStorageConsts.GetNftIconConvertURL(imageUrl);
+
+            Debug.Log($"APi url response: {apiUrl}");
+
+            using (UnityWebRequest request = UnityWebRequest.Get(apiUrl))
+            {
+                var operation = request.SendWebRequest();
+
+                while (!operation.isDone)
+                {
+                    await Task.Yield();
+                }
+
+                if (request.result != WebRequestUtils.SUCCESS)
+                {
+                    UnitonConnectLogger.LogError($"Failed to load image by api server: {request.error}");
+
+                    return null;
+                }
+
+                byte[] imageData = request.downloadHandler.data;
+
+                Texture2D texture = new(2, 2);
+
+                if (texture.LoadImage(imageData))
+                {
+                    UnitonConnectLogger.Log($"Loaded image {texture.name} with sise: {texture.width}x{texture.height}");
+
+                    return texture;
+                }
+
+                return null;
             }
         }
 

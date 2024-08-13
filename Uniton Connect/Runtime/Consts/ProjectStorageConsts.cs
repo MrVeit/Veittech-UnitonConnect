@@ -1,6 +1,7 @@
 using UnityEngine;
 using TonSdk.Connect;
 using UnitonConnect.Runtime.Data;
+using UnityEngine.Networking;
 
 namespace UnitonConnect.Editor.Common
 {
@@ -29,6 +30,8 @@ namespace UnitonConnect.Editor.Common
 
         public const string TEST_SUPPORTED_WALLETS_LINK = "https://raw.githubusercontent.com/ton-blockchain/wallets-list/main/wallets-v2.json";
 
+        private const string GET_NFT_IMAGE_CONVERTER = "/get-nft-image?url=";
+
         public static string GetTestAppManifest()
         {
             return GetAppManifest(TEST_APP_URL, APP_DATA_FILE_NAME);
@@ -49,9 +52,24 @@ namespace UnitonConnect.Editor.Common
             PlayerPrefs.DeleteKey(GetSaveConnectionKey(connectionKey));
         }
 
+        public static string GetNftIconConvertURL(string iconUrl)
+        {
+            var runtimeData = GetRuntimeAppStorage().Data;
+
+            string apiUrl = $"{runtimeData.ServerApiLink}" +
+                $"{GET_NFT_IMAGE_CONVERTER}{GetEscapedURLContent(iconUrl)}";
+
+            return apiUrl;
+        }
+
         private static string GetSaveConnectionKey(string connectionKey)
         {
             return $"{RemoteStorage.STORAGE_PREFIX}{connectionKey}";
+        }
+
+        private static string GetEscapedURLContent(string value)
+        {
+            return UnityWebRequest.EscapeURL(value);
         }
     }
 }

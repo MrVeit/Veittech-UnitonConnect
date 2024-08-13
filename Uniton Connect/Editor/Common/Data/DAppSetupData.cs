@@ -46,6 +46,12 @@ namespace UnitonConnect.Editor.SetupWindow.Data
             set => Data.ProjectLink = value;
         }
 
+        public string ServerApiLink
+        {
+            get => Data.ServerApiLink;
+            set => Data.ServerApiLink = value;
+        }
+
         public string Name
         {
             get => Data.Name;

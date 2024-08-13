@@ -81,9 +81,15 @@ namespace UnitonConnect.Editor.SetupWindow
 
             GUILayout.Space(20);
 
-            EditorGUILayout.LabelField("Url:", GUILayout.Width(150));
+            EditorGUILayout.LabelField("Project URL:", GUILayout.Width(150));
             DAppSetupData.Instance.ProjectLink = GUILayout.TextField(
                 DAppSetupData.Instance.ProjectLink, GUILayout.Width(300));
+
+            GUILayout.Space(5);
+
+            EditorGUILayout.LabelField("API Server URL:", GUILayout.Width(150));
+            DAppSetupData.Instance.ServerApiLink = GUILayout.TextField(
+                DAppSetupData.Instance.ServerApiLink, GUILayout.Width(300));
 
             GUILayout.Space(5);
 
@@ -151,11 +157,11 @@ namespace UnitonConnect.Editor.SetupWindow
 
         private void UpdateRuntimeStorage()
         {
-            var runtimeStorage = Resources.Load<DAppConfig>(
-                $"{ProjectStorageConsts.RUNTIME_FOLDER_IN_RESOURCES}/" +
-                $"{ProjectStorageConsts.RUNTIME_FILE_NAME_WITOUT_FORMAT}");
+            var runtimeStorage = ProjectStorageConsts.GetRuntimeAppStorage();
 
             runtimeStorage.Data.ProjectLink = DAppSetupData.Instance.ProjectLink;
+            runtimeStorage.Data.ServerApiLink = DAppSetupData.Instance.ServerApiLink;
+
             runtimeStorage.Data.Name = DAppSetupData.Instance.Name;
             runtimeStorage.Data.Icon = DAppSetupData.Instance.Icon;
 
