@@ -8,7 +8,14 @@
  <img width="600px" src="Assets/sdkBackgroundLogo.png" alt="qr"/>
 </p>
 
-**UNITON CONNECT** is a convenient solution for working with the Ton Connect ecosystem right in Unity and has the following features: authorization via TON wallets (QR code or via Deep Link), making transactions and much more.
+**UNITON CONNECT** is a user-friendly solution for working with the TON ecosystem inside web applications on Unity. 
+
+**Available functionality:**
+- Authorization via TON wallets (QR code or via Deep Link), 
+- Executing transactions via Toncoin,
+- Retrieving NFT collections from a connected wallet,
+- Read wallet balance (as long as Toncoin is available),
+- Conversion of wallet addresses into different formats and their visualization.
 
 # Technical Demo
 
