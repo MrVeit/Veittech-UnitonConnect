@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using UnitonConnect.Core.Utils.Debugging;
 
 namespace UnitonConnect.Runtime.Data
 {
@@ -42,5 +43,69 @@ namespace UnitonConnect.Runtime.Data
 
         [JsonProperty("trust")]
         public string Trust { get; set; }
+
+        public string GetBestResolutionPng()
+        {
+            return Metadata.IconURL;
+        }
+
+        public string Get5x5ResolutionWebp()
+        {
+            if (!IsDetectedTargetSize(0))
+            {
+                UnitonConnectLogger.LogError("5x5 image size not detected");
+
+                return string.Empty;
+            }
+
+            return Previews[0].Url;
+        }
+
+        public string Get100x100ResolutionWebp()
+        {
+            if (!IsDetectedTargetSize(1))
+            {
+                UnitonConnectLogger.LogError("100x100 image size not detected");
+
+                return string.Empty;
+            }
+
+            return Previews[1].Url;
+        }
+
+        public string Get500x500ResolutionWebp()
+        {
+            if (!IsDetectedTargetSize(2))
+            {
+                UnitonConnectLogger.LogError("500x500 image size not detected");
+
+                return string.Empty;
+            }
+
+            return Previews[2].Url;
+        }
+
+        public string Get1500x1500ResolutionWebp()
+        {
+            if (!IsDetectedTargetSize(3))
+            {
+                UnitonConnectLogger.LogError("1500x1500 image size not detected");
+
+                return string.Empty;
+            }
+
+            return Previews[3].Url;
+        }
+
+        private bool IsDetectedTargetSize(int id)
+        {
+            if (Previews[id] == null || Previews.Count == 0)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
     }
 }

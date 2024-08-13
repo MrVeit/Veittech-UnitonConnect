@@ -12,6 +12,7 @@ namespace UnitonConnect.Core.Demo
 {
     public sealed class TestWalletNftCollectionsPanel : TestBasePanel
     {
+        [SerializeField, Space] private UnitonConnectSDK _unitonConnect;
         [SerializeField, Space] private TestNftView _nftPrefab;
         [SerializeField, Space] private TextMeshProUGUI _warningMessage;
         [SerializeField, Space] private GameObject _loadAnimation;
@@ -25,24 +26,22 @@ namespace UnitonConnect.Core.Demo
 
         private readonly float _slotSize = 350f;
 
-        private UnitonConnectSDK _unitonConnect => UnitonConnectSDK.Instance;
-
         private UserAssets.NFT _nftModule => _unitonConnect.Assets.Nft;
 
         private void OnEnable()
         {
+            _unitonConnect.OnWalletDisconnected += RemoveNftCollectionStorage;
+
             _nftModule.OnNftCollectionsClaimed += NftCollectionsClaimed;
             _nftModule.OnNftCollectionsNotFounded += NftCollectionsNotFounded;
-
-            _unitonConnect.OnWalletDisconnected += RemoveNftCollectionStorage;
         }
 
-        private void OnDisable()
+        private void OnDestroy()
         {
+            _unitonConnect.OnWalletDisconnected -= RemoveNftCollectionStorage;
+
             _nftModule.OnNftCollectionsClaimed -= NftCollectionsClaimed;
             _nftModule.OnNftCollectionsNotFounded -= NftCollectionsNotFounded;
-
-            _unitonConnect.OnWalletDisconnected -= RemoveNftCollectionStorage;
         }
 
         public void Init()
@@ -86,24 +85,15 @@ namespace UnitonConnect.Core.Demo
 
         private async Task<List<NftViewData>> CreateNftViewContainer(NftCollectionData collections)
         {
-#if !UNITY_EDITOR || UNITY_WEBGL
-            if (!IsSupportedWebServer())
-            {
-                UnitonConnectLogger.LogWarning("CORS header reads are not available via" +
-                    " Github Pages for downloading images from NFT collections." +
-                    " Deploy the web build to your server and configure the CORS header there.");
-
-                return null;
-            }
-#endif
-
             List<NftViewData> nftVisual = new();
 
             foreach (var nft in collections.Items)
             {
-                var iconUrl = nft.Metadata.IconURL;
+                var iconUrl = nft.Get100x100ResolutionWebp();
 
-                var nftIcon = await WalletVisualUtils.GetWalletIconFromServerAsync(iconUrl);
+                UnitonConnectLogger.Log($"Claimed icon by urL: {iconUrl}");
+
+                var nftIcon = await WalletVisualUtils.GetIconFromProxyServerAsync(iconUrl);
                 var nftName = nft.Metadata.ItemName;
 
                 var newNftView = new NftViewData()
