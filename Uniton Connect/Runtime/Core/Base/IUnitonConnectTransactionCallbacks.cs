@@ -7,7 +7,7 @@ namespace UnitonConnect.Core.Common
         delegate void OnTonBalanceClaim(decimal tonBalance);
         delegate void OnTransactionSendingFinish(SendTransactionResult? transactionResult, bool isSuccess);
 
-        event OnTransactionSendingFinish OnTransactionSendingFinished;
+        event OnTransactionSendingFinish OnSendingTonFinished;
         event OnTonBalanceClaim OnTonBalanceClaimed;
     }
 }
