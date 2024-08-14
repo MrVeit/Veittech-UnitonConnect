@@ -114,11 +114,12 @@ In case you want your application name, its logo and a link to the project itsel
 
 Here you need to select your game/application logo, enter a title and provide a link to the site where it will be published.
 
-To build the project for the first time, go to [Build](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/README.MD#build).
-Now you can work with the SDK without problems if you followed the second method.
+**IMPORTANT:** Starting with `version 0.2.8`, you need to provide a link to your own API server, which uploads NFT collection images `bypassing CORS` and converts from `webP` to `jpeg` format (png format is available, but its size will take longer to load).
+To raise your own API server on `Node.js`, go to the [Backend Set Up](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/README.MD#backend-set-up) section.
 
-**IMPORTANT:** Starting with `version 0.2.8`, you need to provide a link to your own api server, which uploads NFT collection images bypassing CORS and converts from webP to jpeg format (png format is available, but its size will take longer to load).
-To raise your own API server on Node.js, go to the [Backend Set Up](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/README.MD#backend-set-up) section.
+Now you need to do the first build of the project to generate the application configuration from the editor to a json file. 
+Go to [Build](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/README.MD#build) to customize the build settings. 
+After the first build and publishing the project to `Github Pages` or `another test server`, you can continue working with the SDK without any problem if you followed the second method.
 
 # Usage Template
 
