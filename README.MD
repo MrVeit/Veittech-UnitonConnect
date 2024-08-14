@@ -114,23 +114,11 @@ In case you want your application name, its logo and a link to the project itsel
 
 Here you need to select your game/application logo, enter a title and provide a link to the site where it will be published.
 
+To build the project for the first time, go to [Build](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/README.MD#build).
+Now you can work with the SDK without problems if you followed the second method.
+
 **IMPORTANT:** Starting with `version 0.2.8`, you need to provide a link to your own api server, which uploads NFT collection images bypassing CORS and converts from webP to jpeg format (png format is available, but its size will take longer to load).
-
-To raise your own API server on Node.js, go to the `Backend` section.
-
-### Build Set Up
-
-The next step is to build the project in its current form. Before that you need to configure several parameters in the `Player Settings` window:
-1. Set the custom `Uniton` build template, which is available after importing the library into the project. It can be set under `Build Settings -> Player Settings -> Resolution and Presentation -> WebGL Template`,
-2. Then you need to switch the `Managed Stripping Level` property type to **Minimal**, so that the library functionality is not cut out when building the unit and works correctly,
-3. Now the final touches, in the `Player Settings -> Publish Settings` section you need to switch the `Enable Exception` property to any value except `Explicitly Thrown Exceptions Only`. Because if build errors occur, you may **freeze or even crash** the project.
-
-After successful build, **2 files will be created** in the build directory: `icon.png` and `dAppData.json`. They will contain all the information you entered earlier in the `dApp Config` window.
-Now you can publish your project anywhere you want. After publishing your project, go back to the `dApp Config` window and specify the correct link for the SDK to work with your project correctly.
-
-For test mode, **I recommend** using `Github Actions` with their `Static Page` feature. The tutorial for deploying a WebGL build to Unity can be found on the Internet, as there is no need to describe it here.
-
-Now you can work with the SDK without any problems if you followed the second method. Anyway, this will be an additional guide when your project is ready to be published.
+To raise your own API server on Node.js, go to the [Backend Set Up](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/README.MD#backend-set-up) section.
 
 # Usage Template
 
@@ -588,9 +576,66 @@ private void TonBalanceClaimed(decimal tonBalance)
 }
 ```
 
-# Backend Configuration
+# Build
 
-// Soon
+In order to build a project, you must first configure several settings in the `Player Settings` window:
+1. Set the custom `Uniton` build template, which is available after importing the library into the project. It can be set under `Build Settings -> Player Settings -> Resolution and Presentation -> WebGL Template`,
+2. Then you need to switch the `Managed Stripping Level` property type to **Minimal**, so that the library functionality is not cut out when building the uniton and works correctly,
+3. Now the final touches, under `Player Settings -> Publish Settings` you need to switch the `Enable Exception` property to any value except `Explicitly Thrown Exceptions Only`. Because if build errors occur, you can **freeze or even crash** the project.
+
+After a successful build, **2 files** will be created in the build directory: `icon.png` and `dAppData.json`. These will contain all the information you entered earlier in the `dApp Config` window.
+You can now publish your project anywhere you want. After publishing your project, go back to the `dApp Config` window and specify the correct link so that the SDK will work correctly with your project.
+
+For test mode **I recommend** using `Github Actions` with their `Static Page` feature. A guide to deploying a WebGL build to Unity can be found online, so there's no need to describe it here.
+
+# Backend Set Up
+
+First, you need to download the source code of this Proxy Server, which the SDK accesses to load and convert pictures from NFT collections:
+
+```
+https://github.com/MrVeit/Veittech-UnitonConnect-ServerAPI
+```
+
+If you already have Node.js installed on your Windows computer (does anyone make Unity games on Linux? :D), you can skip this step and move on to the next one. If you still don't have it installed, you need to go to the official Node.js website and [install it yourself](https://nodejs.org/en/).
+
+After installing and cloning the above two repositories, you can open the project in `VS Code` or `any other code editor` that **supports Node.js**.
+
+Now, to be able to run the proxy locally and start testing, you need to create an environment variable repository. To do this, you need to create a file named `.env` in the project directory, but **without a file format**.
+
+The following information must be filled in for the Proxy Server environment variables repository:
+
+```config
+PORT = 3000
+HOST = http://localhost:
+```
+
+- Variable `HOST` is a link to your domain where the server is running, for testing purposes we will use the local address `http://localhost`,
+
+- Variable `PORT` is a free port, which will listen to the proxy server to receive and send requests to the unity game client.
+
+You can now run a proxy server to download pictures from nft collections. 
+Open a terminal in the code editor in which you opened the project and type the following command:
+
+```
+node server.js
+```
+
+or
+
+```
+npm start
+```
+
+**IMPORTANT:** In case you encounter a startup problem at this stage, it means you don't have Node.js installed or it was installed incorrectly.
+Try reinstalling or searching for a solution to your problem on the Internet.
+
+**P.S:** Now you can go back to the Unity project, open the dApp configuration window via `Uniton Connect -> dApp Config` and fill the `API Server URL` field with `http://localhost:3000`.
+
+# Production Backend Deploy
+
+```
+Soon
+```
 
 # Source Code
 
