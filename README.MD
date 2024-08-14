@@ -588,11 +588,7 @@ private void TonBalanceClaimed(decimal tonBalance)
 }
 ```
 
-# Backend
-
-// Soon
-
-# Production Deploy
+# Backend Configuration
 
 // Soon
 
