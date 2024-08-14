@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnitonConnect.Core;
 using UnitonConnect.Core.Common;
@@ -10,25 +9,27 @@ namespace UnitonConnect.DeFi
 {
     public sealed class UserAssets
     {
-        private readonly MonoBehaviour _mono;
-
         public NFT Nft { get; private set; }
 
-        public UserAssets(MonoBehaviour mono)
+        public UserAssets(MonoBehaviour mono,
+            UnitonConnectSDK sdk)
         {
-            Nft = new NFT(mono);
+            Nft = new NFT(mono, sdk);
         }
 
         public sealed class NFT : IUnitonConnectNftTransactionCallbacks
         {
             private readonly MonoBehaviour _mono;
+            private readonly UnitonConnectSDK _sdk;
 
-            public NFT(MonoBehaviour mono)
+            public NFT(MonoBehaviour mono,
+                UnitonConnectSDK sdk)
             {
                 _mono = mono;
+                _sdk = sdk;
             }
 
-            private string _walletAddress => UnitonConnectSDK.Instance.GetWalletAddress();
+            private string _walletAddress => _sdk.GetWalletAddress();
 
             public NftCollectionData LatestNftCollections { get; private set; }
             public NftItemData LatestNftCollection { get; private set; }

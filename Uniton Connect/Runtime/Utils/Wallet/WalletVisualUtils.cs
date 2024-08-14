@@ -9,8 +9,10 @@ using UnitonConnect.Editor.Common;
 
 namespace UnitonConnect.Core.Utils.View
 {
-    public sealed class WalletVisualUtils
+    public static class WalletVisualUtils
     {
+        private static readonly UnitonConnectSDK _unitonConnect = UnitonConnectSDK.Instance;
+
         /// <summary>
         /// Return the first and last characters of the wallet address
         /// </summary>
@@ -128,7 +130,7 @@ namespace UnitonConnect.Core.Utils.View
         public static async Task<Texture2D> GetWalletIconFromLocalStorage(
             WalletConfig config, List<WalletProviderConfig> localStorage)
         {
-            if (!UnitonConnectSDK.Instance.IsUseCachedWalletsIcons)
+            if (!_unitonConnect.IsUseCachedWalletsIcons)
             {
                 UnitonConnectLogger.LogWarning("For loading wallet icons from local storage, " +
                     "you need to activate the 'Use Cached Wallets Icons' option");
@@ -148,7 +150,7 @@ namespace UnitonConnect.Core.Utils.View
 
             if (icon == null)
             {
-                UnitonConnectLogger.LogError($"Failed to load {config.Name} wallet icon to local storage, start downloading from server...");
+                UnitonConnectLogger.LogWarning($"Failed to load {config.Name} wallet icon to local storage, start downloading from server...");
 
                 icon = await GetWalletIconFromServerAsync(config.Image);
 
@@ -169,7 +171,7 @@ namespace UnitonConnect.Core.Utils.View
             string name = config.Name;
             Texture2D icon = null;
 
-            if (UnitonConnectSDK.Instance.IsUseCachedWalletsIcons)
+            if (_unitonConnect.IsUseCachedWalletsIcons)
             {
                 icon = await GetWalletIconFromLocalStorage(config,
                     localStorage.Config);

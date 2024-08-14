@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,32 +18,6 @@ namespace UnitonConnect.Core.Demo
 {
     public sealed class TestWalletInterfaceAdapter : MonoBehaviour
     {
-        private static readonly object _lock = new();
-
-        private static TestWalletInterfaceAdapter _instance;
-
-        public static TestWalletInterfaceAdapter Instance
-        {
-            get
-            {
-                if (_instance)
-                {
-                    return _instance;
-                }
-
-                lock (_lock)
-                {
-                    if (_instance == null)
-                    {
-                        _instance = FindObjectOfType<TestWalletInterfaceAdapter>();
-                    }
-                }
-
-                return _instance;
-            }
-        }
-
-        [SerializeField, Space] private UnitonConnectSDK _unitonSDK;
         [SerializeField, Space] private WalletsProvidersData _walletsStorage;
         [SerializeField, Space] private TextMeshProUGUI _debugMessage;
         [SerializeField] private TextMeshProUGUI _shortWalletAddress;
@@ -57,22 +32,26 @@ namespace UnitonConnect.Core.Demo
         [SerializeField] private Transform _walletsParent;
         [SerializeField, Space] private List<TestWalletView> _activeWallets;
 
-        public WalletConfig LatestAuthorizedWallet { get; private set; }
-
-        public List<WalletConfig> LoadedWallets { get; set; }
-
         private string _connectUrl;
 
+        private UnitonConnectSDK _unitonSDK;
         private UserAssets.NFT _nftModule => _unitonSDK.Assets.Nft;
+
+        public UnitonConnectSDK UnitonSDK => _unitonSDK;
+        public UserAssets.NFT NftStorage => _nftModule;
+
+        public WalletConfig LatestAuthorizedWallet { get; private set; }
+        public List<WalletConfig> LoadedWallets { get; set; }
 
         private void Awake()
         {
-            CreateInstance();
+            _unitonSDK = UnitonConnectSDK.Instance;
 
             _unitonSDK.OnInitialized += Initialize;
 
             _unitonSDK.OnWalletConnectionFinished += WalletConnectionFinished;
             _unitonSDK.OnWalletConnectionFailed += WalletConnectionFailed;
+            _unitonSDK.OnWalletConnectionRestored += WalletConnectionRestored;
 
             _unitonSDK.OnWalletDisconnected += WalletDisconnected;
 
@@ -88,8 +67,9 @@ namespace UnitonConnect.Core.Demo
 
             _unitonSDK.OnWalletConnectionFinished -= WalletConnectionFinished;
             _unitonSDK.OnWalletConnectionFailed -= WalletConnectionFailed;
+            _unitonSDK.OnWalletConnectionRestored -= WalletConnectionRestored;
 
-            _unitonSDK.OnWalletDisconnected += WalletDisconnected;
+            _unitonSDK.OnWalletDisconnected -= WalletDisconnected;
 
             _nftModule.OnNftCollectionsClaimed -= NftCollectionsLoaded;
             _nftModule.OnTargetNftCollectionClaimed -= TargetNftCollectionLoaded;
@@ -102,7 +82,7 @@ namespace UnitonConnect.Core.Demo
 
         private void Start()
         {
-            UnitonConnectSDK.Instance.Initialize();
+            _unitonSDK.Initialize();
 
             if (!_unitonSDK.IsWalletConnected)
             {
@@ -115,41 +95,23 @@ namespace UnitonConnect.Core.Demo
             _nftModule.OnTargetNftCollectionClaimed += TargetNftCollectionLoaded;
         }
 
-        private void CreateInstance()
+        private void Initialize()
         {
-            lock (_lock)
+            LoadWallets((walletsConfig) =>
             {
-                if (_instance == null)
-                {
-                    _instance = this;
+                LoadedWallets = WalletConnectUtils.GetSupportedWalletsListForUse(walletsConfig);
 
-                    DontDestroyOnLoad(gameObject);
+                if (_unitonSDK.IsWalletConnected)
+                {
+                    UnitonConnectLogger.Log("SDK is already initialized, " +
+                        "there is no need to reconnect the wallet. To reconnect, " +
+                        "you need to disconnect the previously connected wallet");
 
                     return;
                 }
 
-                UnitonConnectLogger.LogError($"Another instance is detected on the scene, running delete...");
-
-                Destroy(gameObject);
-            }
-        }
-
-        private void Initialize()
-        {
-            if (_unitonSDK.IsWalletConnected)
-            {
-                UnitonConnectLogger.Log("SDK is already initialized, " +
-                    "there is no need to reconnect the wallet. To reconnect, " +
-                    "you need to disconnect the previously connected wallet");
-
-                return;
-            }
-
-            _unitonSDK.LoadWalletsConfigs(ProjectStorageConsts.
-                TEST_SUPPORTED_WALLETS_LINK, (walletsConfigs) =>
-                {
-                    CreateWalletsList(walletsConfigs);
-                });
+                CreateWalletsList(walletsConfig);
+            });
         }
 
         private async void CreateWalletsList(List<WalletConfig> wallets)
@@ -181,15 +143,24 @@ namespace UnitonConnect.Core.Demo
 
                 var walletViewData = Instantiate(_walletViewPrefab, _walletsParent);
 
-                walletViewData.SetView(name, icon, _connectPanel);
+                walletViewData.SetView(this, name, icon, _connectPanel);
 
                 _activeWallets.Add(walletViewData);
             }
         }
 
+        private void LoadWallets(Action<List<WalletConfig>> walletsLoaded)
+        {
+            _unitonSDK.LoadWalletsConfigs(ProjectStorageConsts.
+                TEST_SUPPORTED_WALLETS_LINK, (walletsConfigs) =>
+                {
+                    walletsLoaded?.Invoke(walletsConfigs);
+                });
+        }
+
         private void WalletConnectionFinished(Wallet wallet)
         {
-            if (UnitonConnectSDK.Instance.IsWalletConnected)
+            if (_unitonSDK.IsWalletConnected)
             {
                 var successConnectMessage = $"Wallet is connected, full account address: {wallet.Account.Address}, \n" +
                 $"Platform: {wallet.Device.Platform}, " +
@@ -215,26 +186,33 @@ namespace UnitonConnect.Core.Demo
 
                 if (LoadedWallets != null)
                 {
-                    LatestAuthorizedWallet = WalletConnectUtils.GetConfigOfSpecifiedWallet(
-                        LoadedWallets, wallet.Device.AppName);
+                    LatestAuthorizedWallet = GetWalletConfigByName(wallet);
 
                     UnitonConnectLogger.Log($"The current wallet in the list is detected: " +
                         $"{JsonConvert.SerializeObject(LatestAuthorizedWallet)}");
                 }
-            }
-            else
-            {
-                _connectButton.interactable = true;
-                _disconnectButton.interactable = false;
-                _sendTransactionButton.interactable = false;
-                _openNftCollectionButton.interactable = false;
 
-                _debugMessage.text = string.Empty;
-                _shortWalletAddress.text = string.Empty;
-
-                UnitonConnectLogger.LogWarning($"Connect status: " +
-                    $"{UnitonConnectSDK.Instance.IsWalletConnected}");
+                return;
             }
+
+            _connectButton.interactable = true;
+            _disconnectButton.interactable = false;
+            _sendTransactionButton.interactable = false;
+            _openNftCollectionButton.interactable = false;
+
+            _debugMessage.text = string.Empty;
+            _shortWalletAddress.text = string.Empty;
+
+            UnitonConnectLogger.LogWarning($"Connect status: " +
+                $"{_unitonSDK.IsWalletConnected}");
+        }
+
+        private WalletConfig GetWalletConfigByName(Wallet wallet)
+        {
+            var loadedConfig = WalletConnectUtils.GetConfigOfSpecifiedWallet(
+                LoadedWallets, wallet.Device.AppName);
+
+            return loadedConfig;
         }
 
         private void WalletConnectionFailed(string message)
@@ -243,14 +221,15 @@ namespace UnitonConnect.Core.Demo
                 $"the wallet due to the following reason: {message}");
         }
 
-        private void NftCollectionsLoaded(NftCollectionData collections)
+        private void WalletConnectionRestored(bool isRestored, WalletConfig wallet)
         {
-            UnitonConnectLogger.Log($"Loaded nft collections: {collections.Items.Count}");
-        }
+            if (isRestored)
+            {
+                LatestAuthorizedWallet = wallet;
 
-        private void TargetNftCollectionLoaded(NftItemData nftCollection)
-        {
-            UnitonConnectLogger.Log($"Loaded target nft collection: {nftCollection.Collection.Name}");
+                UnitonConnectLogger.Log($"Connection to previously connected wallet {wallet.Name} restored," +
+                    $" local configuration updated");
+            }
         }
 
         private void WalletDisconnected()
@@ -268,6 +247,16 @@ namespace UnitonConnect.Core.Demo
             }
 
             _activeWallets.Clear();
+        }
+
+        private void NftCollectionsLoaded(NftCollectionData collections)
+        {
+            UnitonConnectLogger.Log($"Loaded nft collections: {collections.Items.Count}");
+        }
+
+        private void TargetNftCollectionLoaded(NftItemData nftCollection)
+        {
+            UnitonConnectLogger.Log($"Loaded target nft collection: {nftCollection.Collection.Name}");
         }
     }
 }

@@ -5,14 +5,14 @@ using TMPro;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.Core.Utils.View;
-using UnitonConnect.DeFi;
 using UnitonConnect.Runtime.Data;
+using UnitonConnect.DeFi;
 
 namespace UnitonConnect.Core.Demo
 {
     public sealed class TestWalletNftCollectionsPanel : TestBasePanel
     {
-        [SerializeField, Space] private UnitonConnectSDK _unitonConnect;
+        [SerializeField, Space] private TestWalletInterfaceAdapter _interfaceAdapter;
         [SerializeField, Space] private TestNftView _nftPrefab;
         [SerializeField, Space] private TextMeshProUGUI _warningMessage;
         [SerializeField, Space] private GameObject _loadAnimation;
@@ -20,13 +20,14 @@ namespace UnitonConnect.Core.Demo
         [SerializeField] private RectTransform _contentSize;
         [SerializeField, Space] private List<TestNftView> _createdNfts;
 
+        private UnitonConnectSDK _unitonConnect => _interfaceAdapter.UnitonSDK;
+        private UserAssets.NFT _nftModule => _interfaceAdapter.NftStorage;
+
         private float _startSize;
 
         private bool _isInitialized;
 
         private readonly float _slotSize = 350f;
-
-        private UserAssets.NFT _nftModule => _unitonConnect.Assets.Nft;
 
         private void OnEnable()
         {
@@ -81,6 +82,8 @@ namespace UnitonConnect.Core.Demo
             _createdNfts.Clear();
 
             _warningMessage.gameObject.SetActive(false);
+
+            _isInitialized = false;
         }
 
         private async Task<List<NftViewData>> CreateNftViewContainer(NftCollectionData collections)

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -14,6 +15,8 @@ namespace UnitonConnect.Core.Demo
         [SerializeField] private Image _icon;
         [SerializeField] private Button _connectButton;
 
+        private TestWalletInterfaceAdapter _interfaceAdapter;
+
         private TestSelectedWalletConnectionPanel _connectPanel;
 
         private WalletConfig _javascriptConfig;
@@ -23,10 +26,10 @@ namespace UnitonConnect.Core.Demo
 
         private string _name;
 
-        public void SetView(string appName, Texture2D icon,
-            TestSelectedWalletConnectionPanel connectPanel)
+        public void SetView(TestWalletInterfaceAdapter interfaceAdapter, 
+            string appName, Texture2D icon, TestSelectedWalletConnectionPanel connectPanel)
         {
-            var testUIManager = TestWalletInterfaceAdapter.Instance;
+            _interfaceAdapter = interfaceAdapter;
 
             _name = appName;
 
@@ -36,40 +39,57 @@ namespace UnitonConnect.Core.Demo
             _connectPanel = connectPanel;
 
             _targetConfig = WalletConnectUtils.GetTargetWalletConfigWithoutSecondBridge(
-                WalletConfigComponents.SSE, _name, testUIManager.LoadedWallets);
+                WalletConfigComponents.SSE, _name, _interfaceAdapter.LoadedWallets);
 
             StartConnect();
         }
 
         private void StartConnect()
         {
-            var testUIManager = TestWalletInterfaceAdapter.Instance;
-            var loadedWallets = testUIManager.LoadedWallets;
+            var loadedWallets = _interfaceAdapter.LoadedWallets;
 
             _connectButton.onClick.AddListener(() =>
             {
-                if (WalletConnectUtils.HasMultipleBridgeTypes(_name, loadedWallets))
-                {
-                    _javascriptConfig = WalletConnectUtils.GetTargetWalletConfigWithoutSecondBridge(
-                        WalletConfigComponents.JAVA_SCRIPT, _name, loadedWallets);
-                    _httpConfig = WalletConnectUtils.GetTargetWalletConfigWithoutSecondBridge(
-                        WalletConfigComponents.SSE, _name, loadedWallets);
-                }
-
-                if (UnitonConnectSDK.Instance.IsUseWebWallets &&
-                    WalletConnectUtils.HasJSBridge(_targetConfig))
-                {
-                    _targetConfig = _javascriptConfig;
-                }
-                else if (!UnitonConnectSDK.Instance.IsUseWebWallets &&
-                    WalletConnectUtils.HasHttpBridge(_targetConfig))
-                {
-                    _targetConfig = _httpConfig;
-                }
-
-                _connectPanel.SetOptions(_targetConfig);
-                _connectPanel.Open();
+                InitializeConnectPanel(loadedWallets);
             });
+        }
+
+        private void InitializeConnectPanel(List<WalletConfig> walletConfigs)
+        {
+            if (WalletConnectUtils.HasMultipleBridgeTypes(_name, walletConfigs))
+            {
+                _javascriptConfig = WalletConnectUtils.GetTargetWalletConfigWithoutSecondBridge(
+                    WalletConfigComponents.JAVA_SCRIPT, _name, walletConfigs);
+                _httpConfig = WalletConnectUtils.GetTargetWalletConfigWithoutSecondBridge(
+                    WalletConfigComponents.SSE, _name, walletConfigs);
+            }
+
+            _targetConfig = GetBridgeConfiguration(_targetConfig);
+
+            _connectPanel.SetOptions(_targetConfig);
+            _connectPanel.Open();
+        }
+
+        private WalletConfig GetBridgeConfiguration(WalletConfig config)
+        {
+            WalletConfig targetConfig;
+
+            if (IsUseWebWallets() && WalletConnectUtils.HasJSBridge(config))
+            {
+                targetConfig = _javascriptConfig;
+            }
+            
+            if (!IsUseWebWallets() && WalletConnectUtils.HasHttpBridge(config))
+            {
+                targetConfig = _httpConfig;
+            }
+
+            return targetConfig;
+        }
+
+        private bool IsUseWebWallets()
+        {
+            return _interfaceAdapter.UnitonSDK.IsUseWebWallets;
         }
     }
 }

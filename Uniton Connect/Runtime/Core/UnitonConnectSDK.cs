@@ -8,14 +8,14 @@ using UnityEngine.Networking;
 using Newtonsoft.Json;
 using TonSdk.Core;
 using TonSdk.Connect;
+using UnitonConnect.Core.Common;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Data.Common;
-using UnitonConnect.Core.Common;
 using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.DeFi;
-using UnitonConnect.Editor.Common;
 using UnitonConnect.ThirdParty.TonAPI;
+using UnitonConnect.Editor.Common;
 
 namespace UnitonConnect.Core
 {
@@ -90,6 +90,8 @@ namespace UnitonConnect.Core
         public bool IsUseWebWallets => _useWebWallets;
         public bool IsUseCachedWalletsIcons => _useCachedWalletsIcons;
 
+        public bool IsRestoreConnectionOnAwake => _restoreConnectionOnAwake;
+
         /// <summary>
         /// Callback if sdk initialization is successful
         /// </summary>
@@ -128,7 +130,7 @@ namespace UnitonConnect.Core
         /// <summary>
         /// Callback to process the status of a recently sent transaction
         /// </summary>
-        public event IUnitonConnectTransactionCallbacks.OnTransactionSendingFinish OnTransactionSendingFinished;
+        public event IUnitonConnectTransactionCallbacks.OnTransactionSendingFinish OnSendingTonFinished;
 
         /// <summary>
         /// Callback to get the current amount of TON on the wallet
@@ -177,7 +179,7 @@ namespace UnitonConnect.Core
             _tonConnect = GetTonConnectInstance(_tonConnectOptions,
                 _remoteStorage, _additionalConnectOptions);
 
-            Assets = new UserAssets(this);
+            Assets = new UserAssets(this, this);
 
             _tonConnect.OnStatusChange(OnWalletConnectionFinish, OnWalletConnectionFail);
 
@@ -285,22 +287,25 @@ namespace UnitonConnect.Core
 
                 transactionResult = await _tonConnect.SendTransaction(transactionRequest);
 
-                UnitonConnectLogger.Log($"Transaction successfully completed, Boc: {transactionResult.Value.Boc}");
+                if (transactionResult.HasValue)
+                {
+                    OnSendingTonFinish(transactionResult, true);
 
-                OnTransactionSendingFinish(transactionResult, true);
+                    UnitonConnectLogger.Log($"Transaction successfully completed, Boc: {transactionResult.Value.Boc}");
+                }
             }
             catch (WalletNotConnectedError connectionError)
             {
                 UnitonConnectLogger.LogError($"{connectionError.Message}");
 
-                OnTransactionSendingFinish(transactionResult, false);
+                OnSendingTonFinish(transactionResult, false);
             }
             catch (Exception exception)
             {
                 UnitonConnectLogger.LogError($"Failed to send tokens due" +
                     $" to the following reason: {exception.Message}");
 
-                OnTransactionSendingFinish(transactionResult, false);
+                OnSendingTonFinish(transactionResult, false);
             }
         }
 
@@ -385,7 +390,7 @@ namespace UnitonConnect.Core
 
                 OnTonBalanceClaimed?.Invoke(tonBalance);
 
-                Debug.Log($"Current TON balance: {Instance.TonBalance}");
+                Debug.Log($"Current TON balance: {TonBalance}");
             }));
         }
 
@@ -402,7 +407,7 @@ namespace UnitonConnect.Core
                     return;
                 }
 
-                UnitonConnectLogger.LogError($"Another instance is detected on the scene, running delete...");
+                UnitonConnectLogger.LogWarning($"Another instance is detected on the scene, running delete...");
 
                 Destroy(gameObject);
             }
@@ -418,10 +423,26 @@ namespace UnitonConnect.Core
             }
 
             bool isSuccess = await _tonConnect.RestoreConnection();
+           
+            if (isSuccess)
+            {
+                string walletName = _tonConnect.Wallet.Device.AppName;
+
+                LoadWalletsConfigs(ProjectStorageConsts.TEST_SUPPORTED_WALLETS_LINK,
+                (configs) =>
+                {
+                    var updatedConfigs = WalletConnectUtils.GetSupportedWalletsListForUse(configs);
+                    var walletConfig = WalletConnectUtils.GetConfigOfSpecifiedWallet(updatedConfigs, walletName);
+
+                    OnWalletConnectionRestore(isSuccess, walletConfig);
+
+                    UnitonConnectLogger.Log($"Connection restored with status: {isSuccess}");
+                });
+
+                return;
+            }
 
             OnWalletConnectionRestore(isSuccess);
-
-            UnitonConnectLogger.Log($"Connection restored with status: {isSuccess}");
         }
 
         private IEnumerator LoadWallets(string supportedWalletsUrl, 
@@ -655,6 +676,7 @@ namespace UnitonConnect.Core
             TonConnectOptions options = new()
             {
                 ManifestUrl = manifestLink,
+
                 WalletsListSource = _walletsListConfig.SourceLink,
                 WalletsListCacheTTLMs = _walletsListConfig.CachedTimeToLive
             };
@@ -727,7 +749,10 @@ namespace UnitonConnect.Core
 
         private void OnWalletConnectionFail(string errorMessage) => OnWalletConnectionFailed?.Invoke(errorMessage);
 
-        private void OnWalletConnectionRestore(bool isRestored) => OnWalletConnectionRestored?.Invoke(isRestored);
+        private void OnWalletConnectionRestore(bool isRestored, WalletConfig restoredWallet = new())
+        {
+            OnWalletConnectionRestored?.Invoke(isRestored, restoredWallet);
+        }
 
         private void OnWalletConnectionPause() => OnWalletConnectionPaused?.Invoke();
 
@@ -735,10 +760,10 @@ namespace UnitonConnect.Core
 
         private void OnWalletDisconnect() => OnWalletDisconnected?.Invoke();
 
-        private void OnTransactionSendingFinish(SendTransactionResult? transactionResult,
+        private void OnSendingTonFinish(SendTransactionResult? transactionResult,
             bool isSuccess)
         {
-            OnTransactionSendingFinished?.Invoke(transactionResult, isSuccess);
+            OnSendingTonFinished?.Invoke(transactionResult, isSuccess);
 
             if (isSuccess)
             {

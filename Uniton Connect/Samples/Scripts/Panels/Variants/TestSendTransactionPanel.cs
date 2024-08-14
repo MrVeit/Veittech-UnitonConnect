@@ -7,9 +7,12 @@ namespace UnitonConnect.Core.Demo
 {
     public sealed class TestSendTransactionPanel : TestBasePanel
     {
+        [SerializeField, Space] private TestWalletInterfaceAdapter _interfaceAdapter;
         [SerializeField, Space] private TMP_InputField _amountBar;
         [SerializeField] private TestWalletAddressBarView _targetWalletAddress;
         [SerializeField, Space] private TextMeshProUGUI _balanceBar;
+
+        private UnitonConnectSDK _unitonConnect => _interfaceAdapter.UnitonSDK;
 
         private const string CREATOR_WALLET_ADDRESS = 
             "EQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4UrpH_";
@@ -18,23 +21,23 @@ namespace UnitonConnect.Core.Demo
 
         private void OnEnable()
         {
-            UnitonConnectSDK.Instance.UpdateTonBalance();
+            _unitonConnect.UpdateTonBalance();
 
-            UnitonConnectSDK.Instance.OnTransactionSendingFinished += TransactionSendingFinished;
-            UnitonConnectSDK.Instance.OnTonBalanceClaimed += TonBalanceClaimed;
+            _unitonConnect.OnSendingTonFinished += TransactionSendingFinished;
+            _unitonConnect.OnTonBalanceClaimed += TonBalanceClaimed;
         }
 
         private void OnDisable()
         {
-            UnitonConnectSDK.Instance.OnTransactionSendingFinished -= TransactionSendingFinished;
-            UnitonConnectSDK.Instance.OnTonBalanceClaimed -= TonBalanceClaimed;
+            _unitonConnect.OnSendingTonFinished -= TransactionSendingFinished;
+            _unitonConnect.OnTonBalanceClaimed -= TonBalanceClaimed;
         }
 
         public void Init()
         {
             SetAmountBar(START_TON_AMOUNT);
             SetTargetAddress(CREATOR_WALLET_ADDRESS);
-            SetTonBalance(UnitonConnectSDK.Instance.TonBalance);
+            SetTonBalance(_unitonConnect.TonBalance);
         }
 
         private void SetAmountBar(float amount)
