@@ -441,13 +441,15 @@ public sealed class LoadingNftCollectionsUsageTemplate : MonoBehaviour
         _nftStorage.OnNftCollectionsClaimed -= NftCollectionsClaimed;
         _nftStorage.OnTargetNftCollectionClaimed -= TargetNftCollectionClaimed;
 
+       _nftStorage.OnNftCollectionsNotFounded -= NftCollectionsNotFounded; 
+
         _loadAllNftCollections.onClick.RemoveListener(LoadAll);
         _loadTargetNftCollection.onClick.RemoveListener(LoadTarget);
     }
 
     private void LoadAll()
     {
-        _nftStorage.Load(10, 0);
+        _nftStorage.Load(10);
     }
 
     private void LoadTarget()
@@ -455,12 +457,12 @@ public sealed class LoadingNftCollectionsUsageTemplate : MonoBehaviour
         //Address of Lost Dogs collection 
         string collectionAddress = "EQAl_hUCAeEv-fKtGxYtITAS6PPxuMRaQwHj0QAHeWe6ZSD0" 
 
-        _nftStorage.LoadTargetCollection(collectionAddress);
+        _nftStorage.LoadTargetCollection(collectionAddress, 10);
     }
 
     private async void NftCollectionsClaimed(NftCollectionData collections)
     {
-        if (_createdNfts.Count == 0)
+        if (collections.Items.Count == 0)
         {
             Debug.LogWarning("No NFT collections was found on the wallet");
 
@@ -490,15 +492,16 @@ public sealed class LoadingNftCollectionsUsageTemplate : MonoBehaviour
         }
     }
 
-    private void TargetNftCollectionClaimed(NftItemData nftCollection)
+    private void TargetNftCollectionClaimed(NftCollectionData collections)
     {
-         UnitonConnectLogger.Log($"Loaded target nft collection:{nftCollection.Collection.Name}");
+         UnitonConnectLogger.Log($"Loaded target nft collection:{collection.Items.Collection.Name}");
     }
 
     private void NftCollectionsNotFounded()
     {
          Debug.LogWarning("Nft collections not found");
     }
+}
 ```
 
 **IMPORTANT:** To download images from NFT collections, you cannot directly access the storage links, because each collection has its own servers configured. Therefore, an unsuccessful attempt to load a collection will return an empty picture due to CORS blocking the request.
@@ -515,20 +518,20 @@ private async void NftCollectionsClaimed(NftCollectionData nftCollections)
 {
     var firstItem = collections.Items[0];
 
-    string bestIcon = firstItem.GetBestResolutionPng();
+    string bestIconUrl = firstItem.GetBestResolutionPng();
 
-    string littleIcon = firstItem.Get5x5ResolutionWebp();
-    string smallIcon = firstItem.Get100x100ResolutionWebp();
-    string mediumIcon = firstItem.Get500x500ResolutionWebp();
-    string bigIcon = firstItem.Get1500x1500ResolutionWebp();
+    string littleIconUrl = firstItem.Get5x5ResolutionWebp();
+    string smallIconUrl = firstItem.Get100x100ResolutionWebp();
+    string mediumIconUrl = firstItem.Get500x500ResolutionWebp();
+    string bigIconUrl = firstItem.Get1500x1500ResolutionWebp();
 }
 ```
 
-P.S: The method names reflect the size of the webp image in pixels.
+**P.S:** The method names reflect the size of the webp image in pixels.
 
 ### Loading TON balance
 
-Starting with ёversion 0.2.8ё, the ability to get the current balance of a connected wallet (Toncoin only) has been added.
+Starting with `version 0.2.8`, added possibility to get current balance of connected wallet **(only Toncoin at the moment)**.
 
 Implementation of current balance request is shown below:
 
@@ -569,6 +572,7 @@ public sealed class LoadingTonBalanceUsageTemplate : MonoBehaviour
     {
         SetTonBalance(tonBalance);
     }
+}
 ```
 
 In case you need to transfer your Ton balance to Nanoton and vice versa, you can use the following methods:
