@@ -103,7 +103,7 @@ public sealed class InitializationUsageTemplate : MonoBehaviour
 
 **At this point, you may encounter errors because your dApp application has not yet been configured.**
 
-### Possible problems:
+### Possible problems
 
 If you just want to test the SDK, activate the `Test Mode` option of the `UnitonConnectSDK` component. In this case, the SDK will initialize the library's test application.
 In case you want your application name, its logo and a link to the project itself to be displayed when connecting to the wallets. You need to enter these data in the `dApp Config` window, which is located at the `Uniton Connect -> dApp Config` path.
@@ -118,7 +118,7 @@ Here you need to select your game/application logo, enter a title and provide a 
 
 To raise your own API server on Node.js, go to the `Backend` section.
 
-### Set up the project to be built:
+### Build Set Up
 
 The next step is to build the project in its current form. Before that you need to configure several parameters in the `Player Settings` window:
 1. Set the custom `Uniton` build template, which is available after importing the library into the project. It can be set under `Build Settings -> Player Settings -> Resolution and Presentation -> WebGL Template`,
@@ -139,7 +139,7 @@ After successful initialization, you can request from the SDK a list of availabl
 
 P.S: At this point, the library links to the **official repository with a json file** that lists the currently available wallets in the `Ton Connect ecosystem`. In future updates, you will have the option **to filter this list and generate**, similar to the configuration of your dApp, a json file with the crypto wallets used in the project.
 
-### SDK Initialization:
+### SDK Initialization
 
 An example of a method call and processing its result is shown below:
 ```c#
@@ -191,7 +191,7 @@ You can now process the filtered wallet configurations for later display in the 
 All code available for use in the library is fully documented. If you have any questions when working with the library API,
 you can always see the implementation of all available functions in the `Example scene`.
 
-### Connecting wallet:
+### Connecting wallet
 
 Now we need to add callbacks to get the connection status of the wallet in the app.
 
