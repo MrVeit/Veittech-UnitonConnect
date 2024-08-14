@@ -114,12 +114,16 @@ In case you want your application name, its logo and a link to the project itsel
 
 Here you need to select your game/application logo, enter a title and provide a link to the site where it will be published.
 
-### Set up a project for build:
+**IMPORTANT:** Starting with `version 0.2.8`, you need to provide a link to your own api server, which uploads NFT collection images bypassing CORS and converts from webP to jpeg format (png format is available, but its size will take longer to load).
+
+To raise your own API server on Node.js, go to the `Backend` section.
+
+### Set up the project to be built:
 
 The next step is to build the project in its current form. Before that you need to configure several parameters in the `Player Settings` window:
-1. Install the custom `TC_Minimal` build template, which is available after importing the library into the project. It can be installed in `Build Settings -> Player Settings -> Resolution and Presentation -> WebGL Template`,
-2. Then you should turn off the `Strip Engine Code` option, which is located in `Player Settings -> Othet Settings` and switch the `Managed Stripping Level` property type to **Minimal**, so that the library functionality is not cut out during unit build and it works correctly,
-3. Now the final touches, in the `Player Settings -> Publish Settings` section you need to switch the `Enable Exception` property to any value except `Explicitly Thrown Exceptions Only`. Since in case of any errors in the build, you may **freeze or even crash** the project.
+1. Set the custom `Uniton` build template, which is available after importing the library into the project. It can be set under `Build Settings -> Player Settings -> Resolution and Presentation -> WebGL Template`,
+2. Then you need to switch the `Managed Stripping Level` property type to **Minimal**, so that the library functionality is not cut out when building the unit and works correctly,
+3. Now the final touches, in the `Player Settings -> Publish Settings` section you need to switch the `Enable Exception` property to any value except `Explicitly Thrown Exceptions Only`. Because if build errors occur, you may **freeze or even crash** the project.
 
 After successful build, **2 files will be created** in the build directory: `icon.png` and `dAppData.json`. They will contain all the information you entered earlier in the `dApp Config` window.
 Now you can publish your project anywhere you want. After publishing your project, go back to the `dApp Config` window and specify the correct link for the SDK to work with your project correctly.
@@ -135,7 +139,7 @@ After successful initialization, you can request from the SDK a list of availabl
 
 P.S: At this point, the library links to the **official repository with a json file** that lists the currently available wallets in the `Ton Connect ecosystem`. In future updates, you will have the option **to filter this list and generate**, similar to the configuration of your dApp, a json file with the crypto wallets used in the project.
 
-### Loading and processing wallet configurations:
+### SDK Initialization:
 
 An example of a method call and processing its result is shown below:
 ```c#
@@ -187,7 +191,7 @@ You can now process the filtered wallet configurations for later display in the 
 All code available for use in the library is fully documented. If you have any questions when working with the library API,
 you can always see the implementation of all available functions in the `Example scene`.
 
-### Connecting the wallet to the application:
+### Connecting wallet:
 
 Now we need to add callbacks to get the connection status of the wallet in the app.
 
@@ -202,12 +206,15 @@ public sealed class ConnectionWalletUsageTemplate: MonoBehaviour
     private List<WalletConfig> _loadedWallets;
 
     private WalletConfig _currentWalletForConnect;
-    
-    public WalletConfig LatestAuthorizedWallet { get; private set; }
 
     private stirng _connectURL;
+
+    public UnitonConnectSDK UnitonSDK => _unitonSDK;
+    public UserAssets.NFT NftStorage => _unitonSDK.Assets.NFT;
     
-    private void OnDisable()
+    public WalletConfig LatestAuthorizedWallet { get; private set; }
+    
+    private void OnDestroy()
     {
         _unitonSDK.OnInitialized -= UnitonConnectSDKInitialized;  
 
@@ -321,13 +328,39 @@ After successful connection via QR code or deep link, you will have connection s
 Here you can process the connected wallet **to get its configuration** and use it when sending a transaction later.
 To nicely display the wallet address, the SDK has a method `WalletVisualUtils.ProcessWalletAddress(string address, int value)` that allows only the first and last characters of the address to be displayed.
 
+P.S: Starting from `version 0.2.8`, you can change the address format of a connected TON wallet.
+
+Conversion to `HEX/RAW` format:
+```c#
+string baseAddress = “UQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk-yXLZXmc2V5I”;
+string hexAddress = WalletConnectUtils.GetHEXAddress(baseAddress); 
+
+//result: 0:c1da9d221d87032b762ad647658a2b5115a38af4b2329d4824fb25cb65799cd9
+```
+
+Conversion to `Bounceable` format:
+```c#
+string baseAddress = “UQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk-yXLZXmc2V5I”;
+string bounceableAddress = WalletConnectUtils.GetBounceableAddress(baseAddress); 
+
+//result: EQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk+yXLZXmc2QON
+```
+
+Convert to `Non Bounceable` format:
+```c#
+string baseAddress = “EQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk+yXLZXmc2QON”;
+string nonBounceableAddress = WalletConnectUtils.GetNonBounceableAddress(baseAddress); 
+
+//result: UQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk-yXLZXmc2V5I
+```
+
 **IMPORTANT:**
 The `UnitonConnectSDK` has a `RestoreConnectionOnAwake` option that restores the last automatically saved session to the wallet. If it is activated, you can subscribe to the result of this event `UnitonConnectSDK.OnWalletConnectionRestored` and process the result if the response is successful.
 
-### Generation and sending of transaction:
+### Sending Toncoin
 
 After we plugged the wallet into the app. Now you can perform various operations with it.
-At the moment `in version 0.2.6`, from the list of interactions with the wallet there is `only sending Toncoin` to the desired address. Therefore, below we will show an example of implementing only this function.
+At the moment `in version 0.2.8`, from the list of interactions with the wallet there is `only sending Toncoin` to the desired address. Therefore, below we will show an example of implementing only this function.
 
 **P.S:** When the wallet functionality in `SDK Uniton Connect` is updated, the examples in the documentation will be updated.
 
@@ -342,21 +375,21 @@ public sealed class TransactionUsageTemplate : MonoBehaviour
 
     private void Start()
     {
-        UnitonConnectSDK.Instance.OnTransactionSendingFinished += TransactionSendingFinished;
+        _walletEntryPoint.UnitonSDK.OnSendingTonFinished += TransactionSendingFinished;
 
         _sendTransaction.onClick.AddListener(Send);
     }
 
-    private void OnDisable()
+    private void OnDestroy()
     {
-        UnitonConnectSDK.Instance.OnTransactionSendingFinished -= TransactionSendingFinished;
+        _walletEntryPoint.UnitonSDK..OnSendingTonFinished -= TransactionSendingFinished;
 
         _sendTransaction.onClick.RemoveListener(Send);  
     }
 
     private async void Send()
     {
-        await UnitonConnectSDK.Instance.SendTransaction(_walletEntryPoint.LatestAuthorizedWallet,
+        await UnitonConnectSDK.Instance.SendTon(_walletEntryPoint.LatestAuthorizedWallet,
             CREATOR_WALLET_ADDRESS, START_TON_AMOUNT);
     }
 
@@ -371,10 +404,188 @@ public sealed class TransactionUsageTemplate : MonoBehaviour
 ```
 
 This example shows a test implementation of sending TonCoin to my TON address.
-In the `UnitonConnectSDK.Instance.SendTransaction()` method you need to pass the configuration of the last authorized wallet, the recipient address and the quantity in `double`. 
+In the `UnitonConnectSDK.Instance.SendTon()` method you need to pass the configuration of the last authorized wallet, the recipient address and the quantity in `double`. 
 If the transaction succeeds or fails, an `OnTransactionSendingFinished` event will be called, the result of which you can process.
 
 **P.S:** The wallet configuration is used **to automatically redirect** when creating a transaction, for its subsequent confirmation.
+
+### Loading NFT collections
+
+Starting with `version 0.2.8`, the ability to obtain NFT collections from a connected wallet has been added.
+
+Below you can see the implementation of downloading all NFT collections:
+
+```c#
+public sealed class LoadingNftCollectionsUsageTemplate : MonoBehaviour
+{
+    [SerializeField, Space] private ConnectionWalletUsageTemplate _walletEntryPoint;
+    [SerializeField, Space] private Button _loadAllNftCollections;
+    [SerializeField] private Button _loadTargetNftCollection;
+
+    private UnitonConnectSDK _unitonConnect => _walletEntryPoint.UnitonSDK;
+    private UserAssets.NFT _nftStorage => _walletEntryPoint.NftStorage;
+
+    private void Start()
+    {
+        _nftStorage.OnNftCollectionsClaimed += NftCollectionsClaimed;
+        _nftStorage.OnTargetNftCollectionClaimed += TargetNftCollectionClaimed;
+
+       _nftStorage.OnNftCollectionsNotFounded += NftCollectionsNotFounded; 
+
+        _loadAllNftCollections.onClick.AddListener(LoadAll);
+        _loadTargetNftCollection.onClick.AddListener(LoadTarget);
+    }
+
+    private void OnDestroy()
+    {
+        _nftStorage.OnNftCollectionsClaimed -= NftCollectionsClaimed;
+        _nftStorage.OnTargetNftCollectionClaimed -= TargetNftCollectionClaimed;
+
+        _loadAllNftCollections.onClick.RemoveListener(LoadAll);
+        _loadTargetNftCollection.onClick.RemoveListener(LoadTarget);
+    }
+
+    private void LoadAll()
+    {
+        _nftStorage.Load(10, 0);
+    }
+
+    private void LoadTarget()
+    {
+        //Address of Lost Dogs collection 
+        string collectionAddress = "EQAl_hUCAeEv-fKtGxYtITAS6PPxuMRaQwHj0QAHeWe6ZSD0" 
+
+        _nftStorage.LoadTargetCollection(collectionAddress);
+    }
+
+    private async void NftCollectionsClaimed(NftCollectionData collections)
+    {
+        if (_createdNfts.Count == 0)
+        {
+            Debug.LogWarning("No NFT collections was found on the wallet");
+
+            return;
+        }
+
+        List<NftViewData> nftVisual = new();
+
+        foreach (var nft in collections.Items)
+        {
+             var iconUrl = nft.Get100x100ResolutionWebp();
+
+             Debug.Log($"Claimed icon by urL: {iconUrl}");
+
+             var nftIcon = await WalletVisualUtils.GetIconFromProxyServerAsync(iconUrl);
+             var nftName = nft.Metadata.ItemName;
+
+             var newNftView = new NftViewData()
+             {
+                 Icon = nftIcon,
+                 Name = nftName
+             };
+
+             nftVisual.Add(newNftView);
+
+             Debug.Log($"Created NFT view with name: {nftName}");
+        }
+    }
+
+    private void TargetNftCollectionClaimed(NftItemData nftCollection)
+    {
+         UnitonConnectLogger.Log($"Loaded target nft collection:{nftCollection.Collection.Name}");
+    }
+
+    private void NftCollectionsNotFounded()
+    {
+         Debug.LogWarning("Nft collections not found");
+    }
+```
+
+**IMPORTANT:** To download images from NFT collections, you cannot directly access the storage links, because each collection has its own servers configured. Therefore, an unsuccessful attempt to load a collection will return an empty picture due to CORS blocking the request.
+
+To do this, you need to call the `await WalletVisualUtils.GetIconFromProxyServerAsync(iconUrl)` method, which calls your API server, which downloads the image from the source and gives it to your Unity client.
+
+**P.S:** In addition, when you attempt to load webP images, the server performs conversion to `JPEG format`.
+If you try to upload a `JPEG/PNG`, the image will be returned with the original format.
+
+Before you can upload a picture of an item from the NFT collection, you must select an image format. 
+
+```c#
+private async void NftCollectionsClaimed(NftCollectionData nftCollections)
+{
+    var firstItem = collections.Items[0];
+
+    string bestIcon = firstItem.GetBestResolutionPng();
+
+    string littleIcon = firstItem.Get5x5ResolutionWebp();
+    string smallIcon = firstItem.Get100x100ResolutionWebp();
+    string mediumIcon = firstItem.Get500x500ResolutionWebp();
+    string bigIcon = firstItem.Get1500x1500ResolutionWebp();
+}
+```
+
+P.S: The method names reflect the size of the webp image in pixels.
+
+### Loading TON balance
+
+Starting with ёversion 0.2.8ё, the ability to get the current balance of a connected wallet (Toncoin only) has been added.
+
+Implementation of current balance request is shown below:
+
+```c#
+public sealed class LoadingTonBalanceUsageTemplate : MonoBehaviour
+{
+    [SerializeField, Space] private ConnectionWalletUsageTemplate _walletEntryPoint;
+    [SerializeField, Space] private Button _loadBalance;
+    [SerializeField] private TextMeshProUGUI _balanceBar;
+
+    private UnitonConnectSDK _unitonConnect => _walletEntryPoint.UnitonSDK;
+
+    private void Start()
+    {
+        _unitonConnect.OnTonBalanceClaimed += TonBalanceClaimed;
+
+        _loadBalance.onClick.AddListener(LoadBalance);
+    }
+
+    private void OnDestroy()
+    {
+        _unitonConnect.OnTonBalanceClaimed -= TonBalanceClaimed;
+
+        _loadBalance.onClick.RemoveListener(LoadBalance);
+    }
+
+    private void LoadBalance();
+    {
+        _unitonConnect.UpdateTonBalance();
+    }
+
+    private void SetTonBalance(decimal balance)
+    {
+        _balanceBar.text = $"Balance: {balance} TON";
+    }
+
+    private void TonBalanceClaimed(decimal tonBalance)
+    {
+        SetTonBalance(tonBalance);
+    }
+```
+
+In case you need to transfer your Ton balance to Nanoton and vice versa, you can use the following methods:
+
+```c#
+decimal nanotons = UserAssetsUtils.ToNanoton(tonBalance);
+
+decimal tons = UserAssetsUtils.FromNanoton(nanotons);
+```
+
+# Backend
+
+// Soon
+
+# Production Deploy
+
+//Soon
 
 # Source Code
 
