@@ -10,7 +10,7 @@
 
 **UNITON CONNECT** is a user-friendly solution for working with the TON ecosystem inside web applications on Unity. 
 
-### **Available functionality:**
+### **Available functionality**
 - Authorization via TON wallets (QR code or via Deep Link), 
 - Executing transactions via Toncoin,
 - Retrieving NFT collections from a connected wallet,
@@ -65,14 +65,14 @@ Initially they do not work due to lack of multithreading support in them,
 
 Before you can use all the features of the SDK, you must initialize it in **one of two available ways**.
 
-#### Аutomatic initialization:
+#### Аutomatic initialization
 The `UnitonConnectSDK` component has an option called `Initialize On Awake`. When you activate it, the SDK will initialize automatically. You only need to subscribe to the necessary events and start working with it.
 
 <p align="center">
  <img width="500px" src="Assets/sdkOverview.png" alt="qr"/>
 </p>
 
-#### Manual initialization:
+#### Manual initialization
 Below is a test example of how it can look like.
 
 ```c#
