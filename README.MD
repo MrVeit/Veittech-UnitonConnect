@@ -29,7 +29,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **Ton Keeper**                                | ❌           | ✔️           |
 | **My Ton Wallet**                             | ✔️           | ✔️           |
 | **Ton Hub**                                   | ⚠️           | ✔️           |
-| **DeWallet**                                  | ⚠️           | ⚠️           |
+| **DeWallet**                                  | ❌           | ❌           |
 | **Bitget Wallet**                             | ⚠️           | ✔️           |
 | **Safe Pal Wallet**                           | ⚠️           | ✔️           |
 | **OKX Wallet**                                | ⚠️           | ✔️           |
@@ -195,7 +195,7 @@ public sealed class ConnectionWalletUsageTemplate: MonoBehaviour
 
     private WalletConfig _currentWalletForConnect;
 
-    private stirng _connectURL;
+    private string _connectURL;
 
     public UnitonConnectSDK UnitonSDK => _unitonSDK;
     public UserAssets.NFT NftStorage => _unitonSDK.Assets.NFT;
@@ -259,7 +259,8 @@ public sealed class ConnectionWalletUsageTemplate: MonoBehaviour
         {
             _unitonSDK.ConnectHttpBridgeWalletViaDeepLink(_currentWalletForConnect, _connectURL);
         }
-        else if (WalletConnectUtils.HasJSBridge(_currentWalletForConnect) && _unitonSDK.IsUseWebWallets)
+        
+        if (WalletConnectUtils.HasJSBridge(_currentWalletForConnect) && _unitonSDK.IsUseWebWallets)
         {
             _unitonSDK.ConnectJavaScriptBridgeWalletViaDeeplink(_currentWalletForConnect);
         }
@@ -320,7 +321,7 @@ P.S: Starting from `version 0.2.8`, you can change the address format of a conne
 
 Conversion to `HEX/RAW` format:
 ```c#
-string baseAddress = “UQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk-yXLZXmc2V5I”;
+string baseAddress = "UQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk-yXLZXmc2V5I";
 string hexAddress = WalletConnectUtils.GetHEXAddress(baseAddress); 
 
 //result: 0:c1da9d221d87032b762ad647658a2b5115a38af4b2329d4824fb25cb65799cd9
@@ -328,7 +329,7 @@ string hexAddress = WalletConnectUtils.GetHEXAddress(baseAddress);
 
 Conversion to `Bounceable` format:
 ```c#
-string baseAddress = “UQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk-yXLZXmc2V5I”;
+string baseAddress = "UQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk-yXLZXmc2V5I";
 string bounceableAddress = WalletConnectUtils.GetBounceableAddress(baseAddress); 
 
 //result: EQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk+yXLZXmc2QON
@@ -336,7 +337,7 @@ string bounceableAddress = WalletConnectUtils.GetBounceableAddress(baseAddress);
 
 Convert to `Non Bounceable` format:
 ```c#
-string baseAddress = “EQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk+yXLZXmc2QON”;
+string baseAddress = "EQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk+yXLZXmc2QON";
 string nonBounceableAddress = WalletConnectUtils.GetNonBounceableAddress(baseAddress); 
 
 //result: UQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk-yXLZXmc2V5I
@@ -419,7 +420,7 @@ public sealed class LoadingNftCollectionsUsageTemplate : MonoBehaviour
         _nftStorage.OnNftCollectionsClaimed += NftCollectionsClaimed;
         _nftStorage.OnTargetNftCollectionClaimed += TargetNftCollectionClaimed;
 
-       _nftStorage.OnNftCollectionsNotFounded += NftCollectionsNotFounded; 
+        _nftStorage.OnNftCollectionsNotFounded += NftCollectionsNotFounded; 
 
         _loadAllNftCollections.onClick.AddListener(LoadAll);
         _loadTargetNftCollection.onClick.AddListener(LoadTarget);
@@ -430,7 +431,7 @@ public sealed class LoadingNftCollectionsUsageTemplate : MonoBehaviour
         _nftStorage.OnNftCollectionsClaimed -= NftCollectionsClaimed;
         _nftStorage.OnTargetNftCollectionClaimed -= TargetNftCollectionClaimed;
 
-       _nftStorage.OnNftCollectionsNotFounded -= NftCollectionsNotFounded; 
+        _nftStorage.OnNftCollectionsNotFounded -= NftCollectionsNotFounded; 
 
         _loadAllNftCollections.onClick.RemoveListener(LoadAll);
         _loadTargetNftCollection.onClick.RemoveListener(LoadTarget);
@@ -605,22 +606,15 @@ Now, to be able to run the proxy locally and start testing, you need to create a
 The following information must be filled in for the Proxy Server environment variables repository:
 
 ```config
-PORT = 3000
 HOST = http://localhost:
+PORT = 3000
 ```
 
 - Variable `HOST` is a link to your domain where the server is running, for testing purposes we will use the local address `http://localhost`,
-
 - Variable `PORT` is a free port, which will listen to the proxy server to receive and send requests to the unity game client.
 
 You can now run a proxy server to download pictures from nft collections. 
 Open a terminal in the code editor in which you opened the project and type the following command:
-
-```
-node server.js
-```
-
-or
 
 ```
 npm start
