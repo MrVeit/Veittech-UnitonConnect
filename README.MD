@@ -37,20 +37,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
  
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
-# Supported tokens 
-
-|           Token         |   Status   |
-| ----------------------- | :--------: |
-| **Toncoin**             | ✔️         |
-| **Notcoin**             | ⚠️         |
-| **USDT**                | ⚠️         |
-| **Jetton**              | ⚠️         |
-| **NFT**                 | ✔️         |
-| **Custom Token**        | ⚠️         |
- 
-<sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
-
-# Supported Wallets & Connection Type
+# Supported Wallets & Connection Types
 
 |        Wallet Provider         | QR Code  | Deeplink |
 | ------------------------------ | :------: | :------: |
@@ -65,6 +52,19 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **OKX TR Wallet (Turkiye)**    | 💻+📱    | 📱       |
 
 <sub>💻 Desktop Client</sub> &nbsp; <sub>📱 Mobile Client</sub> &nbsp; <sub>💻+📱 All Clients</sub>
+
+# Supported tokens 
+
+|           Token         |   Status   |
+| ----------------------- | :--------: |
+| **Toncoin**             | ✔️         |
+| **Notcoin**             | ⚠️         |
+| **USDT**                | ⚠️         |
+| **Jetton**              | ⚠️         |
+| **NFT**                 | ✔️         |
+| **Custom Token**        | ⚠️         |
+ 
+<sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
 # Dependencies
 
