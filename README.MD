@@ -53,7 +53,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
 
 <sub>💻 Desktop Client</sub> &nbsp; <sub>📱 Mobile Client</sub> &nbsp; <sub>💻+📱 All Clients</sub>
 
-# Supported tokens 
+# Supported Tokens 
 
 |           Token         |   Status   |
 | ----------------------- | :--------: |
