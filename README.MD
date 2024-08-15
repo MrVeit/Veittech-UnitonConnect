@@ -21,7 +21,7 @@
 
 You can test the SDK without installation on a demo app [in your browser](https://mrveit.github.io/Veittech-UnitonConnect/) or directly [in the Telegram bot](https://t.me/UnitonConnect_bot/dAppStart).
 
-# Supported Platforms & Wallets
+# Supported Wallets & Platforms
 
 |                Wallet Provider                | WebGL Desktop | WebGL Mobile |
 | --------------------------------------------- |   :-------:   |  :--------:  |
