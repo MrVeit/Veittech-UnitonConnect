@@ -15,7 +15,8 @@
 - Executing transactions via Toncoin,
 - Retrieving NFT collections from a connected wallet,
 - Read wallet balance (as long as Toncoin is available),
-- Conversion of wallet addresses into different formats and their visualization.
+- Conversion of wallet addresses into different formats and their visualization,
+- Filtering of loaded nft collections by various filters: skam, collection address and so on.
 
 # Technical Demo
 
@@ -34,6 +35,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **Safe Pal Wallet**                           | ⚠️           | ✔️           |
 | **OKX Wallet**                                | ⚠️           | ✔️           |
 | **OKX TR Wallet (Turkiye)**                   | ⚠️           | ⚠️           |
+| **Hot Wallet**                                | ⚠️           | ⚠️           |
  
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
@@ -50,6 +52,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **Safe Pal Wallet**            | 💻+📱    | 📱       |
 | **OKX Wallet**                 | 💻+📱    | 📱       |
 | **OKX TR Wallet (Turkiye)**    | 💻+📱    | 📱       |
+| **Hot Wallet**                 | ❌       | ❌       |
 
 <sub>💻 Desktop Client</sub> &nbsp; <sub>📱 Mobile Client</sub> &nbsp; <sub>💻+📱 All Clients</sub>
 
