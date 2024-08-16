@@ -64,7 +64,6 @@ namespace UnitonConnect.Core.Demo
 
             _startSize = _slotSize;
 
-            //_nftModule.LoadTargetCollection("EQCiCAFFcYBkEjJV6szFgUrTyrIAvEeix-u6g9Y0q3aYhJkr", 2);
             _nftModule.Load(10);
 
             SetContentSlotSize(_startSize);

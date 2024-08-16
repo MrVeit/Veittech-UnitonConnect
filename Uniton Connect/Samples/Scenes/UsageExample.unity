@@ -1834,6 +1834,7 @@ MonoBehaviour:
   _nftCollectionPanel: {fileID: 1422879015}
   _walletViewPrefab: {fileID: 8589778159642721567, guid: 8f6f3a23eb0fe024aa3232148a417ada, type: 3}
   _walletsParent: {fileID: 1122900484}
+  _walletsContentSize: {fileID: 1122900484}
   _activeWallets: []
 --- !u!1 &517745557
 GameObject:
@@ -3423,7 +3424,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 20.890015, y: -16.815002}
+  m_AnchoredPosition: {x: 20.890137, y: -16.814941}
   m_SizeDelta: {x: 272.91, y: 105.48}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &805753949
