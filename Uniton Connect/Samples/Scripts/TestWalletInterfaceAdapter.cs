@@ -30,9 +30,12 @@ namespace UnitonConnect.Core.Demo
         [SerializeField] private TestWalletNftCollectionsPanel _nftCollectionPanel;
         [SerializeField, Space] private TestWalletView _walletViewPrefab;
         [SerializeField] private Transform _walletsParent;
+        [SerializeField] private RectTransform _walletsContentSize;
         [SerializeField, Space] private List<TestWalletView> _activeWallets;
 
         private string _connectUrl;
+
+        private int _contentSize;
 
         private UnitonConnectSDK _unitonSDK;
         private UserAssets.NFT _nftModule => _unitonSDK.Assets.Nft;
@@ -42,6 +45,8 @@ namespace UnitonConnect.Core.Demo
 
         public WalletConfig LatestAuthorizedWallet { get; private set; }
         public List<WalletConfig> LoadedWallets { get; set; }
+
+        private readonly int _cellSize = 225;
 
         private void Awake()
         {
@@ -83,6 +88,10 @@ namespace UnitonConnect.Core.Demo
         private void Start()
         {
             _unitonSDK.Initialize();
+
+            _contentSize = _cellSize;
+
+            SetContentSlotSize(_contentSize);
 
             if (!_unitonSDK.IsWalletConnected)
             {
@@ -136,6 +145,8 @@ namespace UnitonConnect.Core.Demo
                 walletsViewList.Add(walletView);
             }
 
+            int sizeCount = 0;
+
             foreach (var walletView in walletsViewList)
             {
                 var name = walletView.Name;
@@ -146,6 +157,17 @@ namespace UnitonConnect.Core.Demo
                 walletViewData.SetView(this, name, icon, _connectPanel);
 
                 _activeWallets.Add(walletViewData);
+
+                sizeCount++;
+
+                if (sizeCount >= 3)
+                {
+                    sizeCount = 0;
+
+                    _contentSize = _cellSize + _contentSize;
+
+                    SetContentSlotSize(_contentSize);
+                }
             }
         }
 
@@ -156,6 +178,19 @@ namespace UnitonConnect.Core.Demo
                 {
                     walletsLoaded?.Invoke(walletsConfigs);
                 });
+        }
+
+        private void SetContentSlotSize(float size)
+        {
+            _walletsContentSize.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size);
+        }
+
+        private WalletConfig GetWalletConfigByName(Wallet wallet)
+        {
+            var loadedConfig = WalletConnectUtils.GetConfigOfSpecifiedWallet(
+                LoadedWallets, wallet.Device.AppName);
+
+            return loadedConfig;
         }
 
         private void WalletConnectionFinished(Wallet wallet)
@@ -207,14 +242,6 @@ namespace UnitonConnect.Core.Demo
                 $"{_unitonSDK.IsWalletConnected}");
         }
 
-        private WalletConfig GetWalletConfigByName(Wallet wallet)
-        {
-            var loadedConfig = WalletConnectUtils.GetConfigOfSpecifiedWallet(
-                LoadedWallets, wallet.Device.AppName);
-
-            return loadedConfig;
-        }
-
         private void WalletConnectionFailed(string message)
         {
             UnitonConnectLogger.LogError($"Failed to connect " +
@@ -254,9 +281,9 @@ namespace UnitonConnect.Core.Demo
             UnitonConnectLogger.Log($"Loaded nft collections: {collections.Items.Count}");
         }
 
-        private void TargetNftCollectionLoaded(NftItemData nftCollection)
+        private void TargetNftCollectionLoaded(NftCollectionData nftCollection)
         {
-            UnitonConnectLogger.Log($"Loaded target nft collection: {nftCollection.Collection.Name}");
+            UnitonConnectLogger.Log($"Loaded target nft collection with name: {nftCollection.Items[0].Collection.Name}");
         }
     }
 }

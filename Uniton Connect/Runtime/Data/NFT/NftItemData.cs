@@ -44,6 +44,18 @@ namespace UnitonConnect.Runtime.Data
         [JsonProperty("trust")]
         public string Trust { get; set; }
 
+        public bool IsScam()
+        {
+            if (ApprovedBy == null ||
+                ApprovedBy.Count == 0 ||
+                Trust == "none")
+            {
+                return false;
+            }
+
+            return true;
+        }
+
         public string GetBestResolutionPng()
         {
             return Metadata.IconURL;
@@ -106,6 +118,5 @@ namespace UnitonConnect.Runtime.Data
 
             return true;
         }
-
     }
 }

@@ -61,36 +61,32 @@ namespace UnitonConnect.Core
         [SerializeField] private bool _restoreConnectionOnAwake;
         [Header("Ton Connect Settings"), Space]
         [SerializeField, Space] private WalletsListData _walletsListConfig;
-        [Tooltip("[Temporarily unsupported] Disable if you want to use Injected/Web wallets. This only works in WebGL builds!")]
-        //[SerializeField, Space] 
-        private bool _useWebWallets;
         [Tooltip("Enable if you want to instantly receive wallet icons in your interface without waiting for them to be downloaded from the server")]
         [SerializeField, Space] private bool _useCachedWalletsIcons;
         [Tooltip("Configuration of supported wallets for your dApp. You can change their order and number, and override the way their configurations are loaded by hosting it yourself")]
         [SerializeField, Space] private WalletsProvidersData _supportedWallets;
 
         private TonConnect _tonConnect;
-
         private TonConnectOptions _tonConnectOptions;
+
         private AdditionalConnectOptions _additionalConnectOptions;
         private RemoteStorage _remoteStorage;
 
-        public TonConnect TonConnect => _tonConnect;
-
         public UserAssets Assets { get; private set; }
 
-        public List<WalletProviderConfig> SupportedWallets => _supportedWallets.Config;
-
         public decimal TonBalance { get; private set; }
+
+        public TonConnect TonConnect => _tonConnect;
+        public List<WalletProviderConfig> SupportedWallets => _supportedWallets.Config;
 
         public bool IsTestMode => _testMode;
         public bool IsDebugMode => _debugMode;
         public bool IsWalletConnected => _tonConnect.IsConnected;
 
-        public bool IsUseWebWallets => _useWebWallets;
-        public bool IsUseCachedWalletsIcons => _useCachedWalletsIcons;
+        public bool IsUseWebWallets => false;
 
-        public bool IsRestoreConnectionOnAwake => _restoreConnectionOnAwake;
+        public bool IsUseCachedWalletsIcons => _useCachedWalletsIcons;
+        public bool IsActiveRestoreConnection => _restoreConnectionOnAwake;
 
         /// <summary>
         /// Callback if sdk initialization is successful
@@ -167,10 +163,6 @@ namespace UnitonConnect.Core
 
                 return;
             }
-
-            ConfigureWalletsConfig();
-
-            _useWebWallets = false;
 
             _tonConnectOptions = GetOptions(dAppManifestLink);
             _remoteStorage = GetRemoteStorage();
@@ -584,21 +576,6 @@ namespace UnitonConnect.Core
             };
 
             StartCoroutine(ActivateGatewaySenderRoutine(gatewayMessage));
-        }
-
-        private void ConfigureWalletsConfig()
-        {
-#if !UNITY_WEBGL || UNITY_EDITOR
-            if (!_useWebWallets)
-            {
-                return;
-            }
-
-            _useWebWallets = false;
-
-            UnitonConnectLogger.LogWarning("The 'Use Web Wallets' property was automatically disabled" +
-                " due to platform incompatibility. It should only be used in WebGL builds.");
-#endif
         }
 
         private void ParseWalletsConfigs(ref List<WalletProviderData> walletsList, 

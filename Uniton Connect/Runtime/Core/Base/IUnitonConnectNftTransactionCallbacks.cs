@@ -5,7 +5,7 @@ namespace UnitonConnect.Core.Common
     public interface IUnitonConnectNftTransactionCallbacks
     {
         delegate void OnNftCollectionsClaim(NftCollectionData collections);
-        delegate void OnTargetNftCollectionClaim(NftItemData collection);
+        delegate void OnTargetNftCollectionClaim(NftCollectionData collection);
 
         delegate void OnNftCollectionsNotFound();
 
