@@ -1,6 +1,8 @@
+using System;
 using System.Linq;
-using UnitonConnect.Core.Utils.Debugging;
+using System.Collections.Generic;
 using UnitonConnect.Runtime.Data;
+using UnitonConnect.Core.Utils.Debugging;
 
 namespace UnitonConnect.Core.Utils
 {
@@ -33,15 +35,82 @@ namespace UnitonConnect.Core.Utils
         }
 
         /// <summary>
-        /// Retrieving a nft collection with a specific address among previously uploaded ones
+        /// Returns only those nft items that match the contract address
         /// </summary>
         /// <param name="collectionAddress">Collection address, 
         /// for example: EQAl_hUCAeEv-fKtGxYtITAS6PPxuMRaQwHj0QAHeWe6ZSD0</param>
         /// <returns></returns>
-        public static NftItemData GetNftCollectionByAddress(string collectionAddress)
+        public static List<NftItemData> GetCachedNftsByContractAddress(string collectionAddress)
         {
             var hexAddress = WalletConnectUtils.GetHEXAddress(collectionAddress);
 
+            var filteredNfts = GetCachedNftsByFilter(collection => collection.Owner.Address == hexAddress);
+
+            if (filteredNfts == null)
+            {
+                UnitonConnectLogger.LogError($"No nft collections matching " +
+                    $"the ContractAddress condition were found: {collectionAddress}");
+
+                return null;
+            }
+
+            return filteredNfts;
+        }
+
+        /// <summary>
+        /// Returns only those elements of nft collections that have or have not passed the nft marketplace checklist
+        /// </summary>
+        /// <param name="isScam">Verification status of nft item on the marketplace</param>
+        /// <returns></returns>
+        public static List<NftItemData> GetCachedNftsByScamStatus(bool isScam)
+        {
+            var filteredNfts = GetCachedNftsByFilter(collection => collection.IsScam() == isScam);
+
+            if (filteredNfts == null)
+            {
+                UnitonConnectLogger.LogError($"No nft collections are found that match the IsScam: {isScam} condition");
+
+                return null;
+            }
+
+            return filteredNfts;
+        }
+
+        /// <summary>
+        /// Returns nft elements of collections that match the specified filter
+        /// </summary>
+        /// <param name="sortFilter">Filter to return nft items that match the condition</param>
+        /// <returns></returns>
+        public static List<NftItemData> GetCachedNftsByFilter(
+            Func<NftItemData, bool> sortFilter)
+        {
+            var collections = GetCachedNftsIfExist();
+
+            if (collections == null)
+            {
+                UnitonConnectLogger.LogError("No cached nft collections detected, filtering canceled.");
+
+                return null;
+            }
+
+            var filteredCollections = collections.Where(sortFilter).ToList();
+
+            if (!filteredCollections.Any())
+            {
+                UnitonConnectLogger.LogError("No nft collection items were found that match the specified filter");
+
+                return null;
+            }
+
+            return filteredCollections;
+        }
+
+        /// <summary>
+        /// Returns cached nft collections if they have been previously downloaded
+        /// </summary>
+        /// <returns></returns>
+        public static List<NftItemData> GetCachedNftsIfExist()
+        {
             var unitonConnect = UnitonConnectSDK.Instance;
             var nftModule = unitonConnect.Assets.Nft;
 
@@ -61,17 +130,7 @@ namespace UnitonConnect.Core.Utils
                 return null;
             }
 
-            var targetCollection = nftModule.LatestNftCollections.Items.FirstOrDefault(
-                targetCollection => targetCollection.Address == hexAddress);
-
-            if (targetCollection == null)
-            {
-                UnitonConnectLogger.LogError("The required collection is missing from this wallet");
-
-                return null;
-            }
-
-            return targetCollection;
+            return nftModule.LatestNftCollections.Items;
         }
     }
 }

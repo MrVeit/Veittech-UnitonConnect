@@ -9,7 +9,7 @@ using UnitonConnect.Core.Utils.Debugging;
 
 namespace UnitonConnect.Core.Utils
 {
-    public sealed class WalletConnectUtils
+    public static class WalletConnectUtils
     {
         private static readonly UnitonConnectSDK _unitonConnect = UnitonConnectSDK.Instance;
 

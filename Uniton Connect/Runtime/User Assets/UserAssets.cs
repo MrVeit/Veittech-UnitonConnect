@@ -31,8 +31,9 @@ namespace UnitonConnect.DeFi
 
             private string _walletAddress => _sdk.GetWalletAddress();
 
+
             public NftCollectionData LatestNftCollections { get; private set; }
-            public NftItemData LatestNftCollection { get; private set; }
+            public NftCollectionData LatestTargetNftCollection { get; private set; }
 
             /// <summary>
             /// Callback to retrieve all nft collections on a user's account
@@ -54,7 +55,7 @@ namespace UnitonConnect.DeFi
             /// </summary>
             /// <param name="limit">Number of collections displayed</param>
             /// <param name="offset">Number of gaps between collections</param>
-            public void Load(int limit, int offset)
+            public void Load(int limit, int offset = 0)
             {
                 var encodedWalletAddress = ConvertAddressToEncodedURL(_walletAddress);
                 var url = TonApiBridge.NFT.GetAllNftCollectionsUrl(encodedWalletAddress, limit, offset);
@@ -80,12 +81,13 @@ namespace UnitonConnect.DeFi
             /// Get a collection on an account, with a specific contract address
             /// </summary>
             /// <param name="collectionAddress">Address nft collection</param>
-            public void LoadTargetCollection(string collectionAddress)
+            public void LoadTargetCollection(string collectionAddress, int limit, int offset = 0)
             {
                 var encodedWalletAddress = ConvertAddressToEncodedURL(_walletAddress);
                 var encodedCollectionAddress = ConvertAddressToEncodedURL(collectionAddress);
 
-                var url = TonApiBridge.NFT.GetTargetNftCollectionUrl(encodedWalletAddress, encodedCollectionAddress);
+                var url = TonApiBridge.NFT.GetTargetNftCollectionUrl(encodedWalletAddress,
+                    encodedCollectionAddress, limit, offset);
 
                 _mono.StartCoroutine(TonApiBridge.NFT.GetNftCollections(url, (collection) =>
                 {
@@ -98,9 +100,9 @@ namespace UnitonConnect.DeFi
                         return;
                     }
 
-                    LatestNftCollection = collection.Items[0];
+                    LatestTargetNftCollection = collection;
 
-                    OnTargetNftCollectionClaimed?.Invoke(LatestNftCollection);
+                    OnTargetNftCollectionClaimed?.Invoke(LatestTargetNftCollection);
                 }));
             }
 

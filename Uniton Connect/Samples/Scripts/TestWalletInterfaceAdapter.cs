@@ -254,9 +254,9 @@ namespace UnitonConnect.Core.Demo
             UnitonConnectLogger.Log($"Loaded nft collections: {collections.Items.Count}");
         }
 
-        private void TargetNftCollectionLoaded(NftItemData nftCollection)
+        private void TargetNftCollectionLoaded(NftCollectionData nftCollection)
         {
-            UnitonConnectLogger.Log($"Loaded target nft collection: {nftCollection.Collection.Name}");
+            UnitonConnectLogger.Log($"Loaded target nft collection with name: {nftCollection.Items[0].Collection.Name}");
         }
     }
 }

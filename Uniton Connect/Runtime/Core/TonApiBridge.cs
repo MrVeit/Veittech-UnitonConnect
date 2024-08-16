@@ -10,7 +10,7 @@ using UnitonConnect.Runtime.Data;
 
 namespace UnitonConnect.ThirdParty.TonAPI
 {
-    public static class TonApiBridge
+    internal static class TonApiBridge
     {
         private const string API_URL = "https://tonapi.io/v2";
 
@@ -88,11 +88,11 @@ namespace UnitonConnect.ThirdParty.TonAPI
             }
 
             internal static string GetTargetNftCollectionUrl(
-                string hexAddress, string collectionAddress)
+                string hexAddress, string collectionAddress, int limit, int offset)
             {
                 return $"{GetUserWalletUrl(hexAddress)}" +
-                    $"/nfts?collection={collectionAddress}&limit=1" +
-                    $"&offset=0&indirect_ownership=false";
+                    $"/nfts?collection={collectionAddress}&limit={limit}" +
+                    $"&offset={offset}&indirect_ownership=false";
             }
 
             internal static string GetAllNftCollectionsUrl(

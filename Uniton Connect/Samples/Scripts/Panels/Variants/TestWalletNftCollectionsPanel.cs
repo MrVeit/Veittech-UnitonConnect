@@ -1,10 +1,11 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnitonConnect.Core.Data;
-using UnitonConnect.Core.Utils.Debugging;
+using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.View;
+using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.DeFi;
 
@@ -34,6 +35,8 @@ namespace UnitonConnect.Core.Demo
             _unitonConnect.OnWalletDisconnected += RemoveNftCollectionStorage;
 
             _nftModule.OnNftCollectionsClaimed += NftCollectionsClaimed;
+            _nftModule.OnTargetNftCollectionClaimed += TargetNftCollectionClaimed;
+
             _nftModule.OnNftCollectionsNotFounded += NftCollectionsNotFounded;
         }
 
@@ -42,6 +45,8 @@ namespace UnitonConnect.Core.Demo
             _unitonConnect.OnWalletDisconnected -= RemoveNftCollectionStorage;
 
             _nftModule.OnNftCollectionsClaimed -= NftCollectionsClaimed;
+            _nftModule.OnTargetNftCollectionClaimed -= TargetNftCollectionClaimed;
+
             _nftModule.OnNftCollectionsNotFounded -= NftCollectionsNotFounded;
         }
 
@@ -59,7 +64,8 @@ namespace UnitonConnect.Core.Demo
 
             _startSize = _slotSize;
 
-            _nftModule.Load(10, 0);
+            //_nftModule.LoadTargetCollection("EQCiCAFFcYBkEjJV6szFgUrTyrIAvEeix-u6g9Y0q3aYhJkr", 2);
+            _nftModule.Load(10);
 
             SetContentSlotSize(_startSize);
 
@@ -90,9 +96,16 @@ namespace UnitonConnect.Core.Demo
         {
             List<NftViewData> nftVisual = new();
 
-            foreach (var nft in collections.Items)
+            var notScamNfts = UserAssetsUtils.GetCachedNftsByScamStatus(true);
+
+            if (notScamNfts == null)
             {
-                var iconUrl = nft.Get100x100ResolutionWebp();
+                return null;
+            }
+
+            foreach (var nft in notScamNfts)
+            {
+                var iconUrl = nft.Get500x500ResolutionWebp();
 
                 UnitonConnectLogger.Log($"Claimed icon by urL: {iconUrl}");
 
@@ -147,9 +160,19 @@ namespace UnitonConnect.Core.Demo
             _contentSize.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size);
         }
 
-        private async void NftCollectionsClaimed(NftCollectionData nftCollections)
+        private bool IsExistNFTs()
         {
             if (_createdNfts.Count > 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private async void NftCollectionsClaimed(NftCollectionData nftCollections)
+        {
+            if (IsExistNFTs())
             {
                 _loadAnimation.SetActive(false);
 
@@ -158,7 +181,19 @@ namespace UnitonConnect.Core.Demo
 
             var viewNftCollections = await CreateNftViewContainer(nftCollections);
 
+            if (viewNftCollections == null)
+            {
+                NftCollectionsNotFounded();
+
+                return;
+            }
+
             CreateNftItem(viewNftCollections);
+        }
+
+        private void TargetNftCollectionClaimed(NftCollectionData collection)
+        {
+            NftCollectionsClaimed(collection);
         }
 
         private void NftCollectionsNotFounded()
@@ -166,18 +201,6 @@ namespace UnitonConnect.Core.Demo
             _warningMessage.gameObject.SetActive(true);
 
             _loadAnimation.SetActive(false);
-        }
-
-        private bool IsSupportedWebServer()
-        {
-            string currentURL = Application.absoluteURL;
-
-            if (currentURL.Contains("github"))
-            {
-                return false;
-            }
-
-            return true;
         }
     }
 }
