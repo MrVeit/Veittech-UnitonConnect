@@ -27,7 +27,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
 |                Wallet Provider                | WebGL Desktop | WebGL Mobile |
 | --------------------------------------------- |   :-------:   |  :--------:  |
 | **Telegram Wallet**                           | ✔️           | ✔️           |
-| **Ton Keeper**                                | ❌           | ✔️           |
+| **Ton Keeper**                                | ✔️           | ✔️           |
 | **My Ton Wallet**                             | ✔️           | ✔️           |
 | **Ton Hub**                                   | ⚠️           | ✔️           |
 | **DeWallet**                                  | ❌           | ✔️           |
@@ -44,7 +44,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
 |        Wallet Provider         | QR Code  | Deeplink |
 | ------------------------------ | :------: | :------: |
 | **Telegram Wallet**            | 💻+📱    | 💻+📱    |
-| **Ton Keeper**                 | 💻+📱    | 📱       |
+| **Ton Keeper**                 | 💻+📱    | 💻+📱    |
 | **My Ton Wallet**              | 💻+📱    | 💻+📱    |
 | **Ton Hub**                    | 💻+📱    | 📱       |
 | **DeWallet**                   | ❌       | 📱       |
