@@ -32,8 +32,8 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **Ton Hub**                                   | ⚠️           | ✔️           |
 | **DeWallet**                                  | ❌           | ✔️           |
 | **Bitget Wallet**                             | ⚠️           | ✔️           |
-| **Safe Pal Wallet**                           | ⚠️           | ✔️           |
-| **OKX Wallet**                                | ⚠️           | ✔️           |
+| **Safe Pal Wallet**                           | ⚠️           | ⚠️           |
+| **OKX Wallet**                                | ⚠️           | ⚠️           |
 | **OKX TR Wallet (Turkiye)**                   | ⚠️           | ⚠️           |
 | **Hot Wallet**                                | ❌           | ✔️           |
  
@@ -49,9 +49,9 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **Ton Hub**                    | 💻+📱    | 📱       |
 | **DeWallet**                   | ❌       | 📱       |
 | **Bitget Wallet**              | 💻+📱    | 📱       |
-| **Safe Pal Wallet**            | 💻+📱    | 📱       |
-| **OKX Wallet**                 | 💻+📱    | 📱       |
-| **OKX TR Wallet (Turkiye)**    | 💻+📱    | 📱       |
+| **Safe Pal Wallet**            | 💻+📱    | ❌      |
+| **OKX Wallet**                 | 💻+📱    | ❌      |
+| **OKX TR Wallet (Turkiye)**    | 💻+📱    | ❌      |
 | **Hot Wallet**                 | ❌       | 📱       |
 
 <sub>💻 Desktop Client</sub> &nbsp; <sub>📱 Mobile Client</sub> &nbsp; <sub>💻+📱 All Clients</sub> <sub>❌ Not Supported</sub>
