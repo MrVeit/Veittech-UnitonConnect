@@ -60,12 +60,12 @@ You can test the SDK without installation on a demo app [in your browser](https:
 
 |           Token         |   Status   |
 | ----------------------- | :--------: |
-| **Toncoin**             | ✔️         |
-| **Notcoin**             | ⚠️         |
-| **USDT**                | ⚠️         |
-| **Jetton**              | ⚠️         |
+| **TON**                 | ✔️         |
+| **NOT**                 | ⚠️         |
+| **GRAM**                | ⚠️         |
+| **DOGS**                | ⚠️         |
 | **NFT**                 | ✔️         |
-| **Custom Token**        | ⚠️         |
+| **Custom Jetton**       | ⚠️         |
  
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
