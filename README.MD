@@ -20,7 +20,7 @@
 
 ### **Developing functionality**
 - Read balance of basic (GRAM, NOT, DOGS) and custom jettons (by wallet master address),
-- Sending basic and custom jettons (by wallet master address), 
+- Sending basic and custom jettons, 
 - Sending NFTs from available collections on the connected wallet,
 - Swap custom and basic jettons to toncoin and reverse,
 - Creating and mint of custom jettons,
