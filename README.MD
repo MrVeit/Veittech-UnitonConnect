@@ -3,6 +3,7 @@
 [![License](https://img.shields.io/github/license/mrveit/unity-ton-connect?color=318CE7&style=flat-square)](LICENSE)
 [![Version](https://img.shields.io/github/package-json/v/mrveit/unity-ton-connect?color=318CE7&style=flat-square)](package.json)
 [![Unity](https://img.shields.io/badge/Unity-2020.1+-2296F3.svg?color=318CE7&style=flat-square)](https://unity.com/releases/editor/archive)
+![Downloads (all assets, all releases)](https://img.shields.io/github/Downloads/MrVeit/Veittech-UnitonConnect/total?color=318CE7&style=flat-square)
 
 <p align="left">
  <img width="600px" src="Assets/sdkBackgroundLogo.png" alt="qr"/>
