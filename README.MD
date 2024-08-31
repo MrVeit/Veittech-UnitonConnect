@@ -56,16 +56,16 @@ You can test the SDK without installation on a demo app [in your browser](https:
 
 <sub>💻 Desktop Client</sub> &nbsp; <sub>📱 Mobile Client</sub> &nbsp; <sub>💻+📱 All Clients</sub> <sub>❌ Not Supported</sub>
 
-# Supported Tokens 
+# Supported Tokens & Available Func
 
-|           Token         |   Status   |
-| ----------------------- | :--------: |
-| **TON**                 | ✔️         |
-| **NOT**                 | ⚠️         |
-| **GRAM**                | ⚠️         |
-| **DOGS**                | ⚠️         |
-| **NFT**                 | ✔️         |
-| **Custom Jetton**       | ⚠️         |
+|           Token         |   Status   |       Func       |
+| ----------------------- | :--------: | :--------------: |
+| **TON**                 | ✔️         | Balance, Send    |
+| **NOT**                 | ⚠️         | ⚠️              |
+| **GRAM**                | ⚠️         | ⚠️              |
+| **DOGS**                | ⚠️         | ⚠️              |
+| **NFT**                 | ✔️         | Balance, Filter |
+| **Custom Jetton**       | ⚠️         | ⚠️              |
  
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
