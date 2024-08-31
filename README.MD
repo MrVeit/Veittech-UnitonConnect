@@ -18,6 +18,14 @@
 - Conversion of wallet addresses into different formats and their visualization,
 - Filtering of loaded nft collections by various filters: skam, collection address and so on.
 
+### **Developing Functionality**
+- Read balance of basic (GRAM, NOT, DOGS) and custom jettons (by wallet master address),
+- Sending basic and custom jettons (by wallet master address), 
+- Sending NFTs from available collections on the connected wallet,
+- Swap custom/basic jettons to toncoin and reverse,
+- Creating and  mint of custom jettons,
+- Create and  mint NFT collections.
+
 # Technical Demo
 
 You can test the SDK without installation on a demo app [in your browser](https://mrveit.github.io/Veittech-UnitonConnect/) or directly [in the Telegram bot](https://t.me/UnitonConnect_bot/dAppStart).
