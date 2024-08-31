@@ -1,12 +1,12 @@
 # UNITON CONNECT
 
 [![License](https://img.shields.io/github/license/mrveit/unity-ton-connect?color=318CE7&style=flat-square&logo=github)](LICENSE)
-[![Version](https://img.shields.io/github/package-json/v/mrveit/unity-ton-connect?color=318CE7&style=flat-square)](package.json)
+[![Version](https://img.shields.io/github/package-json/v/mrveit/unity-ton-connect?color=318CE7&style=flat-square&logo=buffer)](package.json)
 [![Unity](https://img.shields.io/badge/Unity-2020.1+-2296F3.svg?color=318CE7&style=flat-square&logo=Unity)](https://unity.com/releases/editor/archive)
-![Last commit](https://img.shields.io/github/last-commit/MrVeit/Veittech-UnitonConnect/main?color=318CE7&style=flat-square&logo=Mapbox)
+![Last commit](https://img.shields.io/github/last-commit/MrVeit/Veittech-UnitonConnect/main?color=318CE7&style=flat-square&logo=alwaysdata)
 ![Last release](https://img.shields.io/github/release-date/MrVeit/Veittech-UnitonConnect?color=318CE7&style=flat-square&logo=Dropbox)
-![Repo size](https://img.shields.io/github/repo-size/MrVeit/Veittech-UnitonConnect?color=318CE7&style=flat-square)
-![Downloads](https://img.shields.io/github/downloads/MrVeit/Veittech-UnitonConnect/total?color=318CE7&style=flat-square)
+![Repo size](https://img.shields.io/github/repo-size/MrVeit/Veittech-UnitonConnect?color=318CE7&style=flat-square&logo=amazonredshift)
+![Downloads](https://img.shields.io/github/downloads/MrVeit/Veittech-UnitonConnect/total?color=318CE7&style=flat-square&logo=codeigniter)
 
 <p align="left">
  <img width="600px" src="Assets/sdkBackgroundLogo.png" alt="qr"/>
