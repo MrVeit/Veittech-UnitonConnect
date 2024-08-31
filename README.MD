@@ -5,7 +5,6 @@
 [![Unity](https://img.shields.io/badge/Unity-2020.1+-2296F3.svg?color=318CE7&style=flat-square&logo=Unity&logoColor=E0FFFF)](https://unity.com/releases/editor/archive)
 ![Last commit](https://img.shields.io/github/last-commit/MrVeit/Veittech-UnitonConnect/main?color=318CE7&style=flat-square&logo=alwaysdata&logoColor=E0FFFF)
 ![Last release](https://img.shields.io/github/release-date/MrVeit/Veittech-UnitonConnect?color=318CE7&style=flat-square&logo=Dropbox&logoColor=E0FFFF)
-![Repo size](https://img.shields.io/github/repo-size/MrVeit/Veittech-UnitonConnect?color=318CE7&style=flat-square&logo=amazonredshift&logoColor=E0FFFF)
 ![Downloads](https://img.shields.io/github/downloads/MrVeit/Veittech-UnitonConnect/total?color=318CE7&style=flat-square&logo=codeigniter&logoColor=E0FFFF)
 
 <p align="left">
