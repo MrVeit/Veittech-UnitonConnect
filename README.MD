@@ -17,17 +17,17 @@
 - Authorization via TON wallets (QR code or via Deep Link), 
 - Executing transactions via Toncoin,
 - Retrieving NFT collections from a connected wallet,
-- Read wallet balance (as long as Toncoin is available),
+- Reading wallet balance (as long as Toncoin is available),
 - Conversion of wallet addresses into different formats and their visualization,
 - Filtering of loaded nft collections by various filters: skam, collection address and so on.
 
 ### **Developing functionality**
-- Read balance of basic (GRAM, NOT, DOGS) and custom jettons (by wallet master address),
+- Reading balance of basic (GRAM, NOT, DOGS) and custom jettons (by wallet master address),
 - Sending basic and custom jettons, 
 - Sending NFTs from available collections on the connected wallet,
-- Swap custom and basic jettons to toncoin and reverse,
+- Swapping custom and basic jettons to toncoin and reverse,
 - Creating and mint of custom jettons,
-- Create and mint NFT collections.
+- Creating and mint NFT collections.
 
 # Technical Demo
 
