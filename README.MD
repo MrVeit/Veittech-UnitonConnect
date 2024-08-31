@@ -18,6 +18,14 @@
 - Conversion of wallet addresses into different formats and their visualization,
 - Filtering of loaded nft collections by various filters: skam, collection address and so on.
 
+### **Developing functionality**
+- Read balance of basic (GRAM, NOT, DOGS) and custom jettons (by wallet master address),
+- Sending basic and custom jettons, 
+- Sending NFTs from available collections on the connected wallet,
+- Swap custom and basic jettons to toncoin and reverse,
+- Creating and mint of custom jettons,
+- Create and mint NFT collections.
+
 # Technical Demo
 
 You can test the SDK without installation on a demo app [in your browser](https://mrveit.github.io/Veittech-UnitonConnect/) or directly [in the Telegram bot](https://t.me/UnitonConnect_bot/dAppStart).
@@ -56,16 +64,16 @@ You can test the SDK without installation on a demo app [in your browser](https:
 
 <sub>💻 Desktop Client</sub> &nbsp; <sub>📱 Mobile Client</sub> &nbsp; <sub>💻+📱 All Clients</sub> <sub>❌ Not Supported</sub>
 
-# Supported Tokens 
+# Supported Tokens & Available Func
 
-|           Token         |   Status   |
-| ----------------------- | :--------: |
-| **Toncoin**             | ✔️         |
-| **Notcoin**             | ⚠️         |
-| **USDT**                | ⚠️         |
-| **Jetton**              | ⚠️         |
-| **NFT**                 | ✔️         |
-| **Custom Token**        | ⚠️         |
+|           Token         |   Status   |       Func       |
+| ----------------------- | :--------: | :--------------: |
+| **TON**                 | ✔️         | Balance, Send    |
+| **NOT**                 | ⚠️         | ⚠️              |
+| **GRAM**                | ⚠️         | ⚠️              |
+| **DOGS**                | ⚠️         | ⚠️              |
+| **NFT**                 | ✔️         | Balance, Filter |
+| **Custom Jetton**       | ⚠️         | ⚠️              |
  
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
@@ -649,13 +657,6 @@ Try reinstalling or searching for a solution to your problem on the Internet.
 
 ```
 Soon
-```
-
-# Source Code
-
-**.NET Source Code:**
-```
-https://github.com/continuation-team/TonSdk.NET
 ```
 
 # Donations
