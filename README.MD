@@ -651,13 +651,6 @@ Try reinstalling or searching for a solution to your problem on the Internet.
 Soon
 ```
 
-# Source Code
-
-**.NET Source Code:**
-```
-https://github.com/continuation-team/TonSdk.NET
-```
-
 # Donations
 
 Ton Wallet (TON/NOT/USDt):
