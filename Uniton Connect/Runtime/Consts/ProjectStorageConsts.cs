@@ -1,7 +1,7 @@
 using UnityEngine;
+using UnityEngine.Networking;
 using TonSdk.Connect;
 using UnitonConnect.Runtime.Data;
-using UnityEngine.Networking;
 
 namespace UnitonConnect.Editor.Common
 {
@@ -25,9 +25,10 @@ namespace UnitonConnect.Editor.Common
         public const string APP_ICON_FILE_NAME = "icon.png";
         public const string APP_DATA_FILE_NAME = "dAppData.json";
 
-        public const string TEST_APP_URL = "https://mrveit.github.io/Veittech-UnitonConnect/";
+        public const string TEST_APP_URL = "https://mrveit.github.io/Veittech-UnitonConnect";
         public const string TEST_APP_NAME = "Uniton Connect";
 
+        public const string DEFAULT_SUPPORTED_WALLETS_LINK = "https://mrveit.github.io/Veittech-UnitonConnect/supportedWallets.json";
         public const string TEST_SUPPORTED_WALLETS_LINK = "https://raw.githubusercontent.com/ton-blockchain/wallets-list/main/wallets-v2.json";
 
         private const string GET_NFT_IMAGE_CONVERTER = "/get-nft-image?url=";

@@ -179,6 +179,11 @@ namespace UnitonConnect.Core.Utils.View
             else
             {
                 icon = await GetWalletIconFromServerAsync(config.Image);
+
+                if (icon == null)
+                {
+                    UnitonConnectLogger.LogWarning($"Failed to load wallet icon");
+                }
             }
 
             return GetWalletView(name, icon);

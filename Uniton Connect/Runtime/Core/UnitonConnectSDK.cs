@@ -283,7 +283,8 @@ namespace UnitonConnect.Core
                 {
                     OnSendingTonFinish(transactionResult, true);
 
-                    UnitonConnectLogger.Log($"Transaction successfully completed, Boc: {transactionResult.Value.Boc}");
+                    UnitonConnectLogger.Log($"Transaction successfully created" +
+                        $", Boc: {transactionResult.Value.Boc}");
                 }
             }
             catch (WalletNotConnectedError connectionError)
@@ -420,7 +421,7 @@ namespace UnitonConnect.Core
             {
                 string walletName = _tonConnect.Wallet.Device.AppName;
 
-                LoadWalletsConfigs(ProjectStorageConsts.TEST_SUPPORTED_WALLETS_LINK,
+                LoadWalletsConfigs(ProjectStorageConsts.DEFAULT_SUPPORTED_WALLETS_LINK,
                 (configs) =>
                 {
                     var updatedConfigs = WalletConnectUtils.GetSupportedWalletsListForUse(configs);
@@ -581,8 +582,6 @@ namespace UnitonConnect.Core
         private void ParseWalletsConfigs(ref List<WalletProviderData> walletsList, 
             Action<List<WalletConfig>> walletsClaimed)
         {
-            var walletNameWithBugBridgeURL = "MyTonWallet";
-
             var loadedWallets = new List<WalletConfig>();
 
             foreach (var wallet in walletsList)
@@ -602,11 +601,6 @@ namespace UnitonConnect.Core
                         walletConfig.BridgeUrl = bridge.Url;
                         walletConfig.UniversalUrl = wallet.UniversalUrl;
                         walletConfig.JsBridgeKey = null;
-
-                        if (walletConfig.Name == walletNameWithBugBridgeURL)
-                        {
-                            walletConfig.BridgeUrl = bridge.Url.TrimEnd('/');
-                        }
 
                         loadedWallets.Add(walletConfig);
                     }
