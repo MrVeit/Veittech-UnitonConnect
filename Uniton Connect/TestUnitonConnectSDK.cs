@@ -1,6 +1,6 @@
-using AOT;
 using System;
 using System.Runtime.InteropServices;
+using AOT;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,22 +20,30 @@ namespace UnitonConnect.Core
 
         public static Action<string> OnWalletConnected;
         public static Action<string> OnWalletDisconnected;
+        public static Action<int> OnWalletConnectionRestored;
 
         [DllImport("__Internal")]
-        private static extern void Init(string manifestUrl,
+        private static extern void Init(string manifestUrl, 
             string dAppUrl, Action<int> onInitialized);
 
         [DllImport("__Internal")]
-        private static extern void OpenModal(Action<int> onModalWindowOpened);
+        private static extern void OpenModal(
+            Action<int> onModalWindowOpened);
 
         [DllImport("__Internal")]
-        private static extern void Disconnect(Action<string> callback);
+        private static extern void Disconnect(
+            Action<string> onWalletDisconnected);
 
         [DllImport("__Internal")]
-        private static extern void SubscribeToStatusChange(Action<string> callback);
+        private static extern void SubscribeToStatusChange(
+            Action<string> onWalletConnected);
 
         [DllImport("__Internal")]
         private static extern void UnSubscribeToStatusChange();
+
+        [DllImport("__Internal")]
+        private static extern void SubscribeToRestoreConnection(
+            Action<int> onConnectionRestored);
 
         [MonoPInvokeCallback(typeof(Action<int>))]
         private static void OnInitialize(int statusCode)
@@ -89,6 +97,39 @@ namespace UnitonConnect.Core
             _instance._dataBar.text = message;
         }
 
+        [MonoPInvokeCallback(typeof(Action<int>))]
+        private static void OnWalletConnectionRestor(int statusCode)
+        {
+            OnWalletConnectionRestored?.Invoke(statusCode);
+
+            var message = string.Empty;
+
+            Debug.Log($"Claimed status code for restore connection: {statusCode}");
+
+            if (statusCode == 1)
+            {
+                message = "[UNITON CONNECT] Wallet connection restored";
+
+                Debug.Log(message);
+
+                _instance._dataBar.text = message;
+
+                _instance._disconnectButton.interactable = true;
+                _instance._connectButton.interactable = false;
+
+                return;
+            }
+
+            message = "[UNITON CONNECT] Wallet connection was not restored";
+
+            Debug.LogWarning(message);
+
+            _instance._dataBar.text = message;
+
+            _instance._disconnectButton.interactable = false;
+            _instance._connectButton.interactable = true;
+        }
+
         [MonoPInvokeCallback(typeof(Action<string>))]
         private static void OnWalletConnect(string walletInfo)
         {
@@ -104,6 +145,9 @@ namespace UnitonConnect.Core
 
                 _instance._dataBar.text = message;
 
+                _instance._disconnectButton.interactable = false;
+                _instance._connectButton.interactable = true;
+
                 return;
             }
 
@@ -112,6 +156,9 @@ namespace UnitonConnect.Core
             Debug.Log(message);
 
             _instance._dataBar.text = message;
+
+            _instance._disconnectButton.interactable = true;
+            _instance._connectButton.interactable = false;
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
@@ -176,6 +223,7 @@ namespace UnitonConnect.Core
                 "https://t.me/UnitonConnect_bot", OnInitialize);
 
             SubscribeToStatusChange(OnWalletConnect);
+            SubscribeToRestoreConnection(OnWalletConnectionRestor);
         }
 
         public void ConnectWallet()

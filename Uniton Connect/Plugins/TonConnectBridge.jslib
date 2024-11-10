@@ -1,5 +1,17 @@
 const tonConnectBridge = {
     $tonConnect: {
+        isAvailableSDK: function()
+        {
+            if (!window.tonConnectUI)
+            {
+                console.error(`[UNITON CONNECT] TonConnectUI is not initialized`);
+
+                return false;
+            }
+
+            return true;
+        },
+
         init: function(manifestUrl, dAppUrl, callback)
         {
             try
@@ -9,17 +21,22 @@ const tonConnectBridge = {
 
                 window.tonConnectUI = new TON_CONNECT_UI.TonConnectUI(
                 {
-                    manifestUrl: url
+                    manifestUrl: url,
+                    uiPreferences: { theme: THEME.DARK }
                 });
 
-                console.log(`Lib entity state: ${window.tonConnectUI}`);
+                console.log(`Library entity state: ${window.tonConnectUI}`);
 
-                window.tonConnectUI.uiOptions =
+                if (!tonConnect.isAvailableSDK())
                 {
-                    twaReturnUrl: appUrl,
-                    language: 'ru',
-                    uiPreferences: { theme: THEME.DARK }
-                };
+                    console.warn(`Something wrong, library entity is not exist`);
+
+                    dynCall('vi', callback, [0]);
+
+                    return;
+                }
+
+                window.tonConnectUI.uiOptions = { twaReturnUrl: appUrl };
 
                 console.log(`[UNITON CONNECT] Sdk successfully initialized`);
 
@@ -37,15 +54,24 @@ const tonConnectBridge = {
         {
             try
             {
+                if (!tonConnect.isAvailableSDK())
+                {
+                    console.warn(`[UNITON CONNECT] Opening modal canceled, sdk is not initialized`);
+
+                    dynCall('vi', callback, [0]);
+
+                    return;
+                }
+
                 await window.tonConnectUI.openModal();
 
-                console.log(`[UNITON CONNECT] Connect modal opened`);
+                console.log(`[UNITON CONNECT] Modal window successfully opened`);
 
                 dynCall('vi', callback, [1]);
             }
             catch (eror)
             {
-                console.error(`[UNITON CONNECT] Failed to open connect modal`);
+                console.error(`[UNITON CONNECT] Failed to open modal window`);
 
                 dynCall('vi', callback, [0]);
             }
@@ -55,6 +81,13 @@ const tonConnectBridge = {
         {
             try
             {
+                if (!tonConnect.isAvailableSDK())
+                {
+                    console.warn(`[UNITON CONNECT] Disconnect is not available, sdk is not initialized`);
+
+                    return;
+                }
+
                 await window.tonConnectUI.disconnect();
 
                 const statusPtr = allocate(
@@ -81,17 +114,8 @@ const tonConnectBridge = {
 
         subscribeToStatusChanged: function(callback)
         {
-            if (typeof TON_CONNECT_UI === 'undefined')
+            if (!tonConnect.isAvailableSDK())
             {
-                console.error('TON_CONNECT_UI is not loaded. Ensure the script is correctly linked.');
-                
-                return;
-            }
-
-            if (!window.tonConnectUI)
-            {
-                console.error('tonConnectUI entity is not loaded. Ensure the script is correctly linked.')
-
                 return;
             }
 
@@ -104,23 +128,27 @@ const tonConnectBridge = {
                     const walletPtr = allocate(
                         intArrayFromString(walletInfo), 'i8', ALLOC_NORMAL);
 
-                    console.log(`Parsed wallet: ${window.tonConnectUI.wallet}`);
-                    console.log(`Parsed wallet info: ${window.tonConnectUI.walletInfo}`);
-                    console.log(`Parsed account: ${window.tonConnectUI.account}`);
-                    console.log(`Parsed is connected status: ${window.tonConnectUI.connected}`)
+                    console.log(`Parsed wallet: ` +
+                        `${JSON.stringify(window.tonConnectUI.wallet)}`);
+                    console.log(`Parsed wallet info: ` +
+                        `${JSON.stringify(window.tonConnectUI.walletInfo)}`);
+                    console.log(`Parsed account: ` +
+                        `${JSON.stringify(window.tonConnectUI.account)}`);
+                    console.log(`Parsed is connected status: ` +
+                        `${JSON.stringify(window.tonConnectUI.connected)}`)
 
                     console.log(`[UNITON CONNECT] Wallet successfully connected, data: ${walletInfo}`);
 
                     dynCall('vi', callback, [walletPtr]);
 
                     _free(walletPtr);
-                }
-                else
-                {
-                    console.log(`[UNITON CONNECT] Wallet is disconnected`);
 
-                    dynCall('vi', callback, [0]);
+                    return;
                 }
+
+                console.log(`[UNITON CONNECT] Wallet is disconnected`);
+
+                dynCall('vi', callback, [0]);
             });
         },
 
@@ -131,7 +159,37 @@ const tonConnectBridge = {
                 window.unsubscribeToStatusChange();
 
                 window.unsubscribeToStatusChange = null;
+
+                console.log(`[UNITON CONNECT] Listening wallet status change unsubscribed`)
             }
+        },
+
+        subscribeToRestoreConnection: function(callback)
+        {
+            if (!tonConnect.isAvailableSDK())
+            {
+                console.warn(`[UNITON CONNECT] Sdk is not loaded, restore connection cancelled`);
+
+                return;
+            }
+
+            window.tonConnectUI.connectionRestored.then(restored =>
+            {
+                if (restored)
+                {
+                    console.log(`[UNITON CONNECT] Wallet connection successfully restored, wallet:` +
+                        `${JSON.stringify(window.tonConnectUI.wallet)},` +
+                        `${JSON.stringify(window.tonConnectUI.walletInfo)}`);
+
+                    dynCall('vi', callback, [1]);
+
+                    return;
+                }
+
+                console.warn(`[UNITON CONNECT] Wallet connection was not restored`);
+
+                dynCall('vi', callback, [0]);
+            });
         }
     },
 
@@ -158,6 +216,11 @@ const tonConnectBridge = {
     UnSubscribeToStatusChange: function() 
     {
         tonConnect.unsubscribeToStatusChanged();
+    },
+
+    SubscribeToRestoreConnection: function(callback)
+    {
+        tonConnect.subscribeToRestoreConnection(callback);
     }
 };
 

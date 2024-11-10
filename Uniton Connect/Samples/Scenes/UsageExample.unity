@@ -3598,7 +3598,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 817907983}
   m_OnClick:
     m_PersistentCalls:
@@ -5416,8 +5416,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -1.3500977, y: 28.660156}
-  m_SizeDelta: {x: -70.92, y: 475.02}
+  m_AnchoredPosition: {x: -1.3499756, y: 28.660156}
+  m_SizeDelta: {x: -70.92, y: 431}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!222 &1482803315
 CanvasRenderer:
@@ -5477,9 +5477,9 @@ MonoBehaviour:
   m_fontSize: 50
   m_fontSizeBase: 50
   m_fontWeight: 400
-  m_enableAutoSizing: 0
-  m_fontSizeMin: 18
-  m_fontSizeMax: 72
+  m_enableAutoSizing: 1
+  m_fontSizeMin: 25
+  m_fontSizeMax: 75
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
