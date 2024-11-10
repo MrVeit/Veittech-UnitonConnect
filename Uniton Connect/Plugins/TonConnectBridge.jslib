@@ -36,8 +36,6 @@ const tonConnectBridge = {
                     return;
                 }
 
-                window.tonConnectUI.uiOptions = { twaReturnUrl: appUrl };
-
                 console.log(`[UNITON CONNECT] Sdk successfully initialized`);
 
                 dynCall('vi', callback, [1]);
@@ -54,15 +52,6 @@ const tonConnectBridge = {
         {
             try
             {
-                if (!tonConnect.isAvailableSDK())
-                {
-                    console.warn(`[UNITON CONNECT] Opening modal canceled, sdk is not initialized`);
-
-                    dynCall('vi', callback, [0]);
-
-                    return;
-                }
-
                 await window.tonConnectUI.openModal();
 
                 console.log(`[UNITON CONNECT] Modal window successfully opened`);
@@ -81,13 +70,6 @@ const tonConnectBridge = {
         {
             try
             {
-                if (!tonConnect.isAvailableSDK())
-                {
-                    console.warn(`[UNITON CONNECT] Disconnect is not available, sdk is not initialized`);
-
-                    return;
-                }
-
                 await window.tonConnectUI.disconnect();
 
                 const statusPtr = allocate(
@@ -116,6 +98,9 @@ const tonConnectBridge = {
         {
             if (!tonConnect.isAvailableSDK())
             {
+                console.warn(`[UNITON CONNECT] Sdk is not available, ` +
+                    `listening wallet connection event stopped`)
+
                 return;
             }
 
@@ -166,13 +151,6 @@ const tonConnectBridge = {
 
         subscribeToRestoreConnection: function(callback)
         {
-            if (!tonConnect.isAvailableSDK())
-            {
-                console.warn(`[UNITON CONNECT] Sdk is not loaded, restore connection cancelled`);
-
-                return;
-            }
-
             window.tonConnectUI.connectionRestored.then(restored =>
             {
                 if (restored)
