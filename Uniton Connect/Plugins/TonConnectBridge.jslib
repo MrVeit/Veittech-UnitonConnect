@@ -19,13 +19,13 @@ const tonConnectBridge = {
                     uiPreferences: { theme: THEME.DARK }
                 };
 
-                Runtime.dynCall('vi', callback, [1]);
+                dynCall('vi', callback, [1]);
             }
             catch (error)
             {
                 console.error(`[UNITON CONNECT] Failed to initialize Uniton Connect.`);
 
-                Runtime.dynCall('vi', callback, [0]);
+                dynCall('vi', callback, [0]);
             }
         },
 
@@ -35,13 +35,13 @@ const tonConnectBridge = {
             {
                 await window.tonConnectUI.openModal();
 
-                Runtime.dynCall('vi', callback, [1]);
+                dynCall('vi', callback, [1]);
 
                 console.log(`[UNITON CONNECT] Connect modal opened`);
             }
             catch (eror)
             {
-                Runtime.dynCall('vi', callback, [0]);
+                dynCall('vi', callback, [0]);
 
                 console.error(`[UNITON CONNECT] Failed to open connect modal`);
             }
@@ -56,7 +56,7 @@ const tonConnectBridge = {
                 const statusPtr = allocate(
                     intArrayFromString("200"), 'i8', ALLOC_NORMAL);
 
-                Runtime.dynCall('vi', callback, [statusPtr]);
+                dynCall('vi', callback, [statusPtr]);
 
                 _free(statusPtr);
 
@@ -67,7 +67,7 @@ const tonConnectBridge = {
                 const statusPtr = allocate(
                     intArrayFromString("500"), 'i8', ALLOC_NORMAL);
 
-                Runtime.dynCall('vi', callback, [statusPtr]);
+                dynCall('vi', callback, [statusPtr]);
 
                 _free(statusPtr);
 
@@ -100,7 +100,7 @@ const tonConnectBridge = {
                     const walletPtr = allocate(
                         intArrayFromString(walletInfo), 'i8', ALLOC_NORMAL);
 
-                    Runtime.dynCall('vi', callback, [walletPtr]);
+                    dynCall('vi', callback, [walletPtr]);
 
                     _free(walletPtr);
 
@@ -113,7 +113,7 @@ const tonConnectBridge = {
                 }
                 else
                 {
-                    Runtime.dynCall('vi', callback, [0]);
+                    dynCall('vi', callback, [0]);
 
                     console.log(`[UNITON CONNECT] Wallet disconnected.`);
                 }
