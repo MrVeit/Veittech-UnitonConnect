@@ -22,7 +22,6 @@ const tonConnectBridge = {
                 window.tonConnectUI = new TON_CONNECT_UI.TonConnectUI(
                 {
                     manifestUrl: url,
-                    uiPreferences: { theme: THEME.DARK }
                 });
 
                 console.log(`[UNITON CONNECT] Library entity state: ${window.tonConnectUI}`);
