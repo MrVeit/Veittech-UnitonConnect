@@ -1,3 +1,4 @@
+using AOT;
 using System;
 using System.Runtime.InteropServices;
 using TMPro;
@@ -8,9 +9,17 @@ namespace UnitonConnect.Core
 {
     public class TestUnitonConnectSDK : MonoBehaviour
     {
+        private static TestUnitonConnectSDK _instance;
+
         [SerializeField, Space] private Button _connectButton;
         [SerializeField] private Button _disconnectButton;
         [SerializeField, Space] private TextMeshProUGUI _dataBar;
+
+        public static Action<int> OnInitialized;
+        public static Action<int> OnModalWindowOpened;
+
+        public static Action<string> OnWalletConnected;
+        public static Action<string> OnWalletDisconnected;
 
         [DllImport("__Internal")]
         private static extern void Init(string manifestUrl,
@@ -27,6 +36,86 @@ namespace UnitonConnect.Core
 
         [DllImport("__Internal")]
         private static extern void UnSubscribeToStatusChange();
+
+        [MonoPInvokeCallback(typeof(Action<int>))]
+        private static void OnInitialize(int statusCode)
+        {
+            OnInitialized?.Invoke(statusCode);
+
+            var message = "[UNITON CONNECT] Sdk successfully initialized";
+
+            if (statusCode == 1)
+            {
+                Debug.Log(message);
+
+                _instance._dataBar.text = message;
+
+                return;
+            }
+
+            message = "[UNITON CONNECT] Failed to initialize sdk";
+
+            Debug.LogError(message);
+
+            _instance._dataBar.text = message;
+        }
+
+        [MonoPInvokeCallback(typeof(Action<int>))]
+        private static void OnModalWindowOpen(int statusCode)
+        {
+            OnModalWindowOpened?.Invoke(statusCode);
+
+            var message = "[UNITON CONNECT] Modal window for connect opened";
+
+            if (statusCode == 1)
+            {
+                Debug.Log(message);
+
+                _instance._dataBar.text = message;
+
+                return;
+            }
+
+            Debug.LogError("[UNITON CONNECT] Failed to open modal window");
+        }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnWalletConnect(string walletInfo)
+        {
+            OnWalletConnected?.Invoke(walletInfo);
+
+            if (string.IsNullOrEmpty(walletInfo) || walletInfo == "0")
+            {
+                Debug.Log("[UNITON CONNECT] Wallet is not connected");
+
+                return;
+            }
+
+            Debug.Log($"[UNITON CONNECT] Wallet successfully connected, data: {walletInfo}");
+        }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnWalletDisconnect(string statusCode)
+        {
+            OnWalletDisconnected?.Invoke(statusCode);
+
+            var message = string.Empty;
+
+            if (statusCode == "200")
+            {
+                message = "[UNITON CONNECT] Wallet successfully disconnected";
+
+                Debug.Log(message);
+            }
+            else if (statusCode == "500")
+            {
+                message = "[UNITON CONNECT] Failed to disconnect wallet";
+
+                Debug.LogError(message);
+            }
+
+            _instance._dataBar.text = message;
+        }
 
         private void OnDestroy()
         {
@@ -61,13 +150,10 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            SubscribeToStatusChange((walletData) =>
-            {
-                OnWalletStatusChanged(walletData);
-            });
+            SubscribeToStatusChange(OnWalletConnect);
 
             Init("https://mrveit.github.io/Veittech-UnitonConnect/dAppData.json",
-                "https://t.me/UnitonConnect_bot", OnInitialized);
+                "https://t.me/UnitonConnect_bot", OnInitialize);
         }
 
         public void ConnectWallet()
@@ -77,7 +163,7 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            OpenModal(OnModalWindowOpened);
+            OpenModal(OnModalWindowOpen);
         }
 
         public void DisconnectWallet()
@@ -87,7 +173,7 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            Disconnect(OnWalletDisconnected);
+            Disconnect(OnWalletDisconnect);
         }
 
         private bool IsSupportedPlatform()
@@ -99,66 +185,6 @@ namespace UnitonConnect.Core
 #endif
 
             return true;
-        }
-
-        private void OnInitialized(int statusCode)
-        {
-            var message = "[UNITON CONNECT] Sdk successfully initialized";
-
-            if (statusCode == 1)
-            {
-                Debug.Log(message);
-
-                _dataBar.text = message;
-
-                return;
-            }
-
-            message = "[UNITON CONNECT] Failed to initialize sdk";
-
-            Debug.LogError(message);
-
-            _dataBar.text = message;
-        }
-
-        private void OnModalWindowOpened(int statusCode)
-        {
-            var message = "[UNITON CONNECT] Modal window for connect opened";
-
-            if (statusCode == 1)
-            {
-                Debug.Log(message);
-
-                _dataBar.text = message;
-
-                return;
-            }
-
-            Debug.LogError("[UNITON CONNECT] Failed to open modal window");
-        }
-
-        private void OnWalletDisconnected(string status)
-        {
-            if (status == "200")
-            {
-                Debug.Log("[UNITON CONNECT] Wallet successfully disconnected");
-            }
-            else if (status == "500")
-            {
-                Debug.LogError("[UNITON CONNECT] Failed to disconnect wallet");
-            }
-        }
-
-        private void OnWalletStatusChanged(string walletInfo)
-        {
-            if (string.IsNullOrEmpty(walletInfo) || walletInfo == "0")
-            {
-                Debug.Log("[UNITON CONNECT] Wallet is not connected");
-
-                return;
-            }
-
-            Debug.Log($"[UNITON CONNECT] Wallet successfully connected, data: {walletInfo}");
         }
     }
 }

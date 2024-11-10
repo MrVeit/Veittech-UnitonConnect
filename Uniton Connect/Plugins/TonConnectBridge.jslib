@@ -58,6 +58,8 @@ const tonConnectBridge = {
 
                 Runtime.dynCall('vi', callback, [statusPtr]);
 
+                _free(statusPtr);
+
                 console.log(`[UNITON CONNECT] Wallet successfully disconnected`);
             }
             catch (eror)
@@ -66,6 +68,8 @@ const tonConnectBridge = {
                     intArrayFromString("500"), 'i8', ALLOC_NORMAL);
 
                 Runtime.dynCall('vi', callback, [statusPtr]);
+
+                _free(statusPtr);
 
                 console.error(`[UNITON CONNECT] Failed to disconnect active wallet`);
             }
@@ -83,6 +87,8 @@ const tonConnectBridge = {
                         intArrayFromString(walletInfo), 'i8', ALLOC_NORMAL);
 
                     Runtime.dynCall('vi', callback, [walletPtr]);
+
+                    _free(walletPtr);
 
                     console.log(`Parsed wallet: ${window.tonConnectUI.wallet}`);
                     console.log(`Parsed wallet info: ${window.tonConnectUI.walletInfo}`);
