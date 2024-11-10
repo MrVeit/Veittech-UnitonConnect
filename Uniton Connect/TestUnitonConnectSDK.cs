@@ -150,10 +150,10 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            SubscribeToStatusChange(OnWalletConnect);
-
             Init("https://mrveit.github.io/Veittech-UnitonConnect/dAppData.json",
                 "https://t.me/UnitonConnect_bot", OnInitialize);
+
+            SubscribeToStatusChange(OnWalletConnect);
         }
 
         public void ConnectWallet()

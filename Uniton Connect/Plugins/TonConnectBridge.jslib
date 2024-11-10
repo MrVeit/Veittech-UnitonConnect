@@ -77,6 +77,20 @@ const tonConnectBridge = {
 
         subscribeToStatusChanged: function(callback)
         {
+            if (typeof TON_CONNECT_UI === 'undefined')
+            {
+                console.error('TON_CONNECT_UI is not loaded. Ensure the script is correctly linked.');
+                
+                return;
+            }
+
+            if (!window.tonConnectUI)
+            {
+                console.error('tonConnectUI entity is not loaded. Ensure the script is correctly linked.')
+
+                return;
+            }
+
             window.unsubscribeToStatusChange = window
                 .tonConnectUI.onStatusChange((wallet) =>
             {
