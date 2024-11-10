@@ -22,6 +22,9 @@ namespace UnitonConnect.Core
         public static Action<string> OnWalletDisconnected;
         public static Action<int> OnWalletConnectionRestored;
 
+        private readonly string MANIFEST_URL = "https://mrveit.github.io/Veittech-UnitonConnect/dAppData.json";
+        private readonly string DAPP_LINK = "https://t.me/UnitonConnect_bot";
+
         [DllImport("__Internal")]
         private static extern void Init(string manifestUrl, 
             string dAppUrl, Action<int> onInitialized);
@@ -42,8 +45,8 @@ namespace UnitonConnect.Core
         private static extern void UnSubscribeToStatusChange();
 
         [DllImport("__Internal")]
-        private static extern void SubscribeToRestoreConnection(
-            Action<int> onConnectionRestored);
+        private static extern void SubscribeToRestoreConnection(string manifestUrl, 
+            string dAppUrl, Action<int> onConnectionRestored);
 
         [MonoPInvokeCallback(typeof(Action<int>))]
         private static void OnInitialize(int statusCode)
@@ -219,11 +222,10 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            Init("https://mrveit.github.io/Veittech-UnitonConnect/dAppData.json",
-                "https://t.me/UnitonConnect_bot", OnInitialize);
+            Init(MANIFEST_URL, DAPP_LINK, OnInitialize);
 
+            SubscribeToRestoreConnection(MANIFEST_URL, DAPP_LINK, OnWalletConnectionRestor);
             SubscribeToStatusChange(OnWalletConnect);
-            SubscribeToRestoreConnection(OnWalletConnectionRestor);
         }
 
         public void ConnectWallet()

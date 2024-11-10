@@ -100,8 +100,6 @@ const tonConnectBridge = {
             {
                 console.warn(`[UNITON CONNECT] Sdk is not available, ` +
                     `listening wallet connection event stopped`)
-
-                return;
             }
 
             window.unsubscribeToStatusChange = window
@@ -149,8 +147,15 @@ const tonConnectBridge = {
             }
         },
 
-        subscribeToRestoreConnection: function(callback)
+        subscribeToRestoreConnection: function(manifestUrl, dAppUrl, callback)
         {
+            if (!tonConnect.isAvailableSDK())
+            {
+                console.warn(`[UNITON CONNECT] Sdk is not initialized, start initialize`);
+
+                tonConnect.init(manifestUrl, dAppUrl, callback);
+            }
+
             window.tonConnectUI.connectionRestored.then(restored =>
             {
                 if (restored)
@@ -196,9 +201,11 @@ const tonConnectBridge = {
         tonConnect.unsubscribeToStatusChanged();
     },
 
-    SubscribeToRestoreConnection: function(callback)
+    SubscribeToRestoreConnection: function(
+        manifestUrl, dAppUrl, callback)
     {
-        tonConnect.subscribeToRestoreConnection(callback);
+        tonConnect.subscribeToRestoreConnection(
+            manifestUrl, dAppUrl, callback);
     }
 };
 
