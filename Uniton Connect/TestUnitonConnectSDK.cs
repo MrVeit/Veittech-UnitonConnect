@@ -224,8 +224,8 @@ namespace UnitonConnect.Core
 
             Init(MANIFEST_URL, DAPP_LINK, OnInitialize);
 
-            SubscribeToRestoreConnection(MANIFEST_URL, DAPP_LINK, OnWalletConnectionRestor);
             SubscribeToStatusChange(OnWalletConnect);
+            SubscribeToRestoreConnection(MANIFEST_URL, DAPP_LINK, OnWalletConnectionRestor);
         }
 
         public void ConnectWallet()

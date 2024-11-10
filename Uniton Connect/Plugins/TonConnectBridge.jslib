@@ -14,10 +14,10 @@ const tonConnectBridge = {
 
         init: function(manifestUrl, dAppUrl, callback)
         {
-            try
-            {
                 const url = UTF8ToString(manifestUrl);
                 const appUrl = UTF8ToString(dAppUrl);
+
+                console.log(`[UNITON CONNECT] Claimed init credentials, url: ${url}, appUrl: ${appUrl}`);
 
                 window.tonConnectUI = new TON_CONNECT_UI.TonConnectUI(
                 {
@@ -25,11 +25,11 @@ const tonConnectBridge = {
                     uiPreferences: { theme: THEME.DARK }
                 });
 
-                console.log(`Library entity state: ${window.tonConnectUI}`);
+                console.log(`[UNITON CONNECT] Library entity state: ${window.tonConnectUI}`);
 
                 if (!tonConnect.isAvailableSDK())
                 {
-                    console.warn(`Something wrong, library entity is not exist`);
+                    console.warn(`[UNITON CONNECT] Library entity is not exist, something wrong...`);
 
                     dynCall('vi', callback, [0]);
 
@@ -39,13 +39,6 @@ const tonConnectBridge = {
                 console.log(`[UNITON CONNECT] Sdk successfully initialized`);
 
                 dynCall('vi', callback, [1]);
-            }
-            catch (error)
-            {
-                console.error(`[UNITON CONNECT] Failed to initialize Uniton Connect.`);
-
-                dynCall('vi', callback, [0]);
-            }
         },
 
         openModal: async function(callback)
@@ -151,9 +144,11 @@ const tonConnectBridge = {
         {
             if (!tonConnect.isAvailableSDK())
             {
-                console.warn(`[UNITON CONNECT] Sdk is not initialized, start initialize`);
+                console.warn(`[UNITON CONNECT] Sdk is not initialized, restoring connection cancelled`);
 
-                tonConnect.init(manifestUrl, dAppUrl, callback);
+                dynCall('vi', callback, [0]);
+
+                return;
             }
 
             window.tonConnectUI.connectionRestored.then(restored =>
