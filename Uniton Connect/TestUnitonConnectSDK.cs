@@ -44,6 +44,8 @@ namespace UnitonConnect.Core
 
             var message = "[UNITON CONNECT] Sdk successfully initialized";
 
+            Debug.Log($"Claimed init status code: {statusCode}");
+
             if (statusCode == 1)
             {
                 Debug.Log(message);
@@ -65,10 +67,14 @@ namespace UnitonConnect.Core
         {
             OnModalWindowOpened?.Invoke(statusCode);
 
-            var message = "[UNITON CONNECT] Modal window for connect opened";
+            var message = string.Empty;
+
+            Debug.Log($"Claimed status code for opened modal: {statusCode}");
 
             if (statusCode == 1)
             {
+                message = "[UNITON CONNECT] Modal window for connect opened";
+
                 Debug.Log(message);
 
                 _instance._dataBar.text = message;
@@ -76,7 +82,11 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            Debug.LogError("[UNITON CONNECT] Failed to open modal window");
+            message = "[UNITON CONNECT] Failed to open modal window";
+
+            Debug.LogError(message);
+
+            _instance._dataBar.text = message;
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
@@ -84,14 +94,24 @@ namespace UnitonConnect.Core
         {
             OnWalletConnected?.Invoke(walletInfo);
 
+            var message = string.Empty;
+
             if (string.IsNullOrEmpty(walletInfo) || walletInfo == "0")
             {
-                Debug.Log("[UNITON CONNECT] Wallet is not connected");
+                message = "[UNITON CONNECT] Wallet is not connected";
+
+                Debug.LogWarning(message);
+
+                _instance._dataBar.text = message;
 
                 return;
             }
 
-            Debug.Log($"[UNITON CONNECT] Wallet successfully connected, data: {walletInfo}");
+            message = $"[UNITON CONNECT] Wallet successfully connected, data: {walletInfo}";
+
+            Debug.Log(message);
+
+            _instance._dataBar.text = message;
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
@@ -142,6 +162,8 @@ namespace UnitonConnect.Core
 
         public void Init()
         {
+            _instance = this;
+
             _connectButton.onClick.AddListener(ConnectWallet);
             _disconnectButton.onClick.AddListener(DisconnectWallet);
 

@@ -12,12 +12,16 @@ const tonConnectBridge = {
                     manifestUrl: url
                 });
 
+                console.log(`Lib entity state: ${window.tonConnectUI}`);
+
                 window.tonConnectUI.uiOptions =
                 {
                     twaReturnUrl: appUrl,
                     language: 'ru',
                     uiPreferences: { theme: THEME.DARK }
                 };
+
+                console.log(`[UNITON CONNECT] Sdk successfully initialized`);
 
                 dynCall('vi', callback, [1]);
             }
@@ -35,15 +39,15 @@ const tonConnectBridge = {
             {
                 await window.tonConnectUI.openModal();
 
-                dynCall('vi', callback, [1]);
-
                 console.log(`[UNITON CONNECT] Connect modal opened`);
+
+                dynCall('vi', callback, [1]);
             }
             catch (eror)
             {
-                dynCall('vi', callback, [0]);
-
                 console.error(`[UNITON CONNECT] Failed to open connect modal`);
+
+                dynCall('vi', callback, [0]);
             }
         },
 
@@ -56,22 +60,22 @@ const tonConnectBridge = {
                 const statusPtr = allocate(
                     intArrayFromString("200"), 'i8', ALLOC_NORMAL);
 
+                console.log(`[UNITON CONNECT] Wallet successfully disconnected`);
+
                 dynCall('vi', callback, [statusPtr]);
 
                 _free(statusPtr);
-
-                console.log(`[UNITON CONNECT] Wallet successfully disconnected`);
             }
             catch (eror)
             {
                 const statusPtr = allocate(
                     intArrayFromString("500"), 'i8', ALLOC_NORMAL);
 
+                console.error(`[UNITON CONNECT] Failed to disconnect active wallet`);
+
                 dynCall('vi', callback, [statusPtr]);
 
                 _free(statusPtr);
-
-                console.error(`[UNITON CONNECT] Failed to disconnect active wallet`);
             }
         },
 
@@ -100,22 +104,22 @@ const tonConnectBridge = {
                     const walletPtr = allocate(
                         intArrayFromString(walletInfo), 'i8', ALLOC_NORMAL);
 
-                    dynCall('vi', callback, [walletPtr]);
-
-                    _free(walletPtr);
-
                     console.log(`Parsed wallet: ${window.tonConnectUI.wallet}`);
                     console.log(`Parsed wallet info: ${window.tonConnectUI.walletInfo}`);
                     console.log(`Parsed account: ${window.tonConnectUI.account}`);
                     console.log(`Parsed is connected status: ${window.tonConnectUI.connected}`)
 
                     console.log(`[UNITON CONNECT] Wallet successfully connected, data: ${walletInfo}`);
+
+                    dynCall('vi', callback, [walletPtr]);
+
+                    _free(walletPtr);
                 }
                 else
                 {
-                    dynCall('vi', callback, [0]);
+                    console.log(`[UNITON CONNECT] Wallet is disconnected`);
 
-                    console.log(`[UNITON CONNECT] Wallet disconnected.`);
+                    dynCall('vi', callback, [0]);
                 }
             });
         },
