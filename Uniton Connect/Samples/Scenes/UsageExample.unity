@@ -628,18 +628,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 136500635}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 089b6779f2a023a4395870db227b144b, type: 3}
+  m_Script: {fileID: 11500000, guid: 7c6def54fa7691449a287e390fd703a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _testMode: 0
-  _debugMode: 1
-  _initializeOnAwake: 0
-  _restoreConnectionOnAwake: 1
-  _walletsListConfig:
-    SourceLink: 
-    CachedTimeToLive: 0
-  _useCachedWalletsIcons: 1
-  _supportedWallets: {fileID: 11400000, guid: b52b65440e65b3240a1721c7fb6766d5, type: 2}
+  _connectButton: {fileID: 1029599515}
+  _disconnectButton: {fileID: 817907982}
+  _dataBar: {fileID: 1482803316}
 --- !u!1 &147073027
 GameObject:
   m_ObjectHideFlags: 0
@@ -1794,7 +1788,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &515026108
 Transform:
   m_ObjectHideFlags: 0
@@ -1817,7 +1811,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 515026106}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73d6bca820c181940b9820f10f5fa4a5, type: 3}
   m_Name: 
@@ -3654,7 +3648,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 817907980}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ba6276b658673cd468fa27773118c5b2, type: 3}
   m_Name: 
@@ -4076,7 +4070,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1029599513}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5b807be4e754af943991375f05a66fce, type: 3}
   m_Name: 
@@ -4565,7 +4559,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -5869,7 +5863,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 1544404038}
   m_OnClick:
     m_PersistentCalls:
@@ -5919,7 +5913,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1544404034}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc84ff57316fd45408a9e1874bb25fd1, type: 3}
   m_Name: 
@@ -7880,7 +7874,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 2132820828}
   m_OnClick:
     m_PersistentCalls:
@@ -7930,7 +7924,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2132820825}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2935a9545dcc1104d826b767220368ee, type: 3}
   m_Name: 
