@@ -175,7 +175,7 @@ const tonConnectBridge = {
 
                 dynCall('vi', callback, [nullPtr]);
 
-                _free(nullPtr)
+                _free(nullPtr);
 
                 return;
             }
@@ -189,10 +189,15 @@ const tonConnectBridge = {
                 }]
             };
 
-            window.tonConnectUI.sendTransaction(transationData).then((result) =>
+            window.tonConnectUI.sendTransaction(transationData)
+            .then((result) =>
             {
                 console.log(`[UNITON CONNECT] Response for transaction sended, result: ${result}`);
                 console.log(`[UNITON CONNECT] Parsed transaction result: ${JSON.stringify(result)}`);
+
+                console.log(JSON.stringify(result, null, 2));
+
+                console.log(`[UNITON CONNECT] Try read boc: ${result.boc}`);
 
                 if (result && result.boc) 
                 {
