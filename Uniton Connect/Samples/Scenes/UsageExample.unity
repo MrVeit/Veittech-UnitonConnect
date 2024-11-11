@@ -634,6 +634,7 @@ MonoBehaviour:
   _connectButton: {fileID: 1029599515}
   _disconnectButton: {fileID: 817907982}
   _dataBar: {fileID: 1482803316}
+  _addressBar: {fileID: 2058162193}
 --- !u!1 &147073027
 GameObject:
   m_ObjectHideFlags: 0
@@ -5416,7 +5417,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -1.3499756, y: 28.660156}
+  m_AnchoredPosition: {x: -1.3500977, y: 28.660156}
   m_SizeDelta: {x: -70.92, y: 431}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!222 &1482803315

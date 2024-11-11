@@ -24,8 +24,6 @@ const tonConnectBridge = {
                     manifestUrl: url,
                 });
 
-                console.log(`[UNITON CONNECT] Library entity state: ${window.tonConnectUI}`);
-
                 if (!tonConnect.isAvailableSDK())
                 {
                     console.warn(`[UNITON CONNECT] Library entity is not exist, something wrong...`);
@@ -99,14 +97,10 @@ const tonConnectBridge = {
             {
                 if (wallet)
                 {
-                    const walletInfo = JSON.stringify(wallet);
+                    const walletInfo = JSON.stringify(window.tonConnectUI.account);
                     const walletPtr = allocate(
                         intArrayFromString(walletInfo), 'i8', ALLOC_NORMAL);
 
-                    console.log(`Parsed wallet: ` +
-                        `${JSON.stringify(window.tonConnectUI.wallet)}`);
-                    console.log(`Parsed wallet info: ` +
-                        `${JSON.stringify(window.tonConnectUI.walletInfo)}`);
                     console.log(`Parsed account: ` +
                         `${JSON.stringify(window.tonConnectUI.account)}`);
                     console.log(`Parsed is connected status: ` +
@@ -167,6 +161,100 @@ const tonConnectBridge = {
 
                 dynCall('vi', callback, [0]);
             });
+        },
+
+        setModalTheme: function(theme)
+        {
+            if (!tonConnect.isAvailableSDK())
+            {
+                console.warn(`[UNITON CONNECT] Sdk is not initialized, you can't install the theme right now`);
+
+                return;
+            }
+
+            var targetTheme = null;
+
+            if (theme === "Dark")
+            {
+                targetTheme = window.tonConnectUI.THEME.DARK;
+            }
+            else if (theme === "Light")
+            {
+                targetTheme = window.tonConnectUI.THEME.LIGHT;
+            }
+            else
+            {
+                targetTheme = 'SYSTEM';
+            }
+
+            window.tonConnectUI.uiOptions =
+            {
+                uiPreferences: 
+                {
+                    theme: targetTheme
+                }
+            };
+
+            console.log(`[UNITON CONNECT] Modal window theme changed to: ${targetTheme.toString()}`);
+        },
+
+        sendTransaction: async function(nanoInTon, 
+            recipientAddress, callback)
+        {
+            const transationData = 
+            {
+                messages: [
+                    {
+                        address: recipientAddress,
+                        amount: nanoInTon
+                    }
+                ]
+            }
+
+            try
+            {
+                if (!tonConnect.isAvailableSDK())
+                {
+                    console.warn(`[UNITON CONNECT] Sdk is not initialized, sending transactions not available`);
+
+                    return;
+                }
+                
+                const result = await window.tonConnectUI.sendTransaction(transationData);
+
+                console.log(`[UNITON CONNECT] Transaction sent successfully`);
+
+                if (result) 
+                {
+                    const bocPtr = allocate(intArrayFromString(result.boc || ""), 'i8', ALLOC_NORMAL);
+
+                    console.log(`[UNITON CONNECT] Transaction sent successfully, BOC: ${result.boc}`);
+
+                    dynCall('vi', callback, [bocPtr]);
+
+                    _free(bocPtr);
+                } 
+                else 
+                {
+                    const emptyPtr = allocate(intArrayFromString(""), 'i8', ALLOC_NORMAL);
+
+                    console.error(`[UNITON CONNECT] Transaction sent but no BOC returned`);
+
+                    dynCall('vi', callback, [emptyPtr]);
+
+                    _free(emptyPtr);
+                }
+            }
+            catch (error)
+            {
+                console.error(`[UNITON CONNECT] Failed to send transaction: ${error.message}`);
+
+                const nullPtr = allocate(intArrayFromString("null"), 'i8', ALLOC_NORMAL);
+
+                dynCall('vi', callback, [nullPtr]);
+
+                _free(nullPtr);
+            }
         }
     },
 
@@ -200,6 +288,16 @@ const tonConnectBridge = {
     {
         tonConnect.subscribeToRestoreConnection(
             manifestUrl, dAppUrl, callback);
+    },
+
+    SetModalTheme: function(theme)
+    {
+        setModalTheme(theme);
+    },
+
+    SendTransaction: function(nanoInTon, recipientAddress, callback)
+    {
+        sendTransaction(nanoInTon, recipientAddress, callback);
     }
 };
 

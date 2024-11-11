@@ -1,7 +1,13 @@
 using System;
 using System.Runtime.InteropServices;
 using AOT;
+using Newtonsoft.Json;
 using TMPro;
+using TonSdk.Connect;
+using TonSdk.Core;
+using UnitonConnect.Core.Data;
+using UnitonConnect.Core.Utils;
+using UnitonConnect.Core.Utils.View;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,6 +20,7 @@ namespace UnitonConnect.Core
         [SerializeField, Space] private Button _connectButton;
         [SerializeField] private Button _disconnectButton;
         [SerializeField, Space] private TextMeshProUGUI _dataBar;
+        [SerializeField] private TextMeshProUGUI _addressBar;
 
         public static Action<int> OnInitialized;
         public static Action<int> OnModalWindowOpened;
@@ -22,8 +29,12 @@ namespace UnitonConnect.Core
         public static Action<string> OnWalletDisconnected;
         public static Action<int> OnWalletConnectionRestored;
 
+        public static Action<string> OnTransactionSended;
+
         private readonly string MANIFEST_URL = "https://mrveit.github.io/Veittech-UnitonConnect/dAppData.json";
         private readonly string DAPP_LINK = "https://t.me/UnitonConnect_bot";
+
+        private ConnectedWalletConfigData _walletConfig;
 
         [DllImport("__Internal")]
         private static extern void Init(string manifestUrl, 
@@ -38,6 +49,13 @@ namespace UnitonConnect.Core
             Action<string> onWalletDisconnected);
 
         [DllImport("__Internal")]
+        private static extern void SetModalTheme(string theme);
+
+        [DllImport("__Internal")]
+        private static extern void SendTransaction(string nanoTons,
+            string recipientAddress, Action<string> onTransactionSended);
+
+        [DllImport("__Internal")]
         private static extern void SubscribeToStatusChange(
             Action<string> onWalletConnected);
 
@@ -47,6 +65,31 @@ namespace UnitonConnect.Core
         [DllImport("__Internal")]
         private static extern void SubscribeToRestoreConnection(string manifestUrl, 
             string dAppUrl, Action<int> onConnectionRestored);
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnTransactionSend(string result)
+        {
+            OnTransactionSended?.Invoke(result);
+
+            var message = "[UNITON CONNECT] Transaction sended";
+
+            if (string.IsNullOrEmpty(result))
+            {
+                message = $"[UNITON CONNECT] Transaction sended with eror: {result}";
+
+                Debug.LogError(message);
+
+                _instance._dataBar.text = message;
+
+                return;
+            }
+
+            message = $"[UNITON CONNECT] Transaction successfully sended, boc: {result}";
+
+            Debug.Log(message);
+
+            _instance._dataBar.text = result;
+        }
 
         [MonoPInvokeCallback(typeof(Action<int>))]
         private static void OnInitialize(int statusCode)
@@ -62,6 +105,8 @@ namespace UnitonConnect.Core
                 Debug.Log(message);
 
                 _instance._dataBar.text = message;
+
+                SetModalTheme(ModalWindowThemes.Dark.ToString());
 
                 return;
             }
@@ -162,6 +207,23 @@ namespace UnitonConnect.Core
 
             _instance._disconnectButton.interactable = true;
             _instance._connectButton.interactable = false;
+
+            _instance._walletConfig = JsonConvert.DeserializeObject<ConnectedWalletConfigData>(walletInfo);
+
+            var address = WalletConnectUtils.GetBounceableAddress(_instance._walletConfig.Address);
+
+            var shortWalletAddress = WalletVisualUtils.ProcessWalletAddress(address, 6);
+
+            _instance._addressBar.text = address;
+
+            var recepientAddress = "UQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4Ursw6";
+            var bouceableAddress = WalletConnectUtils.GetBounceableAddress(recepientAddress);
+
+            decimal amount = (decimal)0.001;
+
+            var tonInNanotons = UserAssetsUtils.ToNanoton(amount);
+
+            SendTransaction(tonInNanotons.ToString(), bouceableAddress, OnTransactionSend);
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
