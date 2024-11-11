@@ -19,6 +19,7 @@ namespace UnitonConnect.Core
 
         [SerializeField, Space] private Button _connectButton;
         [SerializeField] private Button _disconnectButton;
+        [SerializeField, Space] private Button _sendTonButton;
         [SerializeField, Space] private TextMeshProUGUI _dataBar;
         [SerializeField] private TextMeshProUGUI _addressBar;
 
@@ -106,7 +107,7 @@ namespace UnitonConnect.Core
 
                 _instance._dataBar.text = message;
 
-                SetModalTheme(ModalWindowThemes.Dark.ToString());
+                SetModalTheme($"{ModalWindowThemes.Dark}");
 
                 return;
             }
@@ -164,6 +165,7 @@ namespace UnitonConnect.Core
 
                 _instance._disconnectButton.interactable = true;
                 _instance._connectButton.interactable = false;
+                _instance._sendTonButton.interactable = true;
 
                 return;
             }
@@ -176,6 +178,7 @@ namespace UnitonConnect.Core
 
             _instance._disconnectButton.interactable = false;
             _instance._connectButton.interactable = true;
+            _instance._sendTonButton.interactable = false;
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
@@ -195,6 +198,7 @@ namespace UnitonConnect.Core
 
                 _instance._disconnectButton.interactable = false;
                 _instance._connectButton.interactable = true;
+                _instance._sendTonButton.interactable = false;
 
                 return;
             }
@@ -207,23 +211,19 @@ namespace UnitonConnect.Core
 
             _instance._disconnectButton.interactable = true;
             _instance._connectButton.interactable = false;
+            _instance._sendTonButton.interactable = true;
 
             _instance._walletConfig = JsonConvert.DeserializeObject<ConnectedWalletConfigData>(walletInfo);
 
             var address = WalletConnectUtils.GetBounceableAddress(_instance._walletConfig.Address);
 
+            Debug.Log($"Parsed connected wallet address: {address}");
+
             var shortWalletAddress = WalletVisualUtils.ProcessWalletAddress(address, 6);
 
+            Debug.Log($"Parsed short address: {shortWalletAddress}");
+
             _instance._addressBar.text = address;
-
-            var recepientAddress = "UQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4Ursw6";
-            var bouceableAddress = WalletConnectUtils.GetBounceableAddress(recepientAddress);
-
-            decimal amount = (decimal)0.001;
-
-            var tonInNanotons = UserAssetsUtils.ToNanoton(amount);
-
-            SendTransaction(tonInNanotons.ToString(), bouceableAddress, OnTransactionSend);
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
@@ -263,6 +263,7 @@ namespace UnitonConnect.Core
         {
             _connectButton.onClick.RemoveListener(ConnectWallet);
             _disconnectButton.onClick.RemoveListener(DisconnectWallet);
+            _sendTonButton.onClick.RemoveListener(SendTon);
 
             if (!IsSupportedPlatform())
             {
@@ -272,12 +273,29 @@ namespace UnitonConnect.Core
             UnSubscribeToStatusChange();
         }
 
+        private void SendTon()
+        {
+            var recepientAddress = "UQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4Ursw6";
+            var bouceableAddress = WalletConnectUtils.GetBounceableAddress(recepientAddress);
+
+            decimal amount = (decimal)0.001f;
+
+            var tonInNanotons = UserAssetsUtils.ToNanoton(amount).ToString();
+
+            Debug.Log($"Data for transaction: recepient: {bouceableAddress}, amount: {tonInNanotons}");
+
+            SendTransaction(tonInNanotons, bouceableAddress, OnTransactionSend);
+
+            Debug.Log($"Transaction sended");
+        }
+
         public void Init()
         {
             _instance = this;
 
             _connectButton.onClick.AddListener(ConnectWallet);
             _disconnectButton.onClick.AddListener(DisconnectWallet);
+            _sendTonButton.onClick.AddListener(SendTon);
 
             if (!IsSupportedPlatform())
             {

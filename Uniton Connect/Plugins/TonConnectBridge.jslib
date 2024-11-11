@@ -172,13 +172,15 @@ const tonConnectBridge = {
                 return;
             }
 
+            console.log(`[UNITON CONNECT] Claimed theme: ${theme}`);
+
             var targetTheme = null;
 
-            if (theme === "Dark")
+            if (UTF8ToString(theme) === "Dark")
             {
                 targetTheme = window.tonConnectUI.THEME.DARK;
             }
-            else if (theme === "Light")
+            else if (UTF8ToString(theme) === "Light")
             {
                 targetTheme = window.tonConnectUI.THEME.LIGHT;
             }
@@ -203,13 +205,9 @@ const tonConnectBridge = {
         {
             const transationData = 
             {
-                messages: [
-                    {
-                        address: recipientAddress,
-                        amount: nanoInTon
-                    }
-                ]
-            }
+                messages: [{ address: UTF8ToString(recipientAddress), 
+                    amount: UTF8ToString(nanoInTon) }]
+            };
 
             try
             {
