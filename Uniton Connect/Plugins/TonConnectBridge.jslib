@@ -292,12 +292,12 @@ const tonConnectBridge = {
 
     SetModalTheme: function(theme)
     {
-        setModalTheme(theme);
+        tonConnect.setModalTheme(theme);
     },
 
     SendTransaction: function(nanoInTon, recipientAddress, callback)
     {
-        sendTransaction(nanoInTon, recipientAddress, callback);
+        tonConnect.sendTransaction(nanoInTon, recipientAddress, callback);
     }
 };
 
