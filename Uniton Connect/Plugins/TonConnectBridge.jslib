@@ -187,6 +187,7 @@ const tonConnectBridge = {
                 const result = await window.tonConnectUI.sendTransaction(transationData);
 
                 console.log(`[UNITON CONNECT] Response for transaction sended, result: ${result}`);
+                console.log(`[UNITON CONNECT] Parsed transaction result: ${JSON.stringify(result)}`);
 
                 if (result) 
                 {
