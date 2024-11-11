@@ -169,8 +169,10 @@ const tonConnectBridge = {
             const transationData = 
             {
                 validUntil: Math.floor(Date.now() / 1000) + 60,
-                messages: [{ address: UTF8ToString(recipientAddress), 
-                    amount: UTF8ToString(nanoInTon) }]
+                messages: [{ 
+                    address: UTF8ToString(recipientAddress), 
+                    amount: UTF8ToString(nanoInTon) 
+                }]
             };
 
             try
@@ -184,7 +186,7 @@ const tonConnectBridge = {
                 
                 const result = await window.tonConnectUI.sendTransaction(transationData);
 
-                console.log(`[UNITON CONNECT] Response for transaction sended`);
+                console.log(`[UNITON CONNECT] Response for transaction sended, result: ${result}`);
 
                 if (result) 
                 {
@@ -201,7 +203,7 @@ const tonConnectBridge = {
 
                 const emptyPtr = allocate(intArrayFromString(""), 'i8', ALLOC_NORMAL);
 
-                console.error(`[UNITON CONNECT] Transaction sent but no BOC returned`);
+                console.error(`[UNITON CONNECT] Transaction sent, but no BOC returned`);
 
                 dynCall('vi', callback, [emptyPtr]);
 
@@ -209,7 +211,7 @@ const tonConnectBridge = {
             }
             catch (error)
             {
-                console.error(`[UNITON CONNECT] Failed to send transaction: ${error.message}`);
+                console.error(`[UNITON CONNECT] Failed to send transaction, reason: ${error.message}`);
 
                 const nullPtr = allocate(intArrayFromString("null"), 'i8', ALLOC_NORMAL);
 
