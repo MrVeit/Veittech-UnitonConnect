@@ -288,13 +288,6 @@ namespace UnitonConnect.Core.Utils
 
         private static Address GetAddress(string walletAddress)
         {
-            if (!_unitonConnect.IsWalletConnected)
-            {
-                UnitonConnectLogger.LogWarning("Wallet is not connected");
-
-                return null;
-            }
-
             var address = new Address(walletAddress);
 
             return address;

@@ -2,17 +2,8 @@ using Newtonsoft.Json;
 
 namespace UnitonConnect.Core.Data
 {
-    public struct ConnectedWalletConfigData
+    public sealed class ConnectedWalletConfigData
     {
-        public ConnectedWalletConfigData(string address, 
-            string chain, string stateInit, string publicKey)
-        {
-            Address = address;
-            Chain = chain;
-            StateInit = stateInit;
-            PublicKey = publicKey;
-        }
-
         [JsonProperty("address")]
         public string Address { get; set; }
 

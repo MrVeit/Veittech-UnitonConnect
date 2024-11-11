@@ -198,7 +198,7 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            message = $"[UNITON CONNECT] Wallet successfully connected, data: {walletInfo}";
+            message = $"[UNITON CONNECT] Wallet successfully connected";
 
             Debug.Log(message);
 
@@ -210,15 +210,24 @@ namespace UnitonConnect.Core
 
             _instance._walletConfig = JsonConvert.DeserializeObject<ConnectedWalletConfigData>(walletInfo);
 
+            if (_instance._walletConfig == null)
+            {
+                Debug.LogWarning("Wallet config is null after connect");
+            }
+
+            Debug.Log($"Parsed address: {_instance._walletConfig.Address}");
+
             var address = WalletConnectUtils.GetBounceableAddress(_instance._walletConfig.Address);
 
             Debug.Log($"Parsed connected wallet address: {address}");
+
+            _instance._addressBar.text = address;
 
             var shortWalletAddress = WalletVisualUtils.ProcessWalletAddress(address, 6);
 
             Debug.Log($"Parsed short address: {shortWalletAddress}");
 
-            _instance._addressBar.text = address;
+            _instance._addressBar.text = shortWalletAddress;
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
