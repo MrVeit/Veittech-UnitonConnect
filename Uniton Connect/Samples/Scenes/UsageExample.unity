@@ -633,6 +633,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _connectButton: {fileID: 1029599515}
   _disconnectButton: {fileID: 817907982}
+  _sendTonButton: {fileID: 2132820827}
   _dataBar: {fileID: 1482803316}
   _addressBar: {fileID: 2058162193}
 --- !u!1 &147073027
