@@ -163,9 +163,23 @@ const tonConnectBridge = {
             });
         },
 
-        sendTransaction: async function(nanoInTon, 
+        sendTransaction: function(nanoInTon, 
             recipientAddress, callback)
         {
+            if (!tonConnect.isAvailableSDK())
+            {
+                console.warn(`[UNITON CONNECT] Sdk is not initialized,` +
+                    `sending transactions not available`);
+
+                const nullPtr = allocate(intArrayFromString("null"), 'i8', ALLOC_NORMAL);
+
+                dynCall('vi', callback, [nullPtr]);
+
+                _free(nullPtr)
+
+                return;
+            }
+
             const transationData = 
             {
                 validUntil: Math.floor(Date.now() / 1000) + 60,
@@ -175,23 +189,14 @@ const tonConnectBridge = {
                 }]
             };
 
-            try
+            window.tonConnectUI.sendTransaction(transationData).then((result) =>
             {
-                if (!tonConnect.isAvailableSDK())
-                {
-                    console.warn(`[UNITON CONNECT] Sdk is not initialized, sending transactions not available`);
-
-                    return;
-                }
-                
-                const result = await window.tonConnectUI.sendTransaction(transationData);
-
                 console.log(`[UNITON CONNECT] Response for transaction sended, result: ${result}`);
                 console.log(`[UNITON CONNECT] Parsed transaction result: ${JSON.stringify(result)}`);
 
-                if (result) 
+                if (result && result.boc) 
                 {
-                    const bocPtr = allocate(intArrayFromString(result.boc || ""), 'i8', ALLOC_NORMAL);
+                    const bocPtr = allocate(intArrayFromString(result.boc), 'i8', ALLOC_NORMAL);
 
                     console.log(`[UNITON CONNECT] Transaction sent successfully, BOC: ${result.boc}`);
 
@@ -200,7 +205,7 @@ const tonConnectBridge = {
                     _free(bocPtr);
 
                     return;
-                } 
+                }
 
                 const emptyPtr = allocate(intArrayFromString(""), 'i8', ALLOC_NORMAL);
 
@@ -209,17 +214,18 @@ const tonConnectBridge = {
                 dynCall('vi', callback, [emptyPtr]);
 
                 _free(emptyPtr);
-            }
-            catch (error)
+            })
+            .catch((error) =>
             {
-                console.error(`[UNITON CONNECT] Failed to send transaction, reason: ${error.message}`);
+                console.error(`[UNITON CONNECT] Failed to send transaction: ${error.message}`);
 
-                const nullPtr = allocate(intArrayFromString("null"), 'i8', ALLOC_NORMAL);
+                const errorPtr = allocate(intArrayFromString(
+                    error.message || "Transaction failed"), 'i8', ALLOC_NORMAL);
 
-                dynCall('vi', callback, [nullPtr]);
+                dynCall('vi', callback, [errorPtr]);
 
-                _free(nullPtr);
-            }
+                _free(errorPtr);
+            });
         }
     },
 
