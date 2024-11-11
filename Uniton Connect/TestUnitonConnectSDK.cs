@@ -50,9 +50,6 @@ namespace UnitonConnect.Core
             Action<string> onWalletDisconnected);
 
         [DllImport("__Internal")]
-        private static extern void SetModalTheme(string theme);
-
-        [DllImport("__Internal")]
         private static extern void SendTransaction(string nanoTons,
             string recipientAddress, Action<string> onTransactionSended);
 
@@ -106,8 +103,6 @@ namespace UnitonConnect.Core
                 Debug.Log(message);
 
                 _instance._dataBar.text = message;
-
-                SetModalTheme($"{ModalWindowThemes.Dark}");
 
                 return;
             }

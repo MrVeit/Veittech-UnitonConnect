@@ -163,48 +163,12 @@ const tonConnectBridge = {
             });
         },
 
-        setModalTheme: function(theme)
-        {
-            if (!tonConnect.isAvailableSDK())
-            {
-                console.warn(`[UNITON CONNECT] Sdk is not initialized, you can't install the theme right now`);
-
-                return;
-            }
-
-            console.log(`[UNITON CONNECT] Claimed theme: ${theme}`);
-
-            var targetTheme = null;
-
-            if (UTF8ToString(theme) === "Dark")
-            {
-                targetTheme = window.tonConnectUI.THEME.DARK;
-            }
-            else if (UTF8ToString(theme) === "Light")
-            {
-                targetTheme = window.tonConnectUI.THEME.LIGHT;
-            }
-            else
-            {
-                targetTheme = 'SYSTEM';
-            }
-
-            window.tonConnectUI.uiOptions =
-            {
-                uiPreferences: 
-                {
-                    theme: targetTheme
-                }
-            };
-
-            console.log(`[UNITON CONNECT] Modal window theme changed to: ${targetTheme.toString()}`);
-        },
-
         sendTransaction: async function(nanoInTon, 
             recipientAddress, callback)
         {
             const transationData = 
             {
+                validUntil: Math.floor(Date.now() / 1000) + 60,
                 messages: [{ address: UTF8ToString(recipientAddress), 
                     amount: UTF8ToString(nanoInTon) }]
             };
@@ -220,7 +184,7 @@ const tonConnectBridge = {
                 
                 const result = await window.tonConnectUI.sendTransaction(transationData);
 
-                console.log(`[UNITON CONNECT] Transaction sent successfully`);
+                console.log(`[UNITON CONNECT] Response for transaction sended`);
 
                 if (result) 
                 {
@@ -231,17 +195,17 @@ const tonConnectBridge = {
                     dynCall('vi', callback, [bocPtr]);
 
                     _free(bocPtr);
+
+                    return;
                 } 
-                else 
-                {
-                    const emptyPtr = allocate(intArrayFromString(""), 'i8', ALLOC_NORMAL);
 
-                    console.error(`[UNITON CONNECT] Transaction sent but no BOC returned`);
+                const emptyPtr = allocate(intArrayFromString(""), 'i8', ALLOC_NORMAL);
 
-                    dynCall('vi', callback, [emptyPtr]);
+                console.error(`[UNITON CONNECT] Transaction sent but no BOC returned`);
 
-                    _free(emptyPtr);
-                }
+                dynCall('vi', callback, [emptyPtr]);
+
+                _free(emptyPtr);
             }
             catch (error)
             {
@@ -286,11 +250,6 @@ const tonConnectBridge = {
     {
         tonConnect.subscribeToRestoreConnection(
             manifestUrl, dAppUrl, callback);
-    },
-
-    SetModalTheme: function(theme)
-    {
-        tonConnect.setModalTheme(theme);
     },
 
     SendTransaction: function(nanoInTon, recipientAddress, callback)
