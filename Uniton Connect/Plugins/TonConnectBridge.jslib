@@ -177,7 +177,7 @@ const tonConnectBridge = {
             });
         },
 
-        isValidBase64(str)
+        isValidBase64: function(str)
         {
             try
             {
@@ -189,7 +189,7 @@ const tonConnectBridge = {
             }
         },
 
-        handleTransactionError(error, callback)
+        handleTransactionError: function(error, callback)
         {
             console.error(`[UNITON CONNECT] Failed to validate transaction:` +
                 `${error.message || 'UNKNOWN ERROR'}`);
@@ -245,7 +245,13 @@ const tonConnectBridge = {
 
                 if (!Array.isArray(bocBytes) || bocBytes.length === 0)
                 {
-                    throw new Error(`Invalid BOC data: empty or not an array`);
+                    const emptyPtr = allocate(intArrayFromString("INVALID_BOC"), 'i8', ALLOC_NORMAL);
+
+                    console.error(`[UNITON CONNECT] Invalid BOC data: empty or not an array`);
+
+                    dynCall('vi', callback, [emptyPtr]);
+
+                    _free(emptyPtr);
 
                     return;
                 }
@@ -255,7 +261,13 @@ const tonConnectBridge = {
 
                 if (!tonConnect.isValidBase64(hashBase64))
                 {
-                    throw new Error(`Invalid Base64 hash result`);
+                    const emptyPtr = allocate(intArrayFromString("INVALID_HASH"), 'i8', ALLOC_NORMAL);
+
+                    console.error(`[UNITON CONNECT] Invalid Base64 hash result`);
+
+                    dynCall('vi', callback, [emptyPtr]);
+
+                    _free(emptyPtr);
 
                     return;
                 }
