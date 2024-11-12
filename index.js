@@ -56,7 +56,7 @@ window.addEventListener("load", function ()
   var loaderUrl = buildUrl + "/Veittech-UnitonConnect-WebPage.loader.js";
   var config = {
     dataUrl: buildUrl + "/ef3d2527457c0eebbe20893ac8332c34.data.unityweb",
-    frameworkUrl: buildUrl + "/80202ab661be675b56982cf79aebf44a.js.unityweb",
+    frameworkUrl: buildUrl + "/7ddb5a0a867205aa953b47929494f0c4.js.unityweb",
     codeUrl: buildUrl + "/3c45b0536547d3b10a7398e018f9f3e9.wasm.unityweb",
     streamingAssetsUrl: "StreamingAssets",
     companyName: "Veittech",
