@@ -203,14 +203,16 @@ const tonConnectBridge = {
 
             var transactionData;
 
+            console.log(`Parsed transacions nanotons: ${nanoInTon}, address: ${recipientAddress}`);
+
             if (!messagePayload || messagePayload === "CLEAR")
             {
                 transactionData = {
                     validUntil: Math.floor(Date.now() / 1000) + 60,
                     messages: [
                     {  
-                        address: UTF8ToString(recipientAddress), 
-                        amount: UTF8ToString(nanoInTon)
+                        address: recipientAddress, 
+                        amount: nanoInTon
                     }
                 ]};
 
@@ -234,8 +236,8 @@ const tonConnectBridge = {
                 validUntil: Math.floor(Date.now() / 1000) + 60,
                 messages: [
                 {  
-                    address: UTF8ToString(recipientAddress), 
-                    amount: UTF8ToString(nanoInTon),
+                    address: recipientAddress, 
+                    amount: nanoInTon,
                     payload: payload
                 }
             ]};
@@ -261,8 +263,12 @@ const tonConnectBridge = {
             }
 
             const tonWeb = window.tonWeb;
+
+            const nanotons = UTF8ToString(nanoInTon);
+            const address = UTF8ToString(recipientAddress);
+
             const transactionData = await tonConnect.getTransactionPayload(
-                nanoInTon, recipientAddress, message);
+                nanotons, address, message);
 
             try
             {
