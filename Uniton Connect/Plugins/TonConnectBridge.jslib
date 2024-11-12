@@ -177,18 +177,6 @@ const tonConnectBridge = {
             });
         },
 
-        isValidBase64: function(str)
-        {
-            try
-            {
-                return btoa(atob(str)) === str;
-            }
-            catch (error)
-            {
-                return false;
-            }
-        },
-
         handleTransactionError: function(error, callback)
         {
             console.error(`[UNITON CONNECT] Failed to validate transaction:` +
@@ -256,39 +244,11 @@ const tonConnectBridge = {
 
                 console.log(`[UNITON CONNECT] Parsed boc bytes: ${bocBytes}`);
 
-                if (!Array.isArray(bocBytes) || bocBytes.length === 0)
-                {
-                    const emptyPtr = allocate(intArrayFromString("INVALID_BOC"), 'i8', ALLOC_NORMAL);
-
-                    console.error(`[UNITON CONNECT] Invalid BOC data: empty or not an array: ${bocBytes}`);
-
-                    dynCall('vi', callback, [emptyPtr]);
-
-                    _free(emptyPtr);
-
-                    return;
-                }
-
-                const bocCellBytes = tonWeb.boc.Cell.oneFromBoc(bocBytes).hash();
+                const bocCellBytes = await tonWeb.boc.Cell.oneFromBoc(bocBytes).hash();
 
                 console.log(`[UNITON CONNECT] Parsed boc cell bytes: ${bocCellBytes}`);
 
                 const hashBase64 = tonWeb.utils.bytesToBase64(bocCellBytes);
-
-                console.log(`[UNITON CONNECT] Parsed base64 hash: ${hashBase64}`);
-
-                if (!tonConnect.isValidBase64(hashBase64))
-                {
-                    const emptyPtr = allocate(intArrayFromString("INVALID_HASH"), 'i8', ALLOC_NORMAL);
-
-                    console.error(`[UNITON CONNECT] Invalid Base64 hash result: ${hashBase64}`);
-
-                    dynCall('vi', callback, [emptyPtr]);
-
-                    _free(emptyPtr);
-
-                    return;
-                }
 
                 console.log(`[UNITON CONNECT] Parsed transaction hash: ${hashBase64}`);
 
