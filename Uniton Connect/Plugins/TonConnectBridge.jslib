@@ -225,7 +225,11 @@ const tonConnectBridge = {
 
             try
             {
-                const result = await window.tonConnectUI.sendTransaction(transactionData);
+                const result = await window.tonConnectUI.sendTransaction(transactionData, 
+                {
+                    modals: ['before', 'success', 'error'],
+                    notifications: ['before', 'success', 'error']
+                });
             
                 if (!result || !result.boc)
                 {
@@ -240,14 +244,23 @@ const tonConnectBridge = {
                     return;
                 }
 
+                console.log(`[UNITON CONNECT] Parsed boc after send transaction: ${result.boc}`);
+
                 const tonWeb = window.tonWeb;
-                const bocBytes = tonWeb.utils.base64ToBytes(result.boc);
+                
+                let claimedBoc = result.boc;
+
+                console.log(`[UNITON CONNECT] Boc after send transaction: ${claimedBoc}`);
+
+                const bocBytes = tonWeb.utils.base64ToBytes(claimedBoc);
+
+                console.log(`[UNITON CONNECT] Parsed boc bytes: ${bocBytes}`);
 
                 if (!Array.isArray(bocBytes) || bocBytes.length === 0)
                 {
                     const emptyPtr = allocate(intArrayFromString("INVALID_BOC"), 'i8', ALLOC_NORMAL);
 
-                    console.error(`[UNITON CONNECT] Invalid BOC data: empty or not an array`);
+                    console.error(`[UNITON CONNECT] Invalid BOC data: empty or not an array: ${bocBytes}`);
 
                     dynCall('vi', callback, [emptyPtr]);
 
@@ -257,13 +270,18 @@ const tonConnectBridge = {
                 }
 
                 const bocCellBytes = tonWeb.boc.Cell.oneFromBoc(bocBytes).hash();
+
+                console.log(`[UNITON CONNECT] Parsed boc cell bytes: ${bocCellBytes}`);
+
                 const hashBase64 = tonWeb.utils.bytesToBase64(bocCellBytes);
+
+                console.log(`[UNITON CONNECT] Parsed base64 hash: ${hashBase64}`);
 
                 if (!tonConnect.isValidBase64(hashBase64))
                 {
                     const emptyPtr = allocate(intArrayFromString("INVALID_HASH"), 'i8', ALLOC_NORMAL);
 
-                    console.error(`[UNITON CONNECT] Invalid Base64 hash result`);
+                    console.error(`[UNITON CONNECT] Invalid Base64 hash result: ${hashBase64}`);
 
                     dynCall('vi', callback, [emptyPtr]);
 
