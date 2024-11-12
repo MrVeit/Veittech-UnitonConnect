@@ -70,6 +70,24 @@ const tonConnectBridge = {
             }
         },
 
+        closeModal: function(callback)
+        {
+            try
+            {
+                window.tonConnectUI.closeModal();
+
+                console.log(`[UNITON CONNECT] Modal window successfully closed`);
+
+                dynCall('vi', callback, [1]);
+            }
+            catch (eror)
+            {
+                console.error(`[UNITON CONNECT] Failed to close modal window`);
+
+                dynCall('vi', callback, [0]);
+            }
+        },
+
         disconnect: async function(callback)
         {
             try
@@ -177,20 +195,57 @@ const tonConnectBridge = {
             });
         },
 
-        handleTransactionError: function(error, callback)
+        getTransactionPayload: async function(nanoInTon, 
+            recipientAddress, message)
         {
-            console.error(`[UNITON CONNECT] Failed to validate transaction:` +
-                `${error.message || 'UNKNOWN ERROR'}`);
+            const tonWeb = window.tonWeb;
 
-            const errorPtr = allocate(intArrayFromString(
-                error.message || "Transaction failed"), 'i8', ALLOC_NORMAL);
-            
-            dynCall('vi', callback, [errorPtr]);
+            var transactionData;
 
-            _free(errorPtr);
+            if (!message || message === "CLEAR")
+            {
+                transactionData = {
+                    validUntil: Math.floor(Date.now() / 1000) + 60,
+                    messages: [
+                    {  
+                        address: UTF8ToString(recipientAddress), 
+                        amount: UTF8ToString(nanoInTon)
+                    }
+                ]};
+
+                console.log(`[UNITON CONNECT] Created payload without message`);
+
+                return transactionData;
+            }
+
+            let cellBuilder = tonWeb.boc.Cell();
+
+            cellBuilder.bits.writeUint(0, 32);
+            cellBuilder.bits.writeString(message);
+                
+            let newBoc = await cellBuilder.toBoc();
+
+            console.log(`[UNITON CONNECT] Created transaction payload boc: ${newBoc}`);
+
+            let payload = tonWeb.utils.bytesToBase64(newBoc);
+
+            console.log(`[UNITON CONNECT] Created transaction message payload: ${payload}`);
+
+            transactionData = {
+                validUntil: Math.floor(Date.now() / 1000) + 60,
+                messages: [
+                {  
+                    address: UTF8ToString(recipientAddress), 
+                    amount: UTF8ToString(nanoInTon),
+                    payload: payload
+                }
+            ]};
+
+            return transactionData;
         },
 
-        sendTransaction: async function(nanoInTon, recipientAddress, callback) 
+        sendTransaction: async function(nanoInTon, 
+            recipientAddress, message, callback) 
         {
             if (!tonConnect.isAvailableSDK()) 
             {
@@ -204,12 +259,9 @@ const tonConnectBridge = {
                 return;
             }
 
-            const transactionData = {
-                validUntil: Math.floor(Date.now() / 1000) + 60,
-                messages: [{ 
-                    address: UTF8ToString(recipientAddress), 
-                    amount: UTF8ToString(nanoInTon) 
-            }]};
+            const tonWeb = window.tonWeb;
+            const transactionData = await tonConnect.getTransactionPayload(
+                nanoInTon, recipientAddress, message);
 
             try
             {
@@ -233,8 +285,6 @@ const tonConnectBridge = {
                 }
 
                 console.log(`[UNITON CONNECT] Parsed boc after send transaction: ${result.boc}`);
-
-                const tonWeb = window.tonWeb;
                 
                 let claimedBoc = result.boc;
 
@@ -260,7 +310,13 @@ const tonConnectBridge = {
             }
             catch (error)
             {
-                tonConnect.handleTransactionError(error, callback);
+                console.error(`[UNITON CONNECT] Failed to validate transaction, reason: ${error.message}`);
+
+                const errorPtr = allocate(intArrayFromString(""), 'i8', ALLOC_NORMAL);
+            
+                dynCall('vi', callback, [errorPtr]);
+
+                _free(errorPtr);
             }
         }
     },
@@ -278,6 +334,11 @@ const tonConnectBridge = {
     OpenModal: function(callback)
     {
         tonConnect.openModal(callback);
+    },
+
+    CloseModal: function(callback)
+    {
+        tonConnect.closeModal(callback);
     },
 
     Disconnect: function(callback)
@@ -304,7 +365,13 @@ const tonConnectBridge = {
 
     SendTransaction: function(nanoInTon, recipientAddress, callback)
     {
-        tonConnect.sendTransaction(nanoInTon, recipientAddress, callback);
+        tonConnect.sendTransaction(nanoInTon, recipientAddress, "CLEAR", callback);
+    },
+
+    SendTransactionWithMessage: function(nanoInTon, 
+        recipientAddress, message, callback)
+    {
+        tonConnect.sendTransaction(nanoInTon, recipientAddress, message, callback);
     }
 };
 

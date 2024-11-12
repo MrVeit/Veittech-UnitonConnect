@@ -8,7 +8,6 @@ using Newtonsoft.Json;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.View;
-using TonSdk.Core.Boc;
 
 namespace UnitonConnect.Core
 {
@@ -22,13 +21,13 @@ namespace UnitonConnect.Core
         [SerializeField, Space] private TextMeshProUGUI _dataBar;
         [SerializeField] private TextMeshProUGUI _addressBar;
 
-        public static Action<int> OnInitialized;
-        public static Action<int> OnModalWindowOpened;
+        public static Action<bool> OnInitialized;
+        public static Action<bool> OnModalWindowOpened;
+        public static Action<bool> OnModalWindowClosed;
+        public static Action<bool> OnWalletConnectionRestored;
 
         public static Action<string> OnWalletConnected;
         public static Action<string> OnWalletDisconnected;
-        public static Action<int> OnWalletConnectionRestored;
-
         public static Action<string> OnTransactionSended;
 
         private readonly string MANIFEST_URL = "https://mrveit.github.io/Veittech-UnitonConnect/dAppData.json";
@@ -45,12 +44,19 @@ namespace UnitonConnect.Core
             Action<int> onModalWindowOpened);
 
         [DllImport("__Internal")]
+        private static extern void CloseModal(Action<int> onModalWindowClosed);
+
+        [DllImport("__Internal")]
         private static extern void Disconnect(
             Action<string> onWalletDisconnected);
 
         [DllImport("__Internal")]
         private static extern void SendTransaction(string nanoTons,
             string recipientAddress, Action<string> onTransactionSended);
+
+        [DllImport("__Internal")]
+        private static extern void SendTransactionWithMessage(string nanoTons,
+            string recipientAddress, string message, Action<string> onTransactionSended);
 
         [DllImport("__Internal")]
         private static extern void SubscribeToStatusChange(
@@ -81,6 +87,8 @@ namespace UnitonConnect.Core
 
                 _instance._dataBar.text = message;
 
+                CloseModal(OnModalWindowClose);
+
                 return;
             }
 
@@ -89,19 +97,19 @@ namespace UnitonConnect.Core
 
             Debug.Log(message);
 
-            _instance._dataBar.text = parsedHash;
+            _instance._dataBar.text = $"Parsed trx hash: {parsedHash}";
+
+            CloseModal(OnModalWindowClose);
         }
 
         [MonoPInvokeCallback(typeof(Action<int>))]
         private static void OnInitialize(int statusCode)
         {
-            OnInitialized?.Invoke(statusCode);
+            OnInitialized?.Invoke(_instance.IsConnected(statusCode));
 
             var message = "[UNITON CONNECT] Sdk successfully initialized";
 
-            Debug.Log($"Claimed init status code: {statusCode}");
-
-            if (statusCode == 1)
+            if (_instance.IsConnected(statusCode))
             {
                 Debug.Log(message);
 
@@ -120,13 +128,11 @@ namespace UnitonConnect.Core
         [MonoPInvokeCallback(typeof(Action<int>))]
         private static void OnModalWindowOpen(int statusCode)
         {
-            OnModalWindowOpened?.Invoke(statusCode);
+            OnModalWindowOpened?.Invoke(_instance.IsConnected(statusCode));
 
             var message = string.Empty;
 
-            Debug.Log($"Claimed status code for opened modal: {statusCode}");
-
-            if (statusCode == 1)
+            if (_instance.IsConnected(statusCode))
             {
                 message = "[UNITON CONNECT] Modal window for connect opened";
 
@@ -139,21 +145,38 @@ namespace UnitonConnect.Core
 
             message = "[UNITON CONNECT] Failed to open modal window";
 
-            Debug.LogError(message);
+            Debug.LogWarning(message);
 
             _instance._dataBar.text = message;
         }
 
         [MonoPInvokeCallback(typeof(Action<int>))]
-        private static void OnWalletConnectionRestor(int statusCode)
+        private static void OnModalWindowClose(int statusCode)
         {
-            OnWalletConnectionRestored?.Invoke(statusCode);
+            OnModalWindowClosed?.Invoke(_instance.IsConnected(statusCode));
 
             var message = string.Empty;
 
-            Debug.Log($"Claimed status code for restore connection: {statusCode}");
+            if (_instance.IsConnected(statusCode))
+            {
+                message = "[UNITON CONNECT] Modal window closed";
 
-            if (statusCode == 1)
+                Debug.Log(message);
+
+                return;
+            }
+
+            Debug.LogWarning(message);
+        }
+
+        [MonoPInvokeCallback(typeof(Action<int>))]
+        private static void OnWalletConnectionRestor(int statusCode)
+        {
+            OnWalletConnectionRestored?.Invoke(_instance.IsConnected(statusCode));
+
+            var message = string.Empty;
+
+            if (_instance.IsConnected(statusCode))
             {
                 message = "[UNITON CONNECT] Wallet connection restored";
 
@@ -288,9 +311,7 @@ namespace UnitonConnect.Core
             decimal amount = (decimal)0.001f;
             var tonInNanotons = UserAssetsUtils.ToNanoton(amount).ToString();
 
-            Debug.Log($"Data for transaction: recepient: {bouceableAddress}, amount: {tonInNanotons}");
-
-            SendTransaction(tonInNanotons, bouceableAddress, OnTransactionSend);
+            SendTransactionWithMessage(tonInNanotons, bouceableAddress, "GOIDA", OnTransactionSend);
 
             Debug.Log($"Transaction sended");
         }
@@ -311,9 +332,9 @@ namespace UnitonConnect.Core
             Init(MANIFEST_URL, DAPP_LINK, OnInitialize);
             InitTonWeb();
 
-            SubscribeToStatusChange(OnWalletConnect);
-            SubscribeToRestoreConnection(MANIFEST_URL, 
+            SubscribeToRestoreConnection(MANIFEST_URL,
                 DAPP_LINK, OnWalletConnectionRestor);
+            SubscribeToStatusChange(OnWalletConnect);
         }
 
         public void ConnectWallet()
@@ -334,6 +355,16 @@ namespace UnitonConnect.Core
             }
 
             Disconnect(OnWalletDisconnect);
+        }
+
+        private bool IsConnected(int statusCode)
+        {
+            if (statusCode == 1)
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private bool IsSupportedPlatform()
