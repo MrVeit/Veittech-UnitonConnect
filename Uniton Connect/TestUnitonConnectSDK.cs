@@ -90,7 +90,9 @@ namespace UnitonConnect.Core
 
             _instance._dataBar.text = parsedBoc;
 
-            ConvertBocToHash(parsedBoc, OnTransactionHashPars);
+            string boc = parsedBoc;
+
+            ConvertBocToHash(boc, OnTransactionHashPars);
         }
 
         [MonoPInvokeCallback(typeof(Action<int>))]

@@ -183,7 +183,7 @@ const tonConnectBridge = {
                 return;
             }
 
-            console.log(`Parsed boc for conver: ${BoC}`);
+            console.log(`Parsed boc for convert: ${BoC}`);
             
             tonWeb.boc.Cell.oneFromBoc(tonWeb.utils.base64ToBytes(BoC)).hash()
             .then((bocCellBytes) =>
