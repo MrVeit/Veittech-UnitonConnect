@@ -166,9 +166,26 @@ const tonConnectBridge = {
         convertBocToHash: function(BoC, callback)
         {
             window.tonWeb = new TonWeb();
+
             const tonWeb = window.tonWeb;
+
+            if (!tonWeb)
+            {
+                console.error(`[UNITON CONNECT] Failed to parse transaction hash: ${error.message}`);
+
+                const errorPtr = allocate(intArrayFromString(
+                    error.message || "Parsing failed"), 'i8', ALLOC_NORMAL);
+
+                dynCall('vi', callback, [errorPtr]);
+
+                _free(errorPtr);
+
+                return;
+            }
+
+            console.log(`Parsed boc for conver: ${BoC}`);
             
-            tonWeb.boc.Cell.oneFromBoc(tonWeb.utils.base64ToBytes(Boc)).hash()
+            tonWeb.boc.Cell.oneFromBoc(tonWeb.utils.base64ToBytes(BoC)).hash()
             .then((bocCellBytes) =>
             {
                 const hashBase64 = tonWeb.utils.base64ToBytes(bocCellBytes);
@@ -294,9 +311,9 @@ const tonConnectBridge = {
         tonConnect.sendTransaction(nanoInTon, recipientAddress, callback);
     },
 
-    ConvertBocToHash: function(Boc, callback)
+    ConvertBocToHash: function(BoC, callback)
     {
-        tonConnect.convertBocToHash(Boc, callback);
+        tonConnect.convertBocToHash(BoC, callback);
     }
 };
 
