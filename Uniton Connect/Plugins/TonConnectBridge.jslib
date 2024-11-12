@@ -218,7 +218,7 @@ const tonConnectBridge = {
                 return transactionData;
             }
 
-            let cellBuilder = tonWeb.boc.Cell();
+            let cellBuilder = new tonWeb.boc.Cell();
 
             cellBuilder.bits.writeUint(0, 32);
             cellBuilder.bits.writeString(message);
