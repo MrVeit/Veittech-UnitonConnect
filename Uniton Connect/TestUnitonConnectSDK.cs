@@ -29,7 +29,6 @@ namespace UnitonConnect.Core
         public static Action<int> OnWalletConnectionRestored;
 
         public static Action<string> OnTransactionSended;
-        public static Action<string> OnTransactionHashParsed;
 
         private readonly string MANIFEST_URL = "https://mrveit.github.io/Veittech-UnitonConnect/dAppData.json";
         private readonly string DAPP_LINK = "https://t.me/UnitonConnect_bot";
@@ -64,18 +63,18 @@ namespace UnitonConnect.Core
             string dAppUrl, Action<int> onConnectionRestored);
 
         [DllImport("__Internal")]
-        private static extern void ConvertBocToHash(string BoC, Action<string> transactionHashParsed);
+        private static extern void InitTonWeb();
 
         [MonoPInvokeCallback(typeof(Action<string>))]
-        private static void OnTransactionSend(string parsedBoc)
+        private static void OnTransactionSend(string parsedHash)
         {
-            OnTransactionSended?.Invoke(parsedBoc);
+            OnTransactionSended?.Invoke(parsedHash);
 
             var message = "[UNITON CONNECT] Transaction sended";
 
-            if (string.IsNullOrEmpty(parsedBoc))
+            if (string.IsNullOrEmpty(parsedHash))
             {
-                message = $"[UNITON CONNECT] Transaction sended with eror: {parsedBoc}";
+                message = $"[UNITON CONNECT] Transaction sended with eror: {parsedHash}";
 
                 Debug.LogError(message);
 
@@ -84,15 +83,12 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            message = $"[UNITON CONNECT] Transaction successfully sended, boc: {parsedBoc}";
+            message = $"[UNITON CONNECT] Transaction successfully sended," +
+                $" parsed transaction hash: {parsedHash}";
 
             Debug.Log(message);
 
-            _instance._dataBar.text = parsedBoc;
-
-            string boc = parsedBoc;
-
-            ConvertBocToHash(boc, OnTransactionHashPars);
+            _instance._dataBar.text = parsedHash;
         }
 
         [MonoPInvokeCallback(typeof(Action<int>))]
@@ -259,31 +255,6 @@ namespace UnitonConnect.Core
             _instance._dataBar.text = message;
         }
 
-        [MonoPInvokeCallback(typeof(Action<string>))]
-        private static void OnTransactionHashPars(string transactionHash)
-        {
-            OnTransactionHashParsed?.Invoke(transactionHash);
-
-            var message = string.Empty;
-
-            if (string.IsNullOrEmpty(transactionHash))
-            {
-                message = "[UNITON CONNECT] Failed to parse transaction hash, something wrong";
-
-                Debug.LogWarning(message);
-
-                _instance._dataBar.text = message;
-
-                return;
-            }
-
-            message = $"[UNITON CONNECT] Parsed transaction hash: {transactionHash}, transaction confirmed by blockchain";
-
-            Debug.Log(message);
-
-            _instance._dataBar.text = message;
-        }
-
         private void OnDestroy()
         {
             Dispose();
@@ -337,9 +308,11 @@ namespace UnitonConnect.Core
             }
 
             Init(MANIFEST_URL, DAPP_LINK, OnInitialize);
+            InitTonWeb();
 
             SubscribeToStatusChange(OnWalletConnect);
-            SubscribeToRestoreConnection(MANIFEST_URL, DAPP_LINK, OnWalletConnectionRestor);
+            SubscribeToRestoreConnection(MANIFEST_URL, 
+                DAPP_LINK, OnWalletConnectionRestor);
         }
 
         public void ConnectWallet()

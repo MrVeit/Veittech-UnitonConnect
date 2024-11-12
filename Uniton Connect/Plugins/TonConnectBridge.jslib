@@ -37,6 +37,20 @@ const tonConnectBridge = {
 
                 dynCall('vi', callback, [1]);
         },
+        
+        initTonWeb: function()
+        {
+            window.tonWeb = new TonWeb();
+
+            if (!window.tonWeb)
+            {
+                console.error(`[UNITON CONNECT] Failed to create Ton Web`);
+
+                return;
+            }
+
+            console.log(`[UNITON CONNECT] Ton Web successfully created`);
+        },
 
         openModal: async function(callback)
         {
@@ -163,52 +177,6 @@ const tonConnectBridge = {
             });
         },
 
-        convertBocToHash: function(BoC, callback)
-        {
-            window.tonWeb = new TonWeb();
-
-            const tonWeb = window.tonWeb;
-
-            if (!tonWeb)
-            {
-                console.error(`[UNITON CONNECT] Failed to parse transaction hash: ${error.message}`);
-
-                const errorPtr = allocate(intArrayFromString(
-                    error.message || "Parsing failed"), 'i8', ALLOC_NORMAL);
-
-                dynCall('vi', callback, [errorPtr]);
-
-                _free(errorPtr);
-
-                return;
-            }
-
-            console.log(`Parsed boc for convert: ${BoC}`);
-            
-            tonWeb.boc.Cell.oneFromBoc(tonWeb.utils.base64ToBytes(BoC)).hash()
-            .then((bocCellBytes) =>
-            {
-                const hashBase64 = tonWeb.utils.base64ToBytes(bocCellBytes);
-
-                console.log(`[UNITON CONNECT] Parsed transaction hash: ${hashBase64}`);
-
-                const hashPtr = allocate(intArrayFromString(hashBase64), 'i8', ALLOC_NORMAL);
-
-                dynCall('vi', callback, [hashPtr]);
-            })
-            .catch((error) =>
-            {
-                console.error(`[UNITON CONNECT] Failed to parse transaction hash: ${error.message}`);
-
-                const errorPtr = allocate(intArrayFromString(
-                    error.message || "Parsing failed"), 'i8', ALLOC_NORMAL);
-
-                dynCall('vi', callback, [errorPtr]);
-
-                _free(errorPtr);
-            });
-        },
-
         sendTransaction: async function(nanoInTon, 
             recipientAddress, callback)
         {
@@ -241,13 +209,32 @@ const tonConnectBridge = {
 
                 if (result && result.boc) 
                 {
-                    const bocPtr = allocate(intArrayFromString(result.boc), 'i8', ALLOC_NORMAL);
+                    const tonWeb = window.tonWeb;
 
                     console.log(`[UNITON CONNECT] Transaction sent successfully, BOC: ${result.boc}`);
 
-                    dynCall('vi', callback, [bocPtr]);
+                    tonWeb.boc.Cell.oneFromBoc(tonWeb.utils.base64ToBytes(result.boc)).hash()
+                    .then((bocCellBytes) =>
+                    {
+                        const hashBase64 = tonWeb.utils.base64ToBytes(bocCellBytes);
 
-                    _free(bocPtr);
+                        console.log(`[UNITON CONNECT] Parsed transaction hash: ${hashBase64}`);
+
+                        const hashPtr = allocate(intArrayFromString(hashBase64), 'i8', ALLOC_NORMAL);
+
+                        dynCall('vi', callback, [hashPtr]);
+                    })
+                    .catch((error) =>
+                    {
+                        console.error(`[UNITON CONNECT] Failed to parse transaction hash: ${error.message}`);
+
+                        const errorPtr = allocate(intArrayFromString(
+                            error.message || "Parsing hash failed"), 'i8', ALLOC_NORMAL);
+
+                        dynCall('vi', callback, [errorPtr]);
+
+                        _free(errorPtr);
+                    });
 
                     return;
                 }
@@ -277,6 +264,11 @@ const tonConnectBridge = {
     Init: function(manifestUrl, dAppUrl, callback)
     {
         tonConnect.init(manifestUrl, dAppUrl, callback);
+    },
+
+    InitTonWeb: function()
+    {
+        tonConnect.initTonWeb();
     },
 
     OpenModal: function(callback)
@@ -309,11 +301,6 @@ const tonConnectBridge = {
     SendTransaction: function(nanoInTon, recipientAddress, callback)
     {
         tonConnect.sendTransaction(nanoInTon, recipientAddress, callback);
-    },
-
-    ConvertBocToHash: function(BoC, callback)
-    {
-        tonConnect.convertBocToHash(BoC, callback);
     }
 };
 
