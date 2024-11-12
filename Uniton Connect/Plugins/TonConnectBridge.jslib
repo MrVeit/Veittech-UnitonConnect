@@ -165,11 +165,11 @@ const tonConnectBridge = {
 
         convertBocToHash: function(BoC, callback)
         {
-            const tonWeb = new window.TonWeb();
+            window.tonWeb = new TonWeb();
+            const tonWeb = window.tonWeb;
             
-            tonWeb.boc.Cell.oneFromBoc(
-                tonWeb.utils.base64ToBytes(Boc)).hash()
-                .then((bocCellBytes) =>
+            tonWeb.boc.Cell.oneFromBoc(tonWeb.utils.base64ToBytes(Boc)).hash()
+            .then((bocCellBytes) =>
             {
                 const hashBase64 = tonWeb.utils.base64ToBytes(bocCellBytes);
 
