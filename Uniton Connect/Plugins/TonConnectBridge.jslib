@@ -177,14 +177,36 @@ const tonConnectBridge = {
             });
         },
 
-        sendTransaction: async function(nanoInTon, 
-            recipientAddress, callback)
+        isValidBase64(str)
         {
-            if (!tonConnect.isAvailableSDK())
+            try
             {
-                console.warn(`[UNITON CONNECT] Sdk is not initialized,` +
-                    `sending transactions not available`);
+                return btoa(atob(str)) === str;
+            }
+            catch (error)
+            {
+                return false;
+            }
+        },
 
+        handleTransactionError(error, callback)
+        {
+            console.error(`[UNITON CONNECT] Failed to validate transaction:` +
+                `${error.message || 'UNKNOWN ERROR'}`);
+
+            const errorPtr = allocate(intArrayFromString(
+                error.message || "Transaction failed"), 'i8', ALLOC_NORMAL);
+            
+            dynCall('vi', callback, [errorPtr]);
+
+            _free(errorPtr);
+        },
+
+        sendTransaction: async function(nanoInTon, recipientAddress, callback) 
+        {
+            if (!tonConnect.isAvailableSDK()) 
+            {
+                console.warn(`[UNITON CONNECT] SDK is not initialized, sending transactions not available`);
                 const nullPtr = allocate(intArrayFromString("null"), 'i8', ALLOC_NORMAL);
 
                 dynCall('vi', callback, [nullPtr]);
@@ -194,70 +216,62 @@ const tonConnectBridge = {
                 return;
             }
 
-            const transationData = 
-            {
+            const transactionData = {
                 validUntil: Math.floor(Date.now() / 1000) + 60,
                 messages: [{ 
                     address: UTF8ToString(recipientAddress), 
                     amount: UTF8ToString(nanoInTon) 
-                }]
-            };
+            }]};
 
-            await window.tonConnectUI.sendTransaction(transationData).then((result) =>
+            try
             {
-                console.log(`[UNITON CONNECT] Parsed transaction result: ${JSON.stringify(result)}`);
-
-                if (result && result.boc) 
+                const result = await window.tonConnectUI.sendTransaction(transactionData);
+            
+                if (!result || !result.boc)
                 {
-                    const tonWeb = window.tonWeb;
+                    const emptyPtr = allocate(intArrayFromString("EMPTY_BOC"), 'i8', ALLOC_NORMAL);
 
-                    console.log(`[UNITON CONNECT] Transaction sent successfully, BOC: ${result.boc}`);
+                    console.error(`[UNITON CONNECT] No BOC returned from transaction`);
 
-                    tonWeb.boc.Cell.oneFromBoc(tonWeb.utils.base64ToBytes(result.boc)).hash()
-                    .then((bocCellBytes) =>
-                    {
-                        const hashBase64 = tonWeb.utils.base64ToBytes(bocCellBytes);
+                    dynCall('vi', callback, [emptyPtr]);
 
-                        console.log(`[UNITON CONNECT] Parsed transaction hash: ${hashBase64}`);
-
-                        const hashPtr = allocate(intArrayFromString(hashBase64), 'i8', ALLOC_NORMAL);
-
-                        dynCall('vi', callback, [hashPtr]);
-                    })
-                    .catch((error) =>
-                    {
-                        console.error(`[UNITON CONNECT] Failed to parse transaction hash: ${error.message}`);
-
-                        const errorPtr = allocate(intArrayFromString(
-                            error.message || "Parsing hash failed"), 'i8', ALLOC_NORMAL);
-
-                        dynCall('vi', callback, [errorPtr]);
-
-                        _free(errorPtr);
-                    });
+                    _free(emptyPtr);
 
                     return;
                 }
 
-                const emptyPtr = allocate(intArrayFromString("EMPTY_BOC"), 'i8', ALLOC_NORMAL);
+                const tonWeb = window.tonWeb;
+                const bocBytes = tonWeb.utils.base64ToBytes(result.boc);
 
-                console.error(`[UNITON CONNECT] Transaction sent, but no BOC returned`);
+                if (!Array.isArray(bocBytes) || bocBytes.length === 0)
+                {
+                    throw new Error(`Invalid BOC data: empty or not an array`);
 
-                dynCall('vi', callback, [emptyPtr]);
+                    return;
+                }
 
-                _free(emptyPtr);
-            })
-            .catch((error) =>
+                const bocCellBytes = tonWeb.boc.Cell.oneFromBoc(bocBytes).hash();
+                const hashBase64 = tonWeb.utils.bytesToBase64(bocCellBytes);
+
+                if (!tonConnect.isValidBase64(hashBase64))
+                {
+                    throw new Error(`Invalid Base64 hash result`);
+
+                    return;
+                }
+
+                console.log(`[UNITON CONNECT] Parsed transaction hash: ${hashBase64}`);
+
+                const hashPtr = allocate(intArrayFromString(hashBase64), 'i8', ALLOC_NORMAL);
+
+                dynCall('vi', callback, [hashPtr]);
+
+                _free(hashPtr);
+            }
+            catch (error)
             {
-                console.error(`[UNITON CONNECT] Failed to send transaction: ${error.message}`);
-
-                const errorPtr = allocate(intArrayFromString(
-                    error.message || "Transaction failed"), 'i8', ALLOC_NORMAL);
-
-                dynCall('vi', callback, [errorPtr]);
-
-                _free(errorPtr);
-            });
+                tonConnect.handleTransactionError(error, callback);
+            }
         }
     },
 

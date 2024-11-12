@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.View;
+using TonSdk.Core.Boc;
 
 namespace UnitonConnect.Core
 {
