@@ -1,15 +1,13 @@
 using System;
 using System.Runtime.InteropServices;
+using UnityEngine;
+using UnityEngine.UI;
 using AOT;
-using Newtonsoft.Json;
 using TMPro;
-using TonSdk.Connect;
-using TonSdk.Core;
+using Newtonsoft.Json;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.View;
-using UnityEngine;
-using UnityEngine.UI;
 
 namespace UnitonConnect.Core
 {
@@ -31,6 +29,7 @@ namespace UnitonConnect.Core
         public static Action<int> OnWalletConnectionRestored;
 
         public static Action<string> OnTransactionSended;
+        public static Action<string> OnTransactionHashParsed;
 
         private readonly string MANIFEST_URL = "https://mrveit.github.io/Veittech-UnitonConnect/dAppData.json";
         private readonly string DAPP_LINK = "https://t.me/UnitonConnect_bot";
@@ -64,16 +63,19 @@ namespace UnitonConnect.Core
         private static extern void SubscribeToRestoreConnection(string manifestUrl, 
             string dAppUrl, Action<int> onConnectionRestored);
 
+        [DllImport("__Internal")]
+        private static extern void ConvertBocToHash(string BoC, Action<string> transactionHashParsed);
+
         [MonoPInvokeCallback(typeof(Action<string>))]
-        private static void OnTransactionSend(string result)
+        private static void OnTransactionSend(string parsedBoc)
         {
-            OnTransactionSended?.Invoke(result);
+            OnTransactionSended?.Invoke(parsedBoc);
 
             var message = "[UNITON CONNECT] Transaction sended";
 
-            if (string.IsNullOrEmpty(result))
+            if (string.IsNullOrEmpty(parsedBoc))
             {
-                message = $"[UNITON CONNECT] Transaction sended with eror: {result}";
+                message = $"[UNITON CONNECT] Transaction sended with eror: {parsedBoc}";
 
                 Debug.LogError(message);
 
@@ -82,11 +84,13 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            message = $"[UNITON CONNECT] Transaction successfully sended, boc: {result}";
+            message = $"[UNITON CONNECT] Transaction successfully sended, boc: {parsedBoc}";
 
             Debug.Log(message);
 
-            _instance._dataBar.text = result;
+            _instance._dataBar.text = parsedBoc;
+
+            ConvertBocToHash(parsedBoc, OnTransactionHashPars);
         }
 
         [MonoPInvokeCallback(typeof(Action<int>))]
@@ -253,6 +257,31 @@ namespace UnitonConnect.Core
             _instance._dataBar.text = message;
         }
 
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnTransactionHashPars(string transactionHash)
+        {
+            OnTransactionHashParsed?.Invoke(transactionHash);
+
+            var message = string.Empty;
+
+            if (string.IsNullOrEmpty(transactionHash))
+            {
+                message = "[UNITON CONNECT] Failed to parse transaction hash, something wrong";
+
+                Debug.LogWarning(message);
+
+                _instance._dataBar.text = message;
+
+                return;
+            }
+
+            message = $"[UNITON CONNECT] Parsed transaction hash: {transactionHash}, transaction confirmed by blockchain";
+
+            Debug.Log(message);
+
+            _instance._dataBar.text = message;
+        }
+
         private void OnDestroy()
         {
             Dispose();
@@ -280,10 +309,9 @@ namespace UnitonConnect.Core
         private void SendTon()
         {
             var recepientAddress = "UQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4Ursw6";
-            var bouceableAddress = WalletConnectUtils.GetBounceableAddress(recepientAddress);
+            var bouceableAddress = WalletConnectUtils.GetHEXAddress(recepientAddress);
 
             decimal amount = (decimal)0.001f;
-
             var tonInNanotons = UserAssetsUtils.ToNanoton(amount).ToString();
 
             Debug.Log($"Data for transaction: recepient: {bouceableAddress}, amount: {tonInNanotons}");

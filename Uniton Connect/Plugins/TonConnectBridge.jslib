@@ -163,7 +163,34 @@ const tonConnectBridge = {
             });
         },
 
-        sendTransaction: function(nanoInTon, 
+        convertBocToHash: function(BoC, callback)
+        {
+            TonWeb.boc.Cell.oneFromBoc(
+                TonWeb.utils.base64ToBytes(Boc)).hash()
+                .then((bocCellBytes) =>
+            {
+                const hashBase64 = TonWeb.utils.base64ToBytes(bocCellBytes);
+
+                console.log(`[UNITON CONNECT] Parsed transaction hash: ${hashBase64}`);
+
+                const hashPtr = allocate(intArrayFromString(hashBase64), 'i8', ALLOC_NORMAL);
+
+                dynCall('vi', callback, [hashPtr]);
+            })
+            .catch((error) =>
+            {
+                console.error(`[UNITON CONNECT] Failed to parse transaction hash: ${error.message}`);
+
+                const errorPtr = allocate(intArrayFromString(
+                    error.message || "Parsing failed"), 'i8', ALLOC_NORMAL);
+
+                dynCall('vi', callback, [errorPtr]);
+
+                _free(errorPtr);
+            });
+        },
+
+        sendTransaction: async function(nanoInTon, 
             recipientAddress, callback)
         {
             if (!tonConnect.isAvailableSDK())
@@ -189,15 +216,9 @@ const tonConnectBridge = {
                 }]
             };
 
-            window.tonConnectUI.sendTransaction(transationData)
-            .then((result) =>
+            await window.tonConnectUI.sendTransaction(transationData).then((result) =>
             {
-                console.log(`[UNITON CONNECT] Response for transaction sended, result: ${result}`);
                 console.log(`[UNITON CONNECT] Parsed transaction result: ${JSON.stringify(result)}`);
-
-                console.log(JSON.stringify(result, null, 2));
-
-                console.log(`[UNITON CONNECT] Try read boc: ${result.boc}`);
 
                 if (result && result.boc) 
                 {
@@ -212,7 +233,7 @@ const tonConnectBridge = {
                     return;
                 }
 
-                const emptyPtr = allocate(intArrayFromString(""), 'i8', ALLOC_NORMAL);
+                const emptyPtr = allocate(intArrayFromString("EMPTY_BOC"), 'i8', ALLOC_NORMAL);
 
                 console.error(`[UNITON CONNECT] Transaction sent, but no BOC returned`);
 
@@ -269,6 +290,11 @@ const tonConnectBridge = {
     SendTransaction: function(nanoInTon, recipientAddress, callback)
     {
         tonConnect.sendTransaction(nanoInTon, recipientAddress, callback);
+    },
+
+    ConvertBocToHash: function(Boc, callback)
+    {
+        tonConnect.convertBocToHash(Boc, callback);
     }
 };
 
