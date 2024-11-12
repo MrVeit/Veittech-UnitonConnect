@@ -165,11 +165,13 @@ const tonConnectBridge = {
 
         convertBocToHash: function(BoC, callback)
         {
-            TonWeb.boc.Cell.oneFromBoc(
-                TonWeb.utils.base64ToBytes(Boc)).hash()
+            const tonWeb = new window.TonWeb();
+            
+            tonWeb.boc.Cell.oneFromBoc(
+                tonWeb.utils.base64ToBytes(Boc)).hash()
                 .then((bocCellBytes) =>
             {
-                const hashBase64 = TonWeb.utils.base64ToBytes(bocCellBytes);
+                const hashBase64 = tonWeb.utils.base64ToBytes(bocCellBytes);
 
                 console.log(`[UNITON CONNECT] Parsed transaction hash: ${hashBase64}`);
 
