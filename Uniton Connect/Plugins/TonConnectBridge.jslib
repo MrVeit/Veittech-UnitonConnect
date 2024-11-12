@@ -218,10 +218,13 @@ const tonConnectBridge = {
                 return transactionData;
             }
 
+            console.log(`Message for payload: ${message}`);
+            console.log(`Message for payload in UTF8: ${UTF8ToString(message)}`);
+
             let cellBuilder = new tonWeb.boc.Cell();
 
             cellBuilder.bits.writeUint(0, 32);
-            cellBuilder.bits.writeString(message);
+            cellBuilder.bits.writeString(UTF8ToString(message));
                 
             let newBoc = await cellBuilder.toBoc();
 
