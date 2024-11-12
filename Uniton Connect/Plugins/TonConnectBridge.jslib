@@ -199,10 +199,11 @@ const tonConnectBridge = {
             recipientAddress, message)
         {
             const tonWeb = window.tonWeb;
+            const messagePayload = UTF8ToString(message);
 
             var transactionData;
 
-            if (!message || message === "CLEAR")
+            if (!messagePayload || messagePayload === "CLEAR")
             {
                 transactionData = {
                     validUntil: Math.floor(Date.now() / 1000) + 60,
@@ -218,19 +219,14 @@ const tonConnectBridge = {
                 return transactionData;
             }
 
-            console.log(`Message for payload: ${message}`);
-            console.log(`Message for payload in UTF8: ${UTF8ToString(message)}`);
+            console.log(`Message for payload: ${messagePayload}`);
 
             let cellBuilder = new tonWeb.boc.Cell();
 
             cellBuilder.bits.writeUint(0, 32);
-            cellBuilder.bits.writeString(UTF8ToString(message));
+            cellBuilder.bits.writeString("Test Message");
                 
-            let newBoc = await cellBuilder.toBoc();
-
-            console.log(`[UNITON CONNECT] Created transaction payload boc: ${newBoc}`);
-
-            let payload = tonWeb.utils.bytesToBase64(newBoc);
+            let payload = tonWeb.utils.bytesToBase64(await cellBuilder.toBoc());
 
             console.log(`[UNITON CONNECT] Created transaction message payload: ${payload}`);
 
@@ -243,6 +239,8 @@ const tonConnectBridge = {
                     payload: payload
                 }
             ]};
+
+            console.log(`Transaction data for send: ${JSON.stringify(transactionData)}`);
 
             return transactionData;
         },
