@@ -30,7 +30,10 @@ namespace UnitonConnect.ThirdParty.TonAPI
             }
             */
 
-            var targetUrl = GetTransactionDataUrl(transactionHash);
+            var encodedTransactionHash = EscapeQueryParam(transactionHash);
+            var targetUrl = GetTransactionDataUrl(encodedTransactionHash);
+
+            UnityEngine.Debug.Log(targetUrl);
 
             using (UnityWebRequest request = UnityWebRequest.Get(targetUrl))
             {
@@ -157,7 +160,12 @@ namespace UnitonConnect.ThirdParty.TonAPI
 
         internal static string ConvertAddressToEncodeURL(string address)
         {
-            return Uri.EscapeDataString(WalletConnectUtils.GetHEXAddress(address));
+            return EscapeQueryParam(WalletConnectUtils.GetHEXAddress(address));
+        }
+
+        private static string EscapeQueryParam(string value)
+        {
+            return Uri.EscapeDataString(value);
         }
 
         private static string GetUserWalletUrl(string hexAddress)

@@ -285,28 +285,26 @@ namespace UnitonConnect.Core
 
             _instance._dataBar.text = $"Parsed trx hash: {parsedHash}";
 
-            CloseModal(OnModalWindowClose);
-
-            _instance.StartCoroutine(TonApiBridge.GetTransactionData(
-                parsedHash, (transactionData) =>
+            _instance.StartCoroutine(TonApiBridge.GetTransactionData(parsedHash,
+                (transactionData) =>
             {
                 var status = transactionData.IsSuccess;
-                var newBalance = transactionData.EndBalance;
-                var fee = transactionData.TotalFees;
-                var sendedAmount = transactionData.TotalFees;
-                var recipientAddress = transactionData.InMessage.Recipient.Address;
+                var newBalance = UserAssetsUtils.FromNanoton(
+                    transactionData.EndBalance).ToString();
+                var fee = UserAssetsUtils.FromNanoton(
+                    transactionData.TotalFees).ToString();
+                var sendedAmount = UserAssetsUtils.FromNanoton(
+                    transactionData.OutMessages[0].Value).ToString();
+                var recipientAddress = transactionData.OutMessages[0].Recipient.Address;
+                var message = transactionData.OutMessages[0].DecodedBody.MessageText;
 
-                var decodedBody = transactionData.InMessage.DecodedBody;
-                var internalMessage = decodedBody.Payloads[0].Message.InternalMessage;
-                var message = internalMessage.Body.Value.MessageText;
-
-                _instance._dataBar.text = $"Claimed transaction data: \n" +
-                    $"STATUS: {transactionData.IsSuccess}" +
-                    $"HASH: {parsedHash}, " +
-                    $"NEW BALANCE: {transactionData.EndBalance}, " +
-                    $"FEE: {transactionData.TotalFees}, " +
-                    $"SENDED AMOUNT: {transactionData.OutMessages[0].Value}, " +
-                    $"RECIPIENT: {WalletConnectUtils.GetHEXAddress(recipientAddress)}, " +
+                _instance._dataBar.text = $"Loaded transaction data: \n" +
+                    $"STATUS: {transactionData.IsSuccess},\n" +
+                    $"HASH: {parsedHash},\n" +
+                    $"NEW BALANCE: {newBalance} TON,\n" +
+                    $"FEE: {fee} TON,\n" +
+                    $"SENDED AMOUNT: {sendedAmount} TON,\n" +
+                    $"RECIPIENT ADDRESS: {WalletConnectUtils.GetNonBounceableAddress(recipientAddress)},\n" +
                     $"MESSAGE: {message}";
             },
             (errorMessage) =>
@@ -337,7 +335,8 @@ namespace UnitonConnect.Core
 
         private void TestTransactionDataFetch(string hash)
         {
-            _instance.StartCoroutine(TonApiBridge.GetTransactionData(hash, (transactionData) =>
+            _instance.StartCoroutine(TonApiBridge.GetTransactionData(
+                hash, (transactionData) =>
             {
                 var status = transactionData.IsSuccess;
                 var newBalance = UserAssetsUtils.FromNanoton(
@@ -401,6 +400,8 @@ namespace UnitonConnect.Core
             _disconnectButton.onClick.AddListener(DisconnectWallet);
             _sendTonButton.onClick.AddListener(SendTon);
 
+            //TestTransactionDataFetch("YZPUPwyUnjtHefF18U3VDVJsSVvwKwWFEykcfjkGEkc=");
+
             if (!IsSupportedPlatform())
             {
                 _instance._dataBar.text = "Unsupported platform, " +
@@ -447,7 +448,7 @@ namespace UnitonConnect.Core
             var tonInNanotons = UserAssetsUtils.ToNanoton(amount).ToString();
 
             SendTransactionWithMessage(tonInNanotons, bouceableAddress, 
-                "GOIDA", OnTransactionSend);
+                "GOOOOOOOOOOOOOOOOOOOOL", OnTransactionSend);
         }
 
         private bool IsSuccess(int statusCode)
