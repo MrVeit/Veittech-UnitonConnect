@@ -22,6 +22,8 @@ namespace UnitonConnect.Core
         [SerializeField, Space] private TextMeshProUGUI _dataBar;
         [SerializeField] private TextMeshProUGUI _addressBar;
 
+        private string _latestTransactionHash;
+
         public static Action<bool> OnInitialized;
 
         public static Action<bool> OnModalWindowOpened;
@@ -284,9 +286,15 @@ namespace UnitonConnect.Core
             Debug.Log(message);
 
             _instance._dataBar.text = $"Parsed trx hash: {parsedHash}";
+            _instance._latestTransactionHash = parsedHash;
 
-            _instance.StartCoroutine(TonApiBridge.GetTransactionData(parsedHash,
-                (transactionData) =>
+            _instance.Invoke(nameof(ValidateTransaction), 3f);
+        }
+
+        private void ValidateTransaction()
+        {
+            _instance.StartCoroutine(TonApiBridge.GetTransactionData(
+                _latestTransactionHash, (transactionData) =>
             {
                 var status = transactionData.IsSuccess;
                 var newBalance = UserAssetsUtils.FromNanoton(
@@ -300,7 +308,7 @@ namespace UnitonConnect.Core
 
                 _instance._dataBar.text = $"Loaded transaction data: \n" +
                     $"STATUS: {transactionData.IsSuccess},\n" +
-                    $"HASH: {parsedHash},\n" +
+                    $"HASH: {_latestTransactionHash},\n" +
                     $"NEW BALANCE: {newBalance} TON,\n" +
                     $"FEE: {fee} TON,\n" +
                     $"SENDED AMOUNT: {sendedAmount} TON,\n" +
@@ -314,6 +322,13 @@ namespace UnitonConnect.Core
                 Debug.LogError(message);
 
                 _instance._dataBar.text = message;
+
+                if (errorMessage == "entity not found")
+                {
+                    Debug.LogWarning("Transaction data is processing");
+
+                    ValidateTransaction();
+                }
             }));
         }
 
@@ -448,7 +463,7 @@ namespace UnitonConnect.Core
             var tonInNanotons = UserAssetsUtils.ToNanoton(amount).ToString();
 
             SendTransactionWithMessage(tonInNanotons, bouceableAddress, 
-                "GOOOOOOOOOOOOOOOOOOOOL", OnTransactionSend);
+                "GOOOOOOL", OnTransactionSend);
         }
 
         private bool IsSuccess(int statusCode)
