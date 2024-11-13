@@ -5,6 +5,7 @@ mergeInto(LibraryManager.library,
         var keyString = UTF8ToString(injectedWalletKey);
         return (keyString in window && typeof window[keyString] === 'object' && 'tonconnect' in window[keyString])      
     },
+
     IsInsideWalletBrowser: function (injectedWalletKey)
     {
         var keyString = UTF8ToString(injectedWalletKey);
@@ -14,6 +15,7 @@ mergeInto(LibraryManager.library,
         }
         return false;
     },
+
     CallConnect: async function(request, version, injectedWalletKey)
     {
         var requestString = UTF8ToString(request);
@@ -50,6 +52,7 @@ mergeInto(LibraryManager.library,
         }
         unityInstanceRef.SendMessage("TonConnect_Core", "OnInjectedWalletMessageReceived", JSON.stringify(result));
     },
+
     CallListenEvents: async function(injectedWalletKey)
     {
         var keyString = UTF8ToString(injectedWalletKey);
@@ -64,6 +67,7 @@ mergeInto(LibraryManager.library,
             unityInstanceRef.SendMessage("TonConnect_Core", "OnInjectedWalletMessageReceived", JSON.stringify(result));
         })
     },
+
     CallRestoreConnection: async function(injectedWalletKey, requestId)
     {
         var keyString = UTF8ToString(injectedWalletKey);
@@ -82,6 +86,7 @@ mergeInto(LibraryManager.library,
         }
         unityInstanceRef.SendMessage("TonConnect_Core", "OnInjectedWalletMessageReceived", JSON.stringify(result));
     },
+
     CallSendRequest: async function(requestString, injectedWalletKey, requestId)
     {
         var keyString = UTF8ToString(injectedWalletKey);
@@ -112,6 +117,7 @@ mergeInto(LibraryManager.library,
             unityInstanceRef.SendMessage("TonConnect_Core", "OnInjectedWalletMessageReceived", JSON.stringify(result));
         }
     },
+    
     CallDisconnect: async function(injectedWalletKey)
     {
         var keyString = UTF8ToString(injectedWalletKey);

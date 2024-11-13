@@ -114,7 +114,12 @@ const tonConnectBridge = {
                     return;
                 }
 
-                dynCall('vi', callback, [0]);
+                const statusPtr = allocate(
+                    intArrayFromString("CONNECT_FAILED"), 'i8', ALLOC_NORMAL);
+
+                dynCall('vi', callback, [statusPtr]);
+
+                _free(statusPtr);
             });
         },
 

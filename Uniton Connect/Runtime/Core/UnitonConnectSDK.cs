@@ -57,8 +57,6 @@ namespace UnitonConnect.Core
         [SerializeField] private bool _debugMode;
         [Tooltip("Turn it off if you want to do your own cdk initialization in your scripts")]
         [SerializeField, Space] private bool _initializeOnAwake;
-        [Tooltip("Enable if you want to restore a saved connection from storage (recommended)")]
-        [SerializeField] private bool _restoreConnectionOnAwake;
         [Header("Ton Connect Settings"), Space]
         [SerializeField, Space] private WalletsListData _walletsListConfig;
         [Tooltip("Enable if you want to instantly receive wallet icons in your interface without waiting for them to be downloaded from the server")]
@@ -72,6 +70,10 @@ namespace UnitonConnect.Core
         private AdditionalConnectOptions _additionalConnectOptions;
         private RemoteStorage _remoteStorage;
 
+        private bool _isInitialized;
+        private bool _restoreConnectionOnAwake = true;
+
+        public UserWallet Wallet { get; private set; }
         public UserAssets Assets { get; private set; }
 
         public decimal TonBalance { get; private set; }
@@ -79,6 +81,7 @@ namespace UnitonConnect.Core
         public TonConnect TonConnect => _tonConnect;
         public List<WalletProviderConfig> SupportedWallets => _supportedWallets.Config;
 
+        public bool IsInitialized => _isInitialized;
         public bool IsTestMode => _testMode;
         public bool IsDebugMode => _debugMode;
         public bool IsWalletConnected => _tonConnect.IsConnected;
@@ -93,26 +96,31 @@ namespace UnitonConnect.Core
         /// </summary>
         public event IUnitonConnectSDKCallbacks.OnUnitonConnectInitialize OnInitialized;
 
+        [Obsolete]
         /// <summary>
         /// Callback in case of successful initialization of sdk and loading of wallet configurations for further connection
         /// </summary>
         public event IUnitonConnectWalletCallbacks.OnWalletConnectionFinish OnWalletConnectionFinished;
 
+        [Obsolete]
         /// <summary>
         /// Callback for error handling, in case of unsuccessful loading of wallet configurations
         /// </summary>
         public event IUnitonConnectWalletCallbacks.OnWalletConnectionFail OnWalletConnectionFailed;
 
+        [Obsolete]
         /// <summary>
         /// Callback for processing the status of restored connection to the wallet
         /// </summary>
         public event IUnitonConnectWalletCallbacks.OnWalletConnectionRestore OnWalletConnectionRestored;
 
+        [Obsolete]
         /// <summary>
         /// Callback to handle the status of pausing the connection to the wallet
         /// </summary>
         public event IUnitonConnectWalletCallbacks.OnWalletConnectionPause OnWalletConnectionPaused;
 
+        [Obsolete]
         /// <summary>
         /// Callback to handle the shutdown status of a previously activated connection pause
         /// </summary>
@@ -123,11 +131,13 @@ namespace UnitonConnect.Core
         /// </summary>
         public event IUnitonConnectWalletCallbacks.OnWalletDisconnect OnWalletDisconnected;
 
+        [Obsolete]
         /// <summary>
         /// Callback to process the status of a recently sent transaction
         /// </summary>
         public event IUnitonConnectTransactionCallbacks.OnTransactionSendingFinish OnSendingTonFinished;
 
+        [Obsolete]
         /// <summary>
         /// Callback to get the current amount of TON on the wallet
         /// </summary>
@@ -179,9 +189,12 @@ namespace UnitonConnect.Core
 
             OnInitialize();
 
+            _isInitialized = true;
+
             UnitonConnectLogger.Log("SDK successfully initialized");
         }
 
+        [Obsolete]
         /// <summary>
         /// Set the connection event listener to pause
         /// </summary>
@@ -192,6 +205,7 @@ namespace UnitonConnect.Core
             OnWalletConnectionPause();
         }
 
+        [Obsolete]
         /// <summary>
         /// Switching off the activated pause for the connection event listener
         /// </summary>
@@ -202,6 +216,7 @@ namespace UnitonConnect.Core
             OnWalletConnectionUnPause();
         }
 
+        [Obsolete]
         /// <summary>
         /// Start downloading wallet configurations by the specified link to the json file
         /// </summary>
@@ -213,6 +228,7 @@ namespace UnitonConnect.Core
             StartCoroutine(LoadWallets(supportedWalletsUrl, walletsClaimed));
         }
 
+        [Obsolete]
         /// <summary>
         /// Connecting to an HTTP bridged wallet via deep links
         /// </summary>
@@ -232,6 +248,7 @@ namespace UnitonConnect.Core
             OpenWalletViaDeepLink(Uri.EscapeUriString(connectUrl));
         }
 
+        [Obsolete]
         /// <summary>
         /// Connection to a JavaScript bridged wallet via deep links
         /// </summary>
@@ -249,6 +266,7 @@ namespace UnitonConnect.Core
             await GenerateConnectURL(wallet);
         }
 
+        [Obsolete]
         /// <summary>
         /// Send TonCoin to the specified recipient address
         /// </summary>
@@ -302,6 +320,7 @@ namespace UnitonConnect.Core
             }
         }
 
+        [Obsolete]
         /// <summary>
         /// Disconnect of previously connected wallet
         /// </summary>
@@ -329,6 +348,7 @@ namespace UnitonConnect.Core
             }
         }
 
+        [Obsolete]
         /// <summary>
         /// Get a link to connect to the wallet via the specified config
         /// </summary>
@@ -354,6 +374,7 @@ namespace UnitonConnect.Core
             return connectUrl;
         }
 
+        [Obsolete]
         /// <summary>
         /// Getting the address of the recently connected wallet
         /// </summary>
@@ -370,6 +391,7 @@ namespace UnitonConnect.Core
             return $"{TonConnect.Wallet.Account.Address}";
         }
 
+        [Obsolete]
         /// <summary>
         /// Loading TON balance of a recently connected wallet. Subscribe to `OnTonBalanceClaimed` event to get the result.
         /// </summary>
@@ -687,10 +709,7 @@ namespace UnitonConnect.Core
 
             Message[] messages =
             {
-                new(receiver, tokensAmount),
-                //new(receiver, tokensAmount),
-                //new(receiver, tokensAmount),
-                //new(receiver, tokensAmount)
+                new(receiver, tokensAmount)
             };
 
             return messages;
@@ -715,8 +734,6 @@ namespace UnitonConnect.Core
 
             OnWalletConnectionFinished?.Invoke(wallet);
         }
-
-        private void OnInjectedWalletMessageReceive(string message) => _tonConnect.ParseInjectedProviderMessage(message);
 
         private void OnWalletConnectionFail(string errorMessage) => OnWalletConnectionFailed?.Invoke(errorMessage);
 
