@@ -4,7 +4,7 @@ const tonConnectBridge = {
         {
             if (!window.tonConnectUI)
             {
-                console.error(`[UNITON CONNECT] TonConnectUI is not initialized`);
+                console.error(`Ton Connect UI is not initialized`);
 
                 return false;
             }
@@ -17,8 +17,6 @@ const tonConnectBridge = {
                 const url = UTF8ToString(manifestUrl);
                 const appUrl = UTF8ToString(dAppUrl);
 
-                console.log(`[UNITON CONNECT] Claimed init credentials, url: ${url}, appUrl: ${appUrl}`);
-
                 window.tonConnectUI = new TON_CONNECT_UI.TonConnectUI(
                 {
                     manifestUrl: url,
@@ -26,14 +24,10 @@ const tonConnectBridge = {
 
                 if (!tonConnect.isAvailableSDK())
                 {
-                    console.warn(`[UNITON CONNECT] Library entity is not exist, something wrong...`);
-
                     dynCall('vi', callback, [0]);
 
                     return;
                 }
-
-                console.log(`[UNITON CONNECT] Sdk successfully initialized`);
 
                 dynCall('vi', callback, [1]);
         },
@@ -41,15 +35,6 @@ const tonConnectBridge = {
         initTonWeb: function()
         {
             window.tonWeb = new TonWeb();
-
-            if (!window.tonWeb)
-            {
-                console.error(`[UNITON CONNECT] Failed to create Ton Web`);
-
-                return;
-            }
-
-            console.log(`[UNITON CONNECT] Ton Web successfully created`);
         },
 
         openModal: async function(callback)
@@ -58,14 +43,10 @@ const tonConnectBridge = {
             {
                 await window.tonConnectUI.openModal();
 
-                console.log(`[UNITON CONNECT] Modal window successfully opened`);
-
                 dynCall('vi', callback, [1]);
             }
             catch (eror)
             {
-                console.error(`[UNITON CONNECT] Failed to open modal window`);
-
                 dynCall('vi', callback, [0]);
             }
         },
@@ -76,14 +57,10 @@ const tonConnectBridge = {
             {
                 window.tonConnectUI.closeModal();
 
-                console.log(`[UNITON CONNECT] Modal window successfully closed`);
-
                 dynCall('vi', callback, [1]);
             }
             catch (eror)
             {
-                console.error(`[UNITON CONNECT] Failed to close modal window`);
-
                 dynCall('vi', callback, [0]);
             }
         },
@@ -97,8 +74,6 @@ const tonConnectBridge = {
                 const statusPtr = allocate(
                     intArrayFromString("200"), 'i8', ALLOC_NORMAL);
 
-                console.log(`[UNITON CONNECT] Wallet successfully disconnected`);
-
                 dynCall('vi', callback, [statusPtr]);
 
                 _free(statusPtr);
@@ -107,8 +82,6 @@ const tonConnectBridge = {
             {
                 const statusPtr = allocate(
                     intArrayFromString("500"), 'i8', ALLOC_NORMAL);
-
-                console.error(`[UNITON CONNECT] Failed to disconnect active wallet`);
 
                 dynCall('vi', callback, [statusPtr]);
 
@@ -120,8 +93,7 @@ const tonConnectBridge = {
         {
             if (!tonConnect.isAvailableSDK())
             {
-                console.warn(`[UNITON CONNECT] Sdk is not available, ` +
-                    `listening wallet connection event stopped`)
+                return;
             }
 
             window.unsubscribeToStatusChange = window
@@ -135,10 +107,6 @@ const tonConnectBridge = {
 
                     console.log(`Parsed account: ` +
                         `${JSON.stringify(window.tonConnectUI.account)}`);
-                    console.log(`Parsed is connected status: ` +
-                        `${JSON.stringify(window.tonConnectUI.connected)}`)
-
-                    console.log(`[UNITON CONNECT] Wallet successfully connected, data: ${walletInfo}`);
 
                     dynCall('vi', callback, [walletPtr]);
 
@@ -146,8 +114,6 @@ const tonConnectBridge = {
 
                     return;
                 }
-
-                console.log(`[UNITON CONNECT] Wallet is disconnected`);
 
                 dynCall('vi', callback, [0]);
             });
@@ -160,8 +126,6 @@ const tonConnectBridge = {
                 window.unsubscribeToStatusChange();
 
                 window.unsubscribeToStatusChange = null;
-
-                console.log(`[UNITON CONNECT] Listening wallet status change unsubscribed`)
             }
         },
 
@@ -169,8 +133,6 @@ const tonConnectBridge = {
         {
             if (!tonConnect.isAvailableSDK())
             {
-                console.warn(`[UNITON CONNECT] Sdk is not initialized, restoring connection cancelled`);
-
                 dynCall('vi', callback, [0]);
 
                 return;
@@ -180,16 +142,10 @@ const tonConnectBridge = {
             {
                 if (restored)
                 {
-                    console.log(`[UNITON CONNECT] Wallet connection successfully restored, wallet:` +
-                        `${JSON.stringify(window.tonConnectUI.wallet)},` +
-                        `${JSON.stringify(window.tonConnectUI.walletInfo)}`);
-
                     dynCall('vi', callback, [1]);
 
                     return;
                 }
-
-                console.warn(`[UNITON CONNECT] Wallet connection was not restored`);
 
                 dynCall('vi', callback, [0]);
             });
@@ -199,11 +155,8 @@ const tonConnectBridge = {
             recipientAddress, message)
         {
             const tonWeb = window.tonWeb;
-            const messagePayload = UTF8ToString(message);
 
             var transactionData;
-
-            console.log(`Parsed transacions nanotons: ${nanoInTon}, address: ${recipientAddress}`);
 
             if (!messagePayload || messagePayload === "CLEAR")
             {
@@ -226,7 +179,7 @@ const tonConnectBridge = {
             let cellBuilder = new tonWeb.boc.Cell();
 
             cellBuilder.bits.writeUint(0, 32);
-            cellBuilder.bits.writeString("Test Message");
+            cellBuilder.bits.writeString(message);
                 
             let payload = tonWeb.utils.bytesToBase64(await cellBuilder.toBoc());
 
@@ -266,9 +219,10 @@ const tonConnectBridge = {
 
             const nanotons = UTF8ToString(nanoInTon);
             const address = UTF8ToString(recipientAddress);
+            const payloadMessage = UTF8ToString(message);
 
             const transactionData = await tonConnect.getTransactionPayload(
-                nanotons, address, message);
+                nanotons, address, payloadMessage);
 
             try
             {
