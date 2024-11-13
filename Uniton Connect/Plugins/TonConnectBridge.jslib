@@ -12,10 +12,9 @@ const tonConnectBridge = {
             return true;
         },
 
-        init: function(manifestUrl, dAppUrl, callback)
+        init: function(manifestUrl, callback)
         {
                 const url = UTF8ToString(manifestUrl);
-                const appUrl = UTF8ToString(dAppUrl);
 
                 window.tonConnectUI = new TON_CONNECT_UI.TonConnectUI(
                 {
@@ -129,7 +128,7 @@ const tonConnectBridge = {
             }
         },
 
-        subscribeToRestoreConnection: function(manifestUrl, dAppUrl, callback)
+        subscribeToRestoreConnection: function(callback)
         {
             if (!tonConnect.isAvailableSDK())
             {
@@ -151,6 +150,67 @@ const tonConnectBridge = {
             });
         },
 
+        subscribeToTransactionEvents: function(
+            successCallback, errorCallback)
+        {
+            const signedHandler = (event) =>
+            {
+                console.log(`[UNITON CONNECT] Transaction signed:`, event.detail);
+
+                const signedData = JSON.stringify(event.detail);
+                const signedPtr = allocate(intArrayFromString(
+                    signedData), 'i8', ALLOC_NORMAL);
+
+                dynCall('vi', successCallback, [signedPtr]);
+
+                _free(signedPtr);
+            };
+
+            const failedHandler = (event) =>
+            {
+                console.warn(`[UNITON CONNECT] Transaction signing failed:`, event.detail);
+
+                const failedData = JSON.stringify(event.detail);
+                const failedPtr = allocate(intArrayFromString(
+                    failedData), 'i8', ALLOC_NORMAL);
+
+                dynCall('vi', errorCallback, [failedPtr]);
+
+                _free(failedPtr);
+            };
+
+            window.addEventListener('ton-connect-ui-transaction-signed', signedHandler);
+            window.addEventListener('ton-connect-ui-transaction-signing-failed', failedHandler);
+
+            window._tonConnectTransactionSignedHandler = signedHandler;
+            window._tonConnectTransactionFailedHandler = failedHandler;
+
+            console.log('[UNITON CONNECT] Subscribed to transaction events');
+        },
+
+        unsubscribeToTransactionEvents: function()
+        {
+            if (window._tonConnectTransactionSignedHandler)
+            {
+                window.removeEventListener('ton-connect-ui-transaction-signed',
+                    window._tonConnectTransactionSignedHandler);
+                
+                delete window._tonConnectTransactionSignedHandler;
+
+                console.log(`[UNITON CONNECT] Unsubscribed from transaction-signed event`);
+            }
+
+            if (window._tonConnectTransactionFailedHandler)
+            {
+                window.removeEventListener('ton-connect-ui-transaction-signing-failed',
+                    window._tonConnectTransactionFailedHandler);
+
+                delete window._tonConnectTransactionSignedHandler;
+
+                console.log(`[UNITON CONNECT] Unsubsribed from transaction-signing-failed event`);
+            }
+        },
+
         getTransactionPayload: async function(nanoInTon, 
             recipientAddress, message)
         {
@@ -169,12 +229,8 @@ const tonConnectBridge = {
                     }
                 ]};
 
-                console.log(`[UNITON CONNECT] Created payload without message`);
-
                 return transactionData;
             }
-
-            console.log(`Message for payload: ${message}`);
 
             let cellBuilder = new tonWeb.boc.Cell();
 
@@ -182,8 +238,6 @@ const tonConnectBridge = {
             cellBuilder.bits.writeString(message);
                 
             let payload = tonWeb.utils.bytesToBase64(await cellBuilder.toBoc());
-
-            console.log(`[UNITON CONNECT] Created transaction message payload: ${payload}`);
 
             transactionData = {
                 validUntil: Math.floor(Date.now() / 1000) + 60,
@@ -195,8 +249,6 @@ const tonConnectBridge = {
                 }
             ]};
 
-            console.log(`Transaction data for send: ${JSON.stringify(transactionData)}`);
-
             return transactionData;
         },
 
@@ -205,7 +257,6 @@ const tonConnectBridge = {
         {
             if (!tonConnect.isAvailableSDK()) 
             {
-                console.warn(`[UNITON CONNECT] SDK is not initialized, sending transactions not available`);
                 const nullPtr = allocate(intArrayFromString("null"), 'i8', ALLOC_NORMAL);
 
                 dynCall('vi', callback, [nullPtr]);
@@ -244,21 +295,11 @@ const tonConnectBridge = {
 
                     return;
                 }
-
-                console.log(`[UNITON CONNECT] Parsed boc after send transaction: ${result.boc}`);
                 
                 let claimedBoc = result.boc;
 
-                console.log(`[UNITON CONNECT] Boc after send transaction: ${claimedBoc}`);
-
                 const bocBytes = tonWeb.utils.base64ToBytes(claimedBoc);
-
-                console.log(`[UNITON CONNECT] Parsed boc bytes: ${bocBytes}`);
-
                 const bocCellBytes = await tonWeb.boc.Cell.oneFromBoc(bocBytes).hash();
-
-                console.log(`[UNITON CONNECT] Parsed boc cell bytes: ${bocCellBytes}`);
-
                 const hashBase64 = tonWeb.utils.bytesToBase64(bocCellBytes);
 
                 console.log(`[UNITON CONNECT] Parsed transaction hash: ${hashBase64}`);
@@ -271,8 +312,6 @@ const tonConnectBridge = {
             }
             catch (error)
             {
-                console.error(`[UNITON CONNECT] Failed to validate transaction, reason: ${error.message}`);
-
                 const errorPtr = allocate(intArrayFromString(""), 'i8', ALLOC_NORMAL);
             
                 dynCall('vi', callback, [errorPtr]);
@@ -282,9 +321,9 @@ const tonConnectBridge = {
         }
     },
 
-    Init: function(manifestUrl, dAppUrl, callback)
+    Init: function(manifestUrl, callback)
     {
-        tonConnect.init(manifestUrl, dAppUrl, callback);
+        tonConnect.init(manifestUrl, callback);
     },
 
     InitTonWeb: function()
@@ -317,11 +356,19 @@ const tonConnectBridge = {
         tonConnect.unsubscribeToStatusChanged();
     },
 
-    SubscribeToRestoreConnection: function(
-        manifestUrl, dAppUrl, callback)
+    SubscribeToRestoreConnection: function(callback)
     {
-        tonConnect.subscribeToRestoreConnection(
-            manifestUrl, dAppUrl, callback);
+        tonConnect.subscribeToRestoreConnection(callback);
+    },
+
+    SubscribeToTransactionEvents: function(successCallback, errorCallback)
+    {
+        tonConnect.subscribeToTransactionEvents(successCallback, errorCallback);
+    },
+
+    UnSubscribeToTransactionEvents: function()
+    {
+        tonConnect.unsubscribeToTransactionEvents();
     },
 
     SendTransaction: function(nanoInTon, recipientAddress, callback)

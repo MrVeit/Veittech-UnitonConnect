@@ -17,6 +17,52 @@ namespace UnitonConnect.ThirdParty.TonAPI
         private static UnitonConnectSDK UNITON_CONNECT => UnitonConnectSDK.Instance;
         private static string _walletAddress => UNITON_CONNECT.GetWalletAddress();
 
+        internal static IEnumerator GetTransactionData(string transactionHash,
+            Action<SuccessTransactionData> dataClaimed, Action<string> fetchDataFailed)
+        {
+            /*
+            if (!UNITON_CONNECT.IsWalletConnected)
+            {
+                UnitonConnectLogger.LogWarning("Failed to request the balance," +
+                    " connect the wallet and repeat the operation later");
+
+                //yield break;
+            }
+            */
+
+            var targetUrl = GetTransactionDataUrl(transactionHash);
+
+            using (UnityWebRequest request = UnityWebRequest.Get(targetUrl))
+            {
+                yield return request.SendWebRequest();
+
+                UnityEngine.Debug.Log("Sended response for fetch transaction data");
+
+                var responseResult = request.downloadHandler.text;
+
+                if (request.result != WebRequestUtils.SUCCESS)
+                {
+                    UnityEngine.Debug.LogError($"Failed to fetch transaction data" +
+                        $" with hash: {transactionHash}, reason: {request.error}");
+
+                    var responseData = JsonConvert.DeserializeObject<
+                        TonApiResponseErrorData>(responseResult);
+
+                    fetchDataFailed?.Invoke(responseData.Message);
+
+                    yield break;
+                }
+
+                var transactionData = JsonConvert.DeserializeObject<
+                    SuccessTransactionData>(responseResult);
+
+                UnityEngine.Debug.Log($"Claimed transaction data with hash: " +
+                    $"{transactionHash}, data: {responseResult}");
+
+                dataClaimed?.Invoke(transactionData);
+            }
+        }
+
         internal static IEnumerator GetBalance(Action<long> walletBalanceClaimed)
         {
             if (!UNITON_CONNECT.IsWalletConnected)
@@ -117,6 +163,11 @@ namespace UnitonConnect.ThirdParty.TonAPI
         private static string GetUserWalletUrl(string hexAddress)
         {
             return $"{API_URL}/accounts/{hexAddress}";
+        }
+
+        private static string GetTransactionDataUrl(string transactionHash)
+        {
+            return $"{API_URL}/blockchain/transactions/{transactionHash}";
         }
     }
 }

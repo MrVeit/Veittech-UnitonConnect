@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.View;
+using UnitonConnect.ThirdParty.TonAPI;
 
 namespace UnitonConnect.Core
 {
@@ -22,22 +23,26 @@ namespace UnitonConnect.Core
         [SerializeField] private TextMeshProUGUI _addressBar;
 
         public static Action<bool> OnInitialized;
+
         public static Action<bool> OnModalWindowOpened;
         public static Action<bool> OnModalWindowClosed;
-        public static Action<bool> OnWalletConnectionRestored;
 
         public static Action<string> OnWalletConnected;
         public static Action<string> OnWalletDisconnected;
-        public static Action<string> OnTransactionSended;
+        public static Action<bool> OnWalletConnectionRestored;
+
+        public static Action<string> OnTonTransactionSended;
 
         private readonly string MANIFEST_URL = "https://mrveit.github.io/Veittech-UnitonConnect/dAppData.json";
-        private readonly string DAPP_LINK = "https://t.me/UnitonConnect_bot";
 
         private ConnectedWalletConfigData _walletConfig;
 
         [DllImport("__Internal")]
         private static extern void Init(string manifestUrl, 
-            string dAppUrl, Action<int> onInitialized);
+            Action<int> onInitialized);
+
+        [DllImport("__Internal")]
+        private static extern void InitTonWeb();
 
         [DllImport("__Internal")]
         private static extern void OpenModal(
@@ -66,50 +71,24 @@ namespace UnitonConnect.Core
         private static extern void UnSubscribeToStatusChange();
 
         [DllImport("__Internal")]
-        private static extern void SubscribeToRestoreConnection(string manifestUrl, 
-            string dAppUrl, Action<int> onConnectionRestored);
+        private static extern void SubscribeToRestoreConnection(
+            Action<int> onConnectionRestored);
 
         [DllImport("__Internal")]
-        private static extern void InitTonWeb();
+        private static extern void SubscribeToTransactionEvents(
+            Action<string> onTransactionSigned, Action<string> onTransactionSignFailed);
 
-        [MonoPInvokeCallback(typeof(Action<string>))]
-        private static void OnTransactionSend(string parsedHash)
-        {
-            OnTransactionSended?.Invoke(parsedHash);
-
-            var message = "[UNITON CONNECT] Transaction sended";
-
-            if (string.IsNullOrEmpty(parsedHash))
-            {
-                message = $"[UNITON CONNECT] Transaction sended with eror: {parsedHash}";
-
-                Debug.LogError(message);
-
-                _instance._dataBar.text = message;
-
-                CloseModal(OnModalWindowClose);
-
-                return;
-            }
-
-            message = $"[UNITON CONNECT] Transaction successfully sended," +
-                $" parsed transaction hash: {parsedHash}";
-
-            Debug.Log(message);
-
-            _instance._dataBar.text = $"Parsed trx hash: {parsedHash}";
-
-            CloseModal(OnModalWindowClose);
-        }
+        [DllImport("__Internal")]
+        private static extern void UnSubscribeToTransactionEvents();
 
         [MonoPInvokeCallback(typeof(Action<int>))]
         private static void OnInitialize(int statusCode)
         {
-            OnInitialized?.Invoke(_instance.IsConnected(statusCode));
+            OnInitialized?.Invoke(_instance.IsSuccess(statusCode));
 
-            var message = "[UNITON CONNECT] Sdk successfully initialized";
+            var message = "Sdk successfully initialized";
 
-            if (_instance.IsConnected(statusCode))
+            if (_instance.IsSuccess(statusCode))
             {
                 Debug.Log(message);
 
@@ -118,7 +97,7 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            message = "[UNITON CONNECT] Failed to initialize sdk";
+            message = "Failed to initialize sdk";
 
             Debug.LogError(message);
 
@@ -128,13 +107,13 @@ namespace UnitonConnect.Core
         [MonoPInvokeCallback(typeof(Action<int>))]
         private static void OnModalWindowOpen(int statusCode)
         {
-            OnModalWindowOpened?.Invoke(_instance.IsConnected(statusCode));
+            OnModalWindowOpened?.Invoke(_instance.IsSuccess(statusCode));
 
             var message = string.Empty;
 
-            if (_instance.IsConnected(statusCode))
+            if (_instance.IsSuccess(statusCode))
             {
-                message = "[UNITON CONNECT] Modal window for connect opened";
+                message = "Modal window for connect opened";
 
                 Debug.Log(message);
 
@@ -143,7 +122,7 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            message = "[UNITON CONNECT] Failed to open modal window";
+            message = "Failed to open modal window";
 
             Debug.LogWarning(message);
 
@@ -153,13 +132,13 @@ namespace UnitonConnect.Core
         [MonoPInvokeCallback(typeof(Action<int>))]
         private static void OnModalWindowClose(int statusCode)
         {
-            OnModalWindowClosed?.Invoke(_instance.IsConnected(statusCode));
+            OnModalWindowClosed?.Invoke(_instance.IsSuccess(statusCode));
 
             var message = string.Empty;
 
-            if (_instance.IsConnected(statusCode))
+            if (_instance.IsSuccess(statusCode))
             {
-                message = "[UNITON CONNECT] Modal window closed";
+                message = "Modal window closed";
 
                 Debug.Log(message);
 
@@ -172,13 +151,13 @@ namespace UnitonConnect.Core
         [MonoPInvokeCallback(typeof(Action<int>))]
         private static void OnWalletConnectionRestor(int statusCode)
         {
-            OnWalletConnectionRestored?.Invoke(_instance.IsConnected(statusCode));
+            OnWalletConnectionRestored?.Invoke(_instance.IsSuccess(statusCode));
 
             var message = string.Empty;
 
-            if (_instance.IsConnected(statusCode))
+            if (_instance.IsSuccess(statusCode))
             {
-                message = "[UNITON CONNECT] Wallet connection restored";
+                message = "Wallet connection restored";
 
                 Debug.Log(message);
 
@@ -191,7 +170,7 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            message = "[UNITON CONNECT] Wallet connection was not restored";
+            message = "Wallet connection was not restored";
 
             Debug.LogWarning(message);
 
@@ -211,7 +190,7 @@ namespace UnitonConnect.Core
 
             if (string.IsNullOrEmpty(walletInfo) || walletInfo == "0")
             {
-                message = "[UNITON CONNECT] Wallet is not connected";
+                message = "Wallet is not connected";
 
                 Debug.LogWarning(message);
 
@@ -224,7 +203,7 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            message = $"[UNITON CONNECT] Wallet successfully connected";
+            message = $"Wallet successfully connected";
 
             Debug.Log(message);
 
@@ -265,18 +244,128 @@ namespace UnitonConnect.Core
 
             if (statusCode == "200")
             {
-                message = "[UNITON CONNECT] Wallet successfully disconnected";
+                message = "Wallet successfully disconnected";
 
                 Debug.Log(message);
             }
             else if (statusCode == "500")
             {
-                message = "[UNITON CONNECT] Failed to disconnect wallet";
+                message = "Failed to disconnect wallet";
 
                 Debug.LogError(message);
             }
 
             _instance._dataBar.text = message;
+        }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnTransactionSend(string parsedHash)
+        {
+            OnTonTransactionSended?.Invoke(parsedHash);
+
+            var message = "Transaction sended...";
+
+            if (string.IsNullOrEmpty(parsedHash))
+            {
+                message = $"Transaction sended with error: {parsedHash}";
+
+                Debug.LogError(message);
+
+                _instance._dataBar.text = message;
+
+                CloseModal(OnModalWindowClose);
+
+                return;
+            }
+
+            message = $"[UNITON CONNECT] Transaction successfully sended," +
+                $" parsed transaction hash: {parsedHash}";
+
+            Debug.Log(message);
+
+            _instance._dataBar.text = $"Parsed trx hash: {parsedHash}";
+
+            CloseModal(OnModalWindowClose);
+
+            _instance.StartCoroutine(TonApiBridge.GetTransactionData(
+                parsedHash, (transactionData) =>
+            {
+                var status = transactionData.IsSuccess;
+                var newBalance = transactionData.EndBalance;
+                var fee = transactionData.TotalFees;
+                var sendedAmount = transactionData.TotalFees;
+                var recipientAddress = transactionData.InMessage.Recipient.Address;
+
+                var decodedBody = transactionData.InMessage.DecodedBody;
+                var internalMessage = decodedBody.Payloads[0].Message.InternalMessage;
+                var message = internalMessage.Body.Value.MessageText;
+
+                _instance._dataBar.text = $"Claimed transaction data: \n" +
+                    $"STATUS: {transactionData.IsSuccess}" +
+                    $"HASH: {parsedHash}, " +
+                    $"NEW BALANCE: {transactionData.EndBalance}, " +
+                    $"FEE: {transactionData.TotalFees}, " +
+                    $"SENDED AMOUNT: {transactionData.OutMessages[0].Value}, " +
+                    $"RECIPIENT: {WalletConnectUtils.GetHEXAddress(recipientAddress)}, " +
+                    $"MESSAGE: {message}";
+            },
+            (errorMessage) =>
+            {
+                var message = $"Failed to fetch transaction data, reason: {errorMessage}";
+
+                Debug.LogError(message);
+
+                _instance._dataBar.text = message;
+            }));
+        }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnTransactionSuccessfullySign(string eventData)
+        {
+            Debug.Log($"Transaction successfully signed with data: {eventData}");
+
+            CloseModal(OnModalWindowClose);
+        }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnTransactionSignFail(string eventData)
+        {
+            Debug.LogWarning($"Transaction failed to sign with data: {eventData}");
+
+            CloseModal(OnModalWindowClose);
+        }
+
+        private void TestTransactionDataFetch(string hash)
+        {
+            _instance.StartCoroutine(TonApiBridge.GetTransactionData(hash, (transactionData) =>
+            {
+                var status = transactionData.IsSuccess;
+                var newBalance = UserAssetsUtils.FromNanoton(
+                    transactionData.EndBalance).ToString();
+                var fee = UserAssetsUtils.FromNanoton(
+                    transactionData.TotalFees).ToString();
+                var sendedAmount = UserAssetsUtils.FromNanoton(
+                    transactionData.OutMessages[0].Value).ToString();
+                var recipientAddress = transactionData.OutMessages[0].Recipient.Address;
+                var message = transactionData.OutMessages[0].DecodedBody.MessageText;
+
+                _instance._dataBar.text = $"Loaded transaction data: \n" +
+                    $"STATUS: {transactionData.IsSuccess},\n" +
+                    $"HASH: {hash},\n" +
+                    $"NEW BALANCE: {newBalance} TON,\n" +
+                    $"FEE: {fee} TON,\n" +
+                    $"SENDED AMOUNT: {sendedAmount} TON,\n" +
+                    $"RECIPIENT ADDRESS: {WalletConnectUtils.GetNonBounceableAddress(recipientAddress)},\n" +
+                    $"MESSAGE: {message}";
+            },
+            (errorMessage) =>
+            {
+                var message = $"Failed to fetch transaction data, reason: {errorMessage}";
+
+                Debug.LogError(message);
+
+                _instance._dataBar.text = message;
+            }));
         }
 
         private void OnDestroy()
@@ -301,19 +390,7 @@ namespace UnitonConnect.Core
             }
 
             UnSubscribeToStatusChange();
-        }
-
-        private void SendTon()
-        {
-            var recepientAddress = "UQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4Ursw6";
-            var bouceableAddress = WalletConnectUtils.GetHEXAddress(recepientAddress);
-
-            decimal amount = (decimal)0.001f;
-            var tonInNanotons = UserAssetsUtils.ToNanoton(amount).ToString();
-
-            SendTransactionWithMessage(tonInNanotons, bouceableAddress, "GOIDA", OnTransactionSend);
-
-            Debug.Log($"Transaction sended");
+            UnSubscribeToTransactionEvents();
         }
 
         public void Init()
@@ -326,15 +403,19 @@ namespace UnitonConnect.Core
 
             if (!IsSupportedPlatform())
             {
+                _instance._dataBar.text = "Unsupported platform, " +
+                    "please build WebGL for check options";
+
                 return;
             }
 
-            Init(MANIFEST_URL, DAPP_LINK, OnInitialize);
+            Init(MANIFEST_URL, OnInitialize);
             InitTonWeb();
 
-            SubscribeToRestoreConnection(MANIFEST_URL,
-                DAPP_LINK, OnWalletConnectionRestor);
+            SubscribeToRestoreConnection(OnWalletConnectionRestor);
             SubscribeToStatusChange(OnWalletConnect);
+            SubscribeToTransactionEvents(OnTransactionSuccessfullySign,
+                OnTransactionSignFail);
         }
 
         public void ConnectWallet()
@@ -357,7 +438,19 @@ namespace UnitonConnect.Core
             Disconnect(OnWalletDisconnect);
         }
 
-        private bool IsConnected(int statusCode)
+        public void SendTon()
+        {
+            var recepientAddress = "UQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4Ursw6";
+            var bouceableAddress = WalletConnectUtils.GetHEXAddress(recepientAddress);
+
+            decimal amount = (decimal)0.001f;
+            var tonInNanotons = UserAssetsUtils.ToNanoton(amount).ToString();
+
+            SendTransactionWithMessage(tonInNanotons, bouceableAddress, 
+                "GOIDA", OnTransactionSend);
+        }
+
+        private bool IsSuccess(int statusCode)
         {
             if (statusCode == 1)
             {
@@ -369,7 +462,7 @@ namespace UnitonConnect.Core
 
         private bool IsSupportedPlatform()
         {
-#if UNITY_EDITOR
+#if UNITY_EDITOR || !UNITY_WEBGL
             Debug.LogWarning("Unsupported platform, please build WebGL for check options");
 
             return false;
