@@ -158,7 +158,7 @@ const tonConnectBridge = {
 
             var transactionData;
 
-            if (!messagePayload || messagePayload === "CLEAR")
+            if (!message || message === "CLEAR")
             {
                 transactionData = {
                     validUntil: Math.floor(Date.now() / 1000) + 60,
@@ -174,7 +174,7 @@ const tonConnectBridge = {
                 return transactionData;
             }
 
-            console.log(`Message for payload: ${messagePayload}`);
+            console.log(`Message for payload: ${message}`);
 
             let cellBuilder = new tonWeb.boc.Cell();
 
