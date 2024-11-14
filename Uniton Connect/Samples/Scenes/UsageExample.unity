@@ -557,7 +557,7 @@ MonoBehaviour:
     CachedTimeToLive: 0
   _useCachedWalletsIcons: 0
   _supportedWallets: {fileID: 11400000, guid: b52b65440e65b3240a1721c7fb6766d5, type: 2}
-  _confirmTransactionDelay: 0
+  _confirmTransactionDelay: 15
 --- !u!1 &147073027
 GameObject:
   m_ObjectHideFlags: 0
