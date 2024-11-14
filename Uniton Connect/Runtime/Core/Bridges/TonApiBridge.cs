@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using UnityEngine;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
 using UnitonConnect.Core;
@@ -15,7 +16,7 @@ namespace UnitonConnect.ThirdParty.TonAPI
         private const string API_URL = "https://tonapi.io/v2";
 
         private static UnitonConnectSDK UNITON_CONNECT => UnitonConnectSDK.Instance;
-        private static string _walletAddress => UNITON_CONNECT.GetWalletAddress();
+        private static string _walletAddress => UNITON_CONNECT.Wallet.ToString();
 
         internal static IEnumerator GetBalance(Action<long> walletBalanceClaimed)
         {
@@ -23,6 +24,8 @@ namespace UnitonConnect.ThirdParty.TonAPI
             {
                 UnitonConnectLogger.LogWarning("Failed to request the balance," +
                     " connect the wallet and repeat the operation later");
+
+                walletBalanceClaimed?.Invoke(0);
 
                 yield break;
             }
@@ -49,6 +52,71 @@ namespace UnitonConnect.ThirdParty.TonAPI
 
                 UnitonConnectLogger.Log($"Current TON balance in nanotons: {data.Balance}");
             }
+        }
+
+        internal static IEnumerator GetTransactionData(string transactionHash, float awaitDelay,
+            Action<SuccessTransactionData> dataClaimed, Action<string> fetchDataFailed)
+        {
+            if (!UNITON_CONNECT.IsWalletConnected)
+            {
+                UnitonConnectLogger.LogWarning("Failed to request the balance," +
+                    " connect the wallet and repeat the operation later");
+
+                yield break;
+            }
+
+            yield return new WaitForSeconds(awaitDelay);
+
+            var encodedTransactionHash = EscapeQueryParam(transactionHash);
+            var targetUrl = GetTransactionDataUrl(encodedTransactionHash);
+
+            using (UnityWebRequest request = UnityWebRequest.Get(targetUrl))
+            {
+                yield return request.SendWebRequest();
+
+                var responseResult = request.downloadHandler.text;
+
+                if (request.result != WebRequestUtils.SUCCESS)
+                {
+                    UnitonConnectLogger.LogError($"Failed to fetch transaction data" +
+                        $" with hash: {transactionHash}, reason: {request.error}");
+
+                    var responseData = JsonConvert.DeserializeObject<
+                        TonApiResponseErrorData>(responseResult);
+
+                    fetchDataFailed?.Invoke(responseData.Message);
+
+                    yield break;
+                }
+
+                var transactionData = JsonConvert.DeserializeObject<
+                    SuccessTransactionData>(responseResult);
+
+                UnitonConnectLogger.Log($"Claimed transaction data with hash: " +
+                    $"{transactionHash}, data: {responseResult}");
+
+                dataClaimed?.Invoke(transactionData);
+            }
+        }
+
+        internal static string ConvertAddressToEncodeURL(string address)
+        {
+            return EscapeQueryParam(WalletConnectUtils.GetHEXAddress(address));
+        }
+
+        private static string EscapeQueryParam(string value)
+        {
+            return Uri.EscapeDataString(value);
+        }
+
+        private static string GetUserWalletUrl(string hexAddress)
+        {
+            return $"{API_URL}/accounts/{hexAddress}";
+        }
+
+        private static string GetTransactionDataUrl(string transactionHash)
+        {
+            return $"{API_URL}/blockchain/transactions/{transactionHash}";
         }
 
         internal static class NFT
@@ -107,16 +175,6 @@ namespace UnitonConnect.ThirdParty.TonAPI
         internal sealed class Jetton
         {
             // SOON :D
-        }
-
-        internal static string ConvertAddressToEncodeURL(string address)
-        {
-            return Uri.EscapeDataString(WalletConnectUtils.GetHEXAddress(address));
-        }
-
-        private static string GetUserWalletUrl(string hexAddress)
-        {
-            return $"{API_URL}/accounts/{hexAddress}";
         }
     }
 }

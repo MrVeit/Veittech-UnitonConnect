@@ -58,7 +58,7 @@ namespace UnitonConnect.Editor.PostProccess
             {
                 ProjectLink = appConfig.Data.ProjectLink,
                 Name = appConfig.Data.Name,
-                Icon = $"{appConfig.Data.ProjectLink}{ProjectStorageConsts.APP_ICON_FILE_NAME}"
+                Icon = $"{appConfig.Data.ProjectLink}/{ProjectStorageConsts.APP_ICON_FILE_NAME}"
             };
 
             string json = JsonConvert.SerializeObject(data);

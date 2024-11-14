@@ -9,6 +9,7 @@ namespace UnitonConnect.Core.Demo
         public sealed override void OnClick()
         {
             _panel.Init();
+
             _panel.Open();    
         }
     }

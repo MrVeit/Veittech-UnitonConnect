@@ -8,11 +8,11 @@ namespace UnitonConnect.Core.Data
     {
         [SerializeField, Space] private TestWalletInterfaceAdapter _interfaceAdapter;
 
-        public sealed override async void OnClick()
+        public sealed override void OnClick()
         {
             UnitonConnectLogger.Log("The disconnecting process of the previously connected wallet has been started");
 
-            await _interfaceAdapter.UnitonSDK.DisconnectWallet();
+            _interfaceAdapter.UnitonSDK.Disconnect();
 
             UnitonConnectLogger.Log("Success disconnect");
 

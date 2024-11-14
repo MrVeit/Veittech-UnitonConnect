@@ -24,15 +24,12 @@ namespace UnitonConnect.Core.Demo
         private UnitonConnectSDK _unitonConnect => _interfaceAdapter.UnitonSDK;
         private UserAssets.NFT _nftModule => _interfaceAdapter.NftStorage;
 
-        private float _startSize;
-
         private bool _isInitialized;
 
-        private readonly float _slotSize = 350f;
 
         private void OnEnable()
         {
-            _unitonConnect.OnWalletDisconnected += RemoveNftCollectionStorage;
+            _unitonConnect.OnNativeWalletDisconnected += RemoveNftCollectionStorage;
 
             _nftModule.OnNftCollectionsClaimed += NftCollectionsClaimed;
             _nftModule.OnTargetNftCollectionClaimed += TargetNftCollectionClaimed;
@@ -42,7 +39,7 @@ namespace UnitonConnect.Core.Demo
 
         private void OnDestroy()
         {
-            _unitonConnect.OnWalletDisconnected -= RemoveNftCollectionStorage;
+            _unitonConnect.OnNativeWalletDisconnected -= RemoveNftCollectionStorage;
 
             _nftModule.OnNftCollectionsClaimed -= NftCollectionsClaimed;
             _nftModule.OnTargetNftCollectionClaimed -= TargetNftCollectionClaimed;
@@ -62,18 +59,19 @@ namespace UnitonConnect.Core.Demo
                 return;
             }
 
-            _startSize = _slotSize;
-
             _nftModule.Load(10);
-
-            SetContentSlotSize(_startSize);
 
             _loadAnimation.SetActive(true);
             _warningMessage.gameObject.SetActive(false);
         }
 
-        public void RemoveNftCollectionStorage()
+        public void RemoveNftCollectionStorage(bool isSuccess)
         {
+            if (!isSuccess)
+            {
+                return;
+            }
+
             if (_createdNfts.Count == 0)
             {
                 return;
@@ -127,7 +125,10 @@ namespace UnitonConnect.Core.Demo
 
         private void CreateNftItem(List<NftViewData> viewContainer)
         {
-            int sizeCount = 0;
+            if (_createdNfts.Count > 0)
+            {
+                return;
+            }
 
             foreach (var nftItem in viewContainer)
             {
@@ -136,27 +137,11 @@ namespace UnitonConnect.Core.Demo
                 newNftView.SetView(nftItem);
 
                 _createdNfts.Add(newNftView);
-
-                sizeCount++;
-
-                if (sizeCount >= 2)
-                {
-                    sizeCount = 0;
-
-                    var slotSize = _startSize + _slotSize;
-
-                    SetContentSlotSize(slotSize);
-                }
             }
 
             _loadAnimation.SetActive(false);
 
             _isInitialized = true;
-        }
-
-        private void SetContentSlotSize(float size)
-        {
-            _contentSize.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size);
         }
 
         private bool IsExistNFTs()
