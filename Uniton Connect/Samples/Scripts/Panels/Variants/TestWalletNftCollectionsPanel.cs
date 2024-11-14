@@ -125,6 +125,11 @@ namespace UnitonConnect.Core.Demo
 
         private void CreateNftItem(List<NftViewData> viewContainer)
         {
+            if (_createdNfts.Count > 0)
+            {
+                return;
+            }
+
             foreach (var nftItem in viewContainer)
             {
                 var newNftView = Instantiate(_nftPrefab, _contentParent);

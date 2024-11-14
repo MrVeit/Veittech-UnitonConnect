@@ -98,11 +98,12 @@ namespace UnitonConnect.Core.Demo
         {
             if (_unitonSDK.IsWalletConnected)
             {
+                var userAddress = wallet.Address;
+
                 var successConnectMessage = $"Wallet is connected, " +
-                    $"full account address: {wallet.ToString()}, \n" +
+                    $"full account address: {userAddress}, \n" +
                     $"Public Key: {wallet.PublicKey}";
 
-                var userAddress = $"{wallet.ToString()}";
                 var shortWalletAddress = WalletVisualUtils.ProcessWalletAddress(userAddress, 6);
 
                 _debugMessage.text = successConnectMessage;

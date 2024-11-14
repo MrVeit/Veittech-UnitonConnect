@@ -1024,7 +1024,12 @@ namespace UnitonConnect.Core
             OnWalletConnectionRestored?.Invoke(isRestored, restoredWallet);
         }
 
-        private void OnWalletConnectionRestore(bool isRestored) => OnNativeWalletConnectionRestored?.Invoke(isRestored);
+        private void OnWalletConnectionRestore(bool isRestored)
+        {
+            _isWalletConnected = true;
+
+            OnNativeWalletConnectionRestored?.Invoke(isRestored);
+        }
 
         private void OnWalletConnectionPause() => OnWalletConnectionPaused?.Invoke();
 
