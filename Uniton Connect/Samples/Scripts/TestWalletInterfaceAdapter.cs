@@ -144,6 +144,11 @@ namespace UnitonConnect.Core.Demo
                 return;
             }
 
+            _connectButton.interactable = false;
+            _disconnectButton.interactable = true;
+            _sendTransactionButton.interactable = true;
+            _openNftCollectionButton.interactable = true;
+
             Debug.Log($"Connection to previously connected wallet restored");
         }
 
@@ -156,7 +161,12 @@ namespace UnitonConnect.Core.Demo
 
             _nftCollectionPanel.RemoveNftCollectionStorage(true);
 
-            Debug.Log($"Wallet disconnected");
+            _connectButton.interactable = true;
+            _disconnectButton.interactable = false;
+            _sendTransactionButton.interactable = false;
+            _openNftCollectionButton.interactable = false;
+
+            Debug.Log($"Previous wallet successful disconnected");
         }
 
         private void NftCollectionsLoaded(NftCollectionData collections)

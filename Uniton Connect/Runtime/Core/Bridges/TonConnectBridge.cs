@@ -61,8 +61,6 @@ namespace UnitonConnect.Core
 
             if (isSuccess)
             {
-                UnitonConnectLogger.Log($"Uniton Connect sdk successfully initialized");
-
                 return;
             }
 
