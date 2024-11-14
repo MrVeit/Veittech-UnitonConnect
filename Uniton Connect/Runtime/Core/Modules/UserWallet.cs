@@ -1,4 +1,5 @@
 using UnitonConnect.Core.Data;
+using UnitonConnect.Core.Utils.Debugging;
 
 namespace UnitonConnect.Core.Common
 {
@@ -15,6 +16,11 @@ namespace UnitonConnect.Core.Common
         {
             _address = address;
 
+            if (walletConfig == null)
+            {
+                return;
+            }
+
             PublicKey = walletConfig.PublicKey;
             StateInit = walletConfig.StateInit;
 
@@ -23,6 +29,13 @@ namespace UnitonConnect.Core.Common
 
         public sealed override string ToString()
         {
+            if (!UnitonConnectSDK.Instance.IsWalletConnected)
+            {
+                UnitonConnectLogger.LogWarning($"Wallet is not connected, address is empty");
+
+                return string.Empty;
+            }
+
             return _address;
         }
     }

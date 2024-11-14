@@ -255,7 +255,7 @@ namespace UnitonConnect.Core
             UnSubscribeToTransactionEvents();
         }
 
-        internal static void InitSdk(string manifestUrl, 
+        internal static void Init(string manifestUrl, 
             Action<bool> sdkInitialized, Action<bool> connectionRestored)
         {
             OnInitialized = sdkInitialized;
@@ -278,7 +278,7 @@ namespace UnitonConnect.Core
             OpenModal(OnModalWindowOpen);
         }
 
-        internal static void DisconnectWallet(
+        internal static void Disconnect(
             Action<bool> walletDisconnected)
         {
             OnWalletDisconnected = walletDisconnected;
@@ -324,49 +324,6 @@ namespace UnitonConnect.Core
 
             SendTransactionWithMessage(tonInNanotons, 
                 targetAddress, message, OnTransactionSend);
-        }
-
-        private static void ValidateTransaction()
-        {
-            /*
-            StartCoroutine(TonApiBridge.GetTransactionData(
-                _latestTransactionHash, (transactionData) =>
-            {
-                var status = transactionData.IsSuccess;
-                var newBalance = UserAssetsUtils.FromNanoton(
-                    transactionData.EndBalance).ToString();
-                var fee = UserAssetsUtils.FromNanoton(
-                    transactionData.TotalFees).ToString();
-                var sendedAmount = UserAssetsUtils.FromNanoton(
-                    transactionData.OutMessages[0].Value).ToString();
-                var recipientAddress = transactionData.OutMessages[0].Recipient.Address;
-                var message = transactionData.OutMessages[0].DecodedBody.MessageText;
-
-                _instance._dataBar.text = $"Loaded transaction data: \n" +
-                    $"STATUS: {transactionData.IsSuccess},\n" +
-                    $"HASH: {_latestTransactionHash},\n" +
-                    $"NEW BALANCE: {newBalance} TON,\n" +
-                    $"FEE: {fee} TON,\n" +
-                    $"SENDED AMOUNT: {sendedAmount} TON,\n" +
-                    $"RECIPIENT ADDRESS: {WalletConnectUtils.GetNonBounceableAddress(recipientAddress)},\n" +
-                    $"MESSAGE: {message}";
-            },
-            (errorMessage) =>
-            {
-                var message = $"Failed to fetch transaction data, reason: {errorMessage}";
-
-                Debug.LogError(message);
-
-                _instance._dataBar.text = message;
-
-                if (errorMessage == "entity not found")
-                {
-                    Debug.LogWarning("Transaction data is processing");
-
-                    Invoke(nameof(ValidateTransaction), 5f);
-                }
-            }));
-            */
         }
 
         private static bool IsSuccess(int statusCode)

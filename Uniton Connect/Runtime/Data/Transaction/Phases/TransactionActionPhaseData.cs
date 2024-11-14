@@ -19,10 +19,10 @@ namespace UnitonConnect.Core.Data
         public int SkippedActions { get; set; }
 
         [JsonProperty("fwd_fees")]
-        public long ForwardFees { get; set; }
+        public decimal ForwardFees { get; set; }
 
         [JsonProperty("total_fees")]
-        public long TotalFees { get; set; }
+        public decimal TotalFees { get; set; }
 
         [JsonProperty("result_code_description")]
         public string ResultCodeDescription { get; set; }

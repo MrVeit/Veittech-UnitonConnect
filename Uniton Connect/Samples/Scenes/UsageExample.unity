@@ -680,14 +680,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 136500635}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7c6def54fa7691449a287e390fd703a3, type: 3}
+  m_Script: {fileID: 11500000, guid: 089b6779f2a023a4395870db227b144b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _connectButton: {fileID: 1029599515}
-  _disconnectButton: {fileID: 817907982}
-  _sendTonButton: {fileID: 2132820827}
-  _dataBar: {fileID: 1482803316}
-  _addressBar: {fileID: 2058162193}
+  _testMode: 1
+  _debugMode: 1
+  _initializeOnAwake: 0
+  _walletsListConfig:
+    SourceLink: 
+    CachedTimeToLive: 0
+  _useCachedWalletsIcons: 0
+  _supportedWallets: {fileID: 11400000, guid: b52b65440e65b3240a1721c7fb6766d5, type: 2}
+  _confirmTransactionDelay: 0
 --- !u!1 &147073027
 GameObject:
   m_ObjectHideFlags: 0
@@ -1842,7 +1846,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &515026108
 Transform:
   m_ObjectHideFlags: 0
@@ -1865,7 +1869,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 515026106}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 73d6bca820c181940b9820f10f5fa4a5, type: 3}
   m_Name: 
@@ -2420,7 +2424,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 1.8325806, y: 0}
+  m_AnchoredPosition: {x: 1.8325195, y: 0}
   m_SizeDelta: {x: 3.665, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &569411085
@@ -4280,7 +4284,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1029599513}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5b807be4e754af943991375f05a66fce, type: 3}
   m_Name: 
@@ -6174,7 +6178,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1544404034}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dc84ff57316fd45408a9e1874bb25fd1, type: 3}
   m_Name: 
@@ -8763,7 +8767,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2132820825}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2935a9545dcc1104d826b767220368ee, type: 3}
   m_Name: 

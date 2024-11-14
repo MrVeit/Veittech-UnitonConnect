@@ -1,18 +1,11 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using Newtonsoft.Json;
 using TMPro;
-using TonSdk.Core;
-using TonSdk.Connect;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.View;
-using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.DeFi;
-using UnitonConnect.Editor.Common;
 
 namespace UnitonConnect.Core.Demo
 {
@@ -25,61 +18,53 @@ namespace UnitonConnect.Core.Demo
         [SerializeField] private Button _disconnectButton;
         [SerializeField] private Button _sendTransactionButton;
         [SerializeField] private Button _openNftCollectionButton;
-        [SerializeField, Space] private TestChooseWalletPanel _chooseWalletPanel;
-        [SerializeField] private TestSelectedWalletConnectionPanel _connectPanel;
-        [SerializeField] private TestWalletNftCollectionsPanel _nftCollectionPanel;
-        [SerializeField, Space] private TestWalletView _walletViewPrefab;
-        [SerializeField] private Transform _walletsParent;
-        [SerializeField] private RectTransform _walletsContentSize;
-        [SerializeField, Space] private List<TestWalletView> _activeWallets;
+        [SerializeField, Space] private TestWalletNftCollectionsPanel _nftCollectionPanel;
         [SerializeField, Space] private GameObject _loadWalletsAnimation;
 
-        private string _connectUrl;
+        private string _latestTransactionHash;
 
         private UnitonConnectSDK _unitonSDK;
+
         private UserAssets.NFT _nftModule => _unitonSDK.Assets.Nft;
 
         public UnitonConnectSDK UnitonSDK => _unitonSDK;
         public UserAssets.NFT NftStorage => _nftModule;
 
-        public WalletConfig LatestAuthorizedWallet { get; private set; }
-        public List<WalletConfig> LoadedWallets { get; set; }
-
         private void Awake()
         {
             _unitonSDK = UnitonConnectSDK.Instance;
 
-            _unitonSDK.OnInitialized += Initialize;
+            _unitonSDK.OnNativeInitialized += Initialize;
 
-            _unitonSDK.OnWalletConnectionFinished += WalletConnectionFinished;
-            _unitonSDK.OnWalletConnectionFailed += WalletConnectionFailed;
-            _unitonSDK.OnWalletConnectionRestored += WalletConnectionRestored;
+            _unitonSDK.OnNativeWalletConnectionFinished += WalletConnectionFinished;
+            _unitonSDK.OnNativeWalletConnectionFailed += WalletConnectionFailed;
+            _unitonSDK.OnNativeWalletConnectionRestored += WalletConnectionRestored;
 
-            _unitonSDK.OnWalletDisconnected += WalletDisconnected;
+            _unitonSDK.OnNativeWalletDisconnected += WalletDisconnected;
 
-            if (_activeWallets.Count < 1)
-            {
-                _unitonSDK.OnWalletDisconnected += Initialize;
-            }
+            _unitonSDK.OnNativeSendingTonFinished += TonTransactionSended;
+            _unitonSDK.OnNativeTransactionConfirmed += TonTransactionConfirmed;
+
+            _unitonSDK.OnNativeTransactionSendingFailed += TonTransactionSendFailed;
         }
 
         private void OnDestroy()
         {
-            _unitonSDK.OnInitialized -= Initialize;
+            _unitonSDK.OnNativeInitialized -= Initialize;
 
-            _unitonSDK.OnWalletConnectionFinished -= WalletConnectionFinished;
-            _unitonSDK.OnWalletConnectionFailed -= WalletConnectionFailed;
-            _unitonSDK.OnWalletConnectionRestored -= WalletConnectionRestored;
+            _unitonSDK.OnNativeWalletConnectionFinished -= WalletConnectionFinished;
+            _unitonSDK.OnNativeWalletConnectionFailed -= WalletConnectionFailed;
+            _unitonSDK.OnNativeWalletConnectionRestored -= WalletConnectionRestored;
 
-            _unitonSDK.OnWalletDisconnected -= WalletDisconnected;
+            _unitonSDK.OnNativeWalletDisconnected -= WalletDisconnected;
+
+            _unitonSDK.OnNativeSendingTonFinished -= TonTransactionSended;
+            _unitonSDK.OnNativeTransactionConfirmed -= TonTransactionConfirmed;
+
+            _unitonSDK.OnNativeTransactionSendingFailed -= TonTransactionSendFailed;
 
             _nftModule.OnNftCollectionsClaimed -= NftCollectionsLoaded;
             _nftModule.OnTargetNftCollectionClaimed -= TargetNftCollectionLoaded;
-
-            if (_activeWallets.Count < 1)
-            {
-                _unitonSDK.OnWalletDisconnected -= Initialize;
-            }
         }
 
         private void Start()
@@ -97,120 +82,39 @@ namespace UnitonConnect.Core.Demo
             _nftModule.OnTargetNftCollectionClaimed += TargetNftCollectionLoaded;
         }
 
-        private void Initialize()
+        private void Initialize(bool isSuccess)
         {
-            LoadWallets((walletsConfig) =>
+            if (!isSuccess)
             {
-                LoadedWallets = WalletConnectUtils.GetSupportedWalletsListForUse(walletsConfig);
+                Debug.Log("Failed tto initialize sdk, something wrong...");
 
-                if (_unitonSDK.IsWalletConnected)
-                {
-                    UnitonConnectLogger.Log("SDK is already initialized, " +
-                        "there is no need to reconnect the wallet. To reconnect, " +
-                        "you need to disconnect the previously connected wallet");
-
-                    return;
-                }
-
-                CreateWalletsList(walletsConfig);
-            });
-        }
-
-        private async void CreateWalletsList(List<WalletConfig> wallets)
-        {
-            var walletsConfigs = WalletConnectUtils.GetSupportedWalletsListForUse(wallets);
-
-            UnitonConnectLogger.Log($"Created {walletsConfigs.Capacity} wallets");
-
-            LoadedWallets = walletsConfigs;
-
-            UnitonConnectLogger.Log(JsonConvert.SerializeObject(walletsConfigs));
-
-            var walletsViewList = new List<WalletViewData>();
-
-            _loadWalletsAnimation.gameObject.SetActive(true);
-
-            foreach (var wallet in LoadedWallets)
-            {
-                WalletViewData walletView = null;
-
-                walletView = await WalletVisualUtils.GetWalletViewIfIconIsNotExist(
-                    wallet, _walletsStorage);
-
-                if (walletView.Icon == null)
-                {
-                    walletView.Icon = await WalletVisualUtils
-                            .GetIconFromProxyServerAsync(wallet.Image);
-                }
-
-                walletsViewList.Add(walletView);
+                return;
             }
 
-            foreach (var walletView in walletsViewList)
-            {
-                var name = walletView.Name;
-                var icon = walletView.Icon;
-
-                var walletViewData = Instantiate(_walletViewPrefab, _walletsParent);
-
-                walletViewData.SetView(this, name, icon, _connectPanel);
-
-                _activeWallets.Add(walletViewData);
-            }
-
-            _loadWalletsAnimation.gameObject.SetActive(false);
+            _connectButton.interactable = true;
         }
 
-        private void LoadWallets(Action<List<WalletConfig>> walletsLoaded)
-        {
-            _unitonSDK.LoadWalletsConfigs(ProjectStorageConsts.
-                TEST_SUPPORTED_WALLETS_LINK, (walletsConfigs) =>
-            {
-                walletsLoaded?.Invoke(walletsConfigs);
-            });
-        }
-
-        private WalletConfig GetWalletConfigByName(Wallet wallet)
-        {
-            var loadedConfig = WalletConnectUtils.GetConfigOfSpecifiedWallet(
-                LoadedWallets, wallet.Device.AppName);
-
-            return loadedConfig;
-        }
-
-        private void WalletConnectionFinished(Wallet wallet)
+        private void WalletConnectionFinished(NewWalletConfig wallet)
         {
             if (_unitonSDK.IsWalletConnected)
             {
-                var successConnectMessage = $"Wallet is connected, full account address: {wallet.Account.Address}, \n" +
-                $"Platform: {wallet.Device.Platform}, " +
-                $"Name: {wallet.Device.AppName}, " +
-                $"Version: {wallet.Device.AppVersion}";
+                var successConnectMessage = $"Wallet is connected, " +
+                    $"full account address: {wallet.ToString()}, \n" +
+                    $"Public Key: {wallet.PublicKey}, " +
+                    $"State init: {wallet.StateInit}";
 
-                var userAddress = $"{wallet.Account.Address}";
-
-                var shortWalletAddress = WalletVisualUtils.ProcessWalletAddress(
-                    wallet.Account.Address.ToString(AddressType.Base64), 6);
+                var userAddress = $"{wallet.ToString()}";
+                var shortWalletAddress = WalletVisualUtils.ProcessWalletAddress(userAddress, 6);
 
                 _debugMessage.text = successConnectMessage;
                 _shortWalletAddress.text = shortWalletAddress;
 
-                UnitonConnectLogger.Log($"Connected wallet short address: {shortWalletAddress}");
+                Debug.Log($"Connected wallet short address: {shortWalletAddress}");
 
                 _connectButton.interactable = false;
                 _disconnectButton.interactable = true;
                 _sendTransactionButton.interactable = true;
                 _openNftCollectionButton.interactable = true;
-
-                _chooseWalletPanel.Close();
-
-                if (LoadedWallets != null)
-                {
-                    LatestAuthorizedWallet = GetWalletConfigByName(wallet);
-
-                    UnitonConnectLogger.Log($"The current wallet in the list is detected: " +
-                        $"{JsonConvert.SerializeObject(LatestAuthorizedWallet)}");
-                }
 
                 return;
             }
@@ -223,52 +127,82 @@ namespace UnitonConnect.Core.Demo
             _debugMessage.text = string.Empty;
             _shortWalletAddress.text = string.Empty;
 
-            UnitonConnectLogger.LogWarning($"Connect status: " +
+            Debug.LogWarning($"Connect status: " +
                 $"{_unitonSDK.IsWalletConnected}");
         }
 
         private void WalletConnectionFailed(string message)
         {
-            UnitonConnectLogger.LogError($"Failed to connect " +
+            Debug.LogError($"Failed to connect " +
                 $"the wallet due to the following reason: {message}");
         }
 
-        private void WalletConnectionRestored(bool isRestored, WalletConfig wallet)
+        private void WalletConnectionRestored(bool isRestored)
         {
-            if (isRestored)
-            {
-                LatestAuthorizedWallet = wallet;
-
-                UnitonConnectLogger.Log($"Connection to previously connected wallet {wallet.Name} restored," +
-                    $" local configuration updated");
-            }
-        }
-
-        private void WalletDisconnected()
-        {
-            _nftCollectionPanel.RemoveNftCollectionStorage();
-
-            if (_activeWallets.Count == 0)
+            if (!isRestored)
             {
                 return;
             }
 
-            foreach (var wallet in _activeWallets)
+            Debug.Log($"Connection to previously connected wallet restored");
+        }
+
+        private void WalletDisconnected(bool isSuccess)
+        {
+            if (!isSuccess)
             {
-                Destroy(wallet.gameObject);
+                return;
             }
 
-            _activeWallets.Clear();
+            _nftCollectionPanel.RemoveNftCollectionStorage(true);
+
+            Debug.Log($"Wallet disconnected");
         }
 
         private void NftCollectionsLoaded(NftCollectionData collections)
         {
-            UnitonConnectLogger.Log($"Loaded nft collections: {collections.Items.Count}");
+            Debug.Log($"Loaded nft collections: {collections.Items.Count}");
         }
 
         private void TargetNftCollectionLoaded(NftCollectionData nftCollection)
         {
-            UnitonConnectLogger.Log($"Loaded target nft collection with name: {nftCollection.Items[0].Collection.Name}");
+            Debug.Log($"Loaded target nft collection with name: {nftCollection.Items[0].Collection.Name}");
+        }
+
+        private void TonTransactionSended(string transactionHash)
+        {
+            _latestTransactionHash = transactionHash;
+
+            Debug.Log($"Latest transaction hash parsed: {_latestTransactionHash}");
+        }
+
+        private void TonTransactionConfirmed(SuccessTransactionData transactionData)
+        {
+            var status = transactionData.IsSuccess;
+            var newBalance = transactionData.EndBalance.FromNanoton();
+            var fee = transactionData.TotalFees.FromNanoton();
+            var sendedAmount = transactionData.OutMessages[0].Value.FromNanoton();
+            var recipientAddress = transactionData.OutMessages[0].Recipient.Address;
+            var convertedAddress = WalletConnectUtils.GetNonBounceableAddress(recipientAddress);
+            var message = transactionData.OutMessages[0].DecodedBody.MessageText;
+
+            _debugMessage.text = $"Loaded transaction data: \n" +
+                $"STATUS: {transactionData.IsSuccess},\n" +
+                $"HASH: {_latestTransactionHash},\n" +
+                $"NEW BALANCE: {newBalance} TON,\n" +
+                $"FEE: {fee} TON,\n" +
+                $"SENDED AMOUNT: {sendedAmount} TON,\n" +
+                $"RECIPIENT ADDRESS: {convertedAddress},\n" +
+                $"MESSAGE: {message}";
+        }
+
+        private void TonTransactionSendFailed(string errorMessage)
+        {
+            var message = $"Failed to send transaction, reason: {errorMessage}";
+
+            Debug.LogError(message);
+
+            _debugMessage.text = errorMessage;
         }
     }
 }

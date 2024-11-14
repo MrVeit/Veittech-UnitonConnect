@@ -16,7 +16,7 @@ namespace UnitonConnect.ThirdParty.TonAPI
         private const string API_URL = "https://tonapi.io/v2";
 
         private static UnitonConnectSDK UNITON_CONNECT => UnitonConnectSDK.Instance;
-        private static string _walletAddress => UNITON_CONNECT.GetWalletAddress();
+        private static string _walletAddress => UNITON_CONNECT.Wallet.ToString();
 
         internal static IEnumerator GetBalance(Action<long> walletBalanceClaimed)
         {
@@ -24,6 +24,8 @@ namespace UnitonConnect.ThirdParty.TonAPI
             {
                 UnitonConnectLogger.LogWarning("Failed to request the balance," +
                     " connect the wallet and repeat the operation later");
+
+                walletBalanceClaimed?.Invoke(0);
 
                 yield break;
             }

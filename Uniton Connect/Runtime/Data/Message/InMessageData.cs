@@ -23,10 +23,10 @@ namespace UnitonConnect.Core.Data
         public bool IsBounced { get; set; }
 
         [JsonProperty("value")]
-        public long Value { get; set; }
+        public decimal Value { get; set; }
 
         [JsonProperty("fwd_fee")]
-        public long ForwardFee { get; set; }
+        public decimal ForwardFee { get; set; }
 
         [JsonProperty("ihr_fee")]
         public long IhrFee { get; set; }

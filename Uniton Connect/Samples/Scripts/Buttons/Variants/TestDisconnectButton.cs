@@ -12,7 +12,7 @@ namespace UnitonConnect.Core.Data
         {
             UnitonConnectLogger.Log("The disconnecting process of the previously connected wallet has been started");
 
-            await _interfaceAdapter.UnitonSDK.DisconnectWallet();
+            _interfaceAdapter.UnitonSDK.Disconnect();
 
             UnitonConnectLogger.Log("Success disconnect");
 

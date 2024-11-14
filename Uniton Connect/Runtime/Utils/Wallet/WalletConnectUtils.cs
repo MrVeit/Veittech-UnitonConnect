@@ -62,7 +62,8 @@ namespace UnitonConnect.Core.Utils
             return GetHEXAddress(wallet.ToString());
         }
 
-        [Obsolete]
+        [Obsolete("Starting from 0.2.9.5 version, " +
+            "there is no need to configure connection to wallets, as there is a native connection window.")]
         /// <summary>
         /// Returns the full wallet configuration if its name is found in the list
         /// </summary>
@@ -87,7 +88,8 @@ namespace UnitonConnect.Core.Utils
             return wallet;
         }
 
-        [Obsolete]
+        [Obsolete("Starting from 0.2.9.5 version, " +
+                    "there is no need to configure connection to wallets, as there is a native connection window.")]
         /// <summary>
         /// Checks the wallet configuration for the presence of an http bridge
         /// </summary>
@@ -97,7 +99,8 @@ namespace UnitonConnect.Core.Utils
             return !string.IsNullOrEmpty(config.BridgeUrl);
         }
 
-        [Obsolete]
+        [Obsolete("Starting from 0.2.9.5 version, " +
+                    "there is no need to configure connection to wallets, as there is a native connection window.")]
         /// <summary>
         /// Checks the wallet configuration for the presence of an javascript bridge
         /// </summary>
@@ -107,7 +110,8 @@ namespace UnitonConnect.Core.Utils
             return !string.IsNullOrEmpty(config.JsBridgeKey);
         }
 
-        [Obsolete]
+        [Obsolete("Starting from 0.2.9.5 version, " +
+                    "there is no need to configure connection to wallets, as there is a native connection window.")]
         /// <summary>
         /// Checks the wallet configuration for more than one bridge
         /// </summary>
@@ -134,7 +138,8 @@ namespace UnitonConnect.Core.Utils
             return false;
         }
 
-        [Obsolete]
+        [Obsolete("Starting from 0.2.9.5 version, " +
+                    "there is no need to configure connection to wallets, as there is a native connection window.")]
         /// <summary>
         /// Get the configuration with the specified bridge, if the wallet has one
         /// </summary>
@@ -151,7 +156,8 @@ namespace UnitonConnect.Core.Utils
             return wallet;
         }
 
-        [Obsolete]
+        [Obsolete("Starting from 0.2.9.5 version, " +
+                    "there is no need to configure connection to wallets, as there is a native connection window.")]
         /// <summary>
         /// Get the configuration with the specified bridge if it does not have a second bridge
         /// </summary>
@@ -194,7 +200,8 @@ namespace UnitonConnect.Core.Utils
             return config;
         }
 
-        [Obsolete]
+        [Obsolete("Starting from 0.2.9.5 version, " +
+                    "there is no need to configure connection to wallets, as there is a native connection window.")]
         /// <summary>
         /// Get a list of htttp bridge wallets for further generation of QR code to connect to them
         /// </summary>
@@ -213,7 +220,8 @@ namespace UnitonConnect.Core.Utils
             return wallets;
         }
 
-        [Obsolete]
+        [Obsolete("Starting from 0.2.9.5 version, " +
+                    "there is no need to configure connection to wallets, as there is a native connection window.")]
         /// <summary>
         /// Get a list of javascript bridge wallets to connect to via DeepLink on WebGL Mobile/Desktop
         /// </summary>
@@ -239,7 +247,8 @@ namespace UnitonConnect.Core.Utils
             return null;
         }
 
-        [Obsolete]
+        [Obsolete("Starting from 0.2.9.5 version, " +
+                    "there is no need to configure connection to wallets, as there is a native connection window.")]
         /// <summary>
         /// Get the list of downloaded wallet configurations with filtering on those supported by the current platform
         /// <param name="wallets">Configurations of previously loaded wallets. Call `OnWalletConnectionFinished` to retrieve this data.</param>.
@@ -277,7 +286,7 @@ namespace UnitonConnect.Core.Utils
             return walletsConfigs;
         }
 
-        [Obsolete]
+        [Obsolete("Use UnitonConnectSDK.Instance.Wallet.ToHex() for convert address for current format")]
         /// <summary>
         /// Convert wallet address to HEX/RAW format, example:
         /// 0:c1da9d221d87032b762ad647658a2b5115a38af4b2329d4824fb25cb65799cd9
@@ -289,7 +298,7 @@ namespace UnitonConnect.Core.Utils
             return rawAddress;
         }
 
-        [Obsolete]
+        [Obsolete("Use UnitonConnectSDK.Instance.Wallet.ToBounceable() for convert address for current format")]
         /// <summary>
         /// Convert wallet address to Bounceable format (base64), example:
         /// EQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk+yXLZXmc2QON
@@ -302,7 +311,7 @@ namespace UnitonConnect.Core.Utils
             return bounceableAddress;
         }
 
-        [Obsolete]
+        [Obsolete("Use UnitonConnectSDK.Instance.Wallet.ToNonBounceable() for convert address for current format")]
         /// <summary>
         /// Convert wallet address to Non Bounceable format (base64), example:
         /// UQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk+yXLZXmc2V5I
@@ -318,6 +327,13 @@ namespace UnitonConnect.Core.Utils
         private static string ConvertAddressByType(string address, AddressType type,
             AddressStringifyOptions options = null)
         {
+            if (!_unitonConnect.IsWalletConnected)
+            {
+                UnitonConnectLogger.LogWarning($"Wallet is not connected, address is empty");
+
+                return string.Empty;
+            }
+
             return GetAddress(address).ToString(type, options);
         }
 

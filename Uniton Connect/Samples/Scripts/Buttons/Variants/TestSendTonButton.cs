@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnitonConnect.Core.Common;
 
 namespace UnitonConnect.Core.Demo
 {
@@ -7,21 +8,20 @@ namespace UnitonConnect.Core.Demo
     {
         [SerializeField, Space] private TestWalletInterfaceAdapter _userInterfaceAdapter;
         [SerializeField, Space] private TMP_InputField _amountBar;
-        [SerializeField] private TestWalletAddressBarView _addressBar;
+        [SerializeField] private TMP_InputField _messageBar;
+        [SerializeField, Space] private TestWalletAddressBarView _addressBar;
 
-        public sealed override async void OnClick()
+        public sealed override void OnClick()
         {
-            var latestWallet = _userInterfaceAdapter.LatestAuthorizedWallet;
-
-            await _userInterfaceAdapter.UnitonSDK.SendTon(latestWallet,
-                _addressBar.FullAddress, ParseAmountFromBar(_amountBar.text));
+            _userInterfaceAdapter.UnitonSDK.SendTransaction(ClassicTokenTypes.Toncoin,
+                _addressBar.FullAddress, ParseAmountFromBar(_amountBar.text), _messageBar.text);
         }
 
-        private double ParseAmountFromBar(string amountFromBar)
+        private decimal ParseAmountFromBar(string amountFromBar)
         {
-            var parsedAmount = amountFromBar.Replace(" ", "").Replace("Ton", "");
+            var parsedAmount = amountFromBar.Replace(" ", "").Replace("TON", "");
 
-            return double.Parse(parsedAmount);
+            return decimal.Parse(parsedAmount);
         }
     }
 }

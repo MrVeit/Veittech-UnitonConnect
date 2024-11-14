@@ -15,7 +15,7 @@ namespace UnitonConnect.Core.Utils
         /// </summary>
         /// <param name="tonBalance"></param>
         /// <returns></returns>
-        public static decimal ToNanoton(decimal tonBalance)
+        public static decimal ToNanoton(this decimal tonBalance)
         {
             var nanoTons = new TonSdk.Core.Coins(tonBalance).ToNano();
 
@@ -27,7 +27,7 @@ namespace UnitonConnect.Core.Utils
         /// </summary>
         /// <param name="nanotonBalance"></param>
         /// <returns></returns>
-        public static decimal FromNanoton(decimal nanotonBalance)
+        public static decimal FromNanoton(this decimal nanotonBalance)
         {
             var tonBalance = nanotonBalance / NANOTON_VALUE;
 
@@ -39,7 +39,6 @@ namespace UnitonConnect.Core.Utils
         /// </summary>
         /// <param name="collectionAddress">Collection address, 
         /// for example: EQAl_hUCAeEv-fKtGxYtITAS6PPxuMRaQwHj0QAHeWe6ZSD0</param>
-        /// <returns></returns>
         public static List<NftItemData> GetCachedNftsByContractAddress(string collectionAddress)
         {
             var hexAddress = WalletConnectUtils.GetHEXAddress(collectionAddress);
@@ -48,7 +47,7 @@ namespace UnitonConnect.Core.Utils
 
             if (filteredNfts == null)
             {
-                UnitonConnectLogger.LogError($"No nft collections matching " +
+                UnitonConnectLogger.LogWarning($"No nft collections matching " +
                     $"the ContractAddress condition were found: {collectionAddress}");
 
                 return null;
@@ -68,7 +67,8 @@ namespace UnitonConnect.Core.Utils
 
             if (filteredNfts == null)
             {
-                UnitonConnectLogger.LogError($"No nft collections are found that match the IsScam: {isScam} condition");
+                UnitonConnectLogger.LogWarning($"No nft collections are " +
+                    $"found that match the IsScam: {isScam} condition");
 
                 return null;
             }
@@ -88,7 +88,7 @@ namespace UnitonConnect.Core.Utils
 
             if (collections == null)
             {
-                UnitonConnectLogger.LogError("No cached nft collections detected, filtering canceled.");
+                UnitonConnectLogger.LogWarning("No cached nft collections detected, filtering canceled.");
 
                 return null;
             }
@@ -97,7 +97,7 @@ namespace UnitonConnect.Core.Utils
 
             if (!filteredCollections.Any())
             {
-                UnitonConnectLogger.LogError("No nft collection items were found that match the specified filter");
+                UnitonConnectLogger.LogWarning("No nft collection items were found that match the specified filter");
 
                 return null;
             }
@@ -116,7 +116,7 @@ namespace UnitonConnect.Core.Utils
 
             if (!unitonConnect.IsWalletConnected)
             {
-                UnitonConnectLogger.LogError("Failed to detect downloaded nft collections," +
+                UnitonConnectLogger.LogWarning("Failed to detect downloaded nft collections," +
                     " connect your wallet and try again later.");
 
                 return null;
@@ -124,7 +124,7 @@ namespace UnitonConnect.Core.Utils
 
             if (nftModule.LatestNftCollections == null)
             {
-                UnitonConnectLogger.LogError("No previously downloaded nft" +
+                UnitonConnectLogger.LogWarning("No previously downloaded nft" +
                     " collections were detected on the wallet");
 
                 return null;

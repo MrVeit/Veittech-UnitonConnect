@@ -16,10 +16,10 @@ namespace UnitonConnect.Core.Data
         public bool IsSuccess { get; set; }
 
         [JsonProperty("gas_fees")]
-        public long GasFees { get; set; }
+        public decimal GasFees { get; set; }
 
         [JsonProperty("gas_used")]
-        public long GasUsed { get; set; }
+        public decimal GasUsed { get; set; }
 
         [JsonProperty("vm_steps")]
         public int VmSteps { get; set; }

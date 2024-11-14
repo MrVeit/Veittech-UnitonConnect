@@ -29,7 +29,7 @@ namespace UnitonConnect.DeFi
                 _sdk = sdk;
             }
 
-            private string _walletAddress => _sdk.GetWalletAddress();
+            private string _walletAddress => _sdk.Wallet.ToString();
 
 
             public NftCollectionData LatestNftCollections { get; private set; }

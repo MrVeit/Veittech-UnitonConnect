@@ -29,10 +29,10 @@ namespace UnitonConnect.Core.Data
         public string EndStatus { get; set; }
 
         [JsonProperty("total_fees")]
-        public long TotalFees { get; set; }
+        public decimal TotalFees { get; set; }
 
         [JsonProperty("end_balance")]
-        public long EndBalance { get; set; }
+        public decimal EndBalance { get; set; }
 
         [JsonProperty("transaction_type")]
         public string TransactionType { get; set; }

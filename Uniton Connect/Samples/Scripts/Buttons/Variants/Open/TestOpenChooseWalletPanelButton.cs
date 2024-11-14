@@ -5,11 +5,11 @@ namespace UnitonConnect.Core.Data
 {
     public sealed class TestOpenChooseWalletPanelButton : TestBaseButton
     {
-        [SerializeField, Space] private TestChooseWalletPanel _panel;
-       
+        [SerializeField, Space] private TestWalletInterfaceAdapter _interfaceAdapter;
+
         public sealed override void OnClick()
         {
-            _panel.Open();
+            _interfaceAdapter.UnitonSDK.Connect();
         }
     }
 }

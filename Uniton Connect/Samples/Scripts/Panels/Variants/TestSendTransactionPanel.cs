@@ -1,7 +1,8 @@
 using UnityEngine;
 using TMPro;
-using TonSdk.Connect;
-using UnitonConnect.Core.Utils.Debugging;
+using UnitonConnect.Core.Common;
+using UnitonConnect.Core.Data;
+using UnitonConnect.Core.Utils;
 
 namespace UnitonConnect.Core.Demo
 {
@@ -9,10 +10,15 @@ namespace UnitonConnect.Core.Demo
     {
         [SerializeField, Space] private TestWalletInterfaceAdapter _interfaceAdapter;
         [SerializeField, Space] private TMP_InputField _amountBar;
-        [SerializeField] private TestWalletAddressBarView _targetWalletAddress;
+        [SerializeField] private TMP_InputField _messageBar;
+        [SerializeField, Space] private TestWalletAddressBarView _targetWalletAddress;
         [SerializeField, Space] private TextMeshProUGUI _balanceBar;
 
         private UnitonConnectSDK _unitonConnect => _interfaceAdapter.UnitonSDK;
+
+        private string _latestTransactionHash;
+
+        private const string START_MESSAGE = "Made by Uniton Connect";
 
         private const string CREATOR_WALLET_ADDRESS = 
             "EQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4UrpH_";
@@ -21,15 +27,19 @@ namespace UnitonConnect.Core.Demo
 
         private void OnEnable()
         {
-            _unitonConnect.UpdateTonBalance();
+            _unitonConnect.LoadBalance(ClassicTokenTypes.Toncoin);
 
-            _unitonConnect.OnSendingTonFinished += TransactionSendingFinished;
+            _unitonConnect.OnNativeSendingTonFinished += TransactionSendingFinished;
+            _unitonConnect.OnNativeTransactionConfirmed += TonTransactionConfirmed;
+
             _unitonConnect.OnTonBalanceClaimed += TonBalanceClaimed;
         }
 
         private void OnDisable()
         {
-            _unitonConnect.OnSendingTonFinished -= TransactionSendingFinished;
+            _unitonConnect.OnNativeSendingTonFinished -= TransactionSendingFinished;
+            _unitonConnect.OnNativeTransactionConfirmed -= TonTransactionConfirmed;
+
             _unitonConnect.OnTonBalanceClaimed -= TonBalanceClaimed;
         }
 
@@ -37,12 +47,18 @@ namespace UnitonConnect.Core.Demo
         {
             SetAmountBar(START_TON_AMOUNT);
             SetTargetAddress(CREATOR_WALLET_ADDRESS);
+            SetMessageBar(START_MESSAGE);
             SetTonBalance(_unitonConnect.TonBalance);
         }
 
         private void SetAmountBar(float amount)
         {
             _amountBar.text = $"{amount}";
+        }
+
+        private void SetMessageBar(string text)
+        {
+            _messageBar.text = text;
         }
 
         private void SetTargetAddress(string address)
@@ -60,16 +76,18 @@ namespace UnitonConnect.Core.Demo
             SetTonBalance(tonBalance);
         }
 
-        private void TransactionSendingFinished(
-            SendTransactionResult? result, bool isSuccess)
+        private void TransactionSendingFinished(string transactionHash)
         {
-            if (!isSuccess || !result.HasValue)
-            {
-                UnitonConnectLogger.LogError("Failed to send transaction for possible reasons:" +
-                    " not enough funds or unsuccessful connection to the wallet");
+            Debug.Log($"Claimed transaction hash: {transactionHash}");
 
-                return;
-            }
+            _latestTransactionHash = transactionHash;
+        }
+
+        private void TonTransactionConfirmed(SuccessTransactionData transactionData)
+        {
+            Debug.Log($"Ton transaction {_latestTransactionHash} confirmed with status: {transactionData.IsSuccess}");
+
+            SetTonBalance(transactionData.EndBalance.FromNanoton());
         }
     }
 }
