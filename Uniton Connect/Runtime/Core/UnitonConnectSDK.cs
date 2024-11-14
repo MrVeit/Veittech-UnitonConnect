@@ -316,9 +316,9 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            TonConnectBridge.Disconnect(OnNativeWalletDisconnect); 
+            TonConnectBridge.Disconnect(OnNativeWalletDisconnect);
         }
-        
+
         /// <summary>
         /// Loading balance of a particular token on a connected wallet, if it exists there.
         /// </summary>
@@ -636,7 +636,7 @@ namespace UnitonConnect.Core
             }
 
             bool isSuccess = await _tonConnect.RestoreConnection();
-           
+
             if (isSuccess)
             {
                 string walletName = _tonConnect.Wallet.Device.AppName;
@@ -696,7 +696,7 @@ namespace UnitonConnect.Core
             }));
         }
 
-        private IEnumerator LoadWallets(string supportedWalletsUrl, 
+        private IEnumerator LoadWallets(string supportedWalletsUrl,
             Action<List<WalletConfig>> walletsClaimed)
         {
             UnityWebRequest request = UnityWebRequest.Get(supportedWalletsUrl);
@@ -837,7 +837,7 @@ namespace UnitonConnect.Core
             StartCoroutine(ActivateGatewaySenderRoutine(gatewayMessage));
         }
 
-        private void ParseWalletsConfigs(ref List<WalletProviderData> walletsList, 
+        private void ParseWalletsConfigs(ref List<WalletProviderData> walletsList,
             Action<List<WalletConfig>> walletsClaimed)
         {
             var loadedWallets = new List<WalletConfig>();
@@ -985,6 +985,8 @@ namespace UnitonConnect.Core
                     " the storage of the previous session has been cleaned up");
             }
 
+            _isWalletConnected = true;
+
             _isWalletConnected = _tonConnect.IsConnected;
 
             Wallet = new UserWallet(wallet.Account.Address.ToString(), null);
@@ -1013,20 +1015,36 @@ namespace UnitonConnect.Core
             OnNativeWalletConnectionFinished?.Invoke(walletConfig);
         }
 
-        private void OnWalletConnectionFail(string errorMessage) => OnWalletConnectionFailed?.Invoke(errorMessage);
+        private void OnWalletConnectionFail(string errorMessage)
+        {
+            _isWalletConnected = false;
 
-        private void OnNativeWalletConnectionFail(string errorMessage) => OnNativeWalletConnectionFailed?.Invoke(errorMessage);
+            OnWalletConnectionFailed?.Invoke(errorMessage);
+        }
+
+        private void OnNativeWalletConnectionFail(string errorMessage)
+        {
+            _isWalletConnected = false;
+
+            OnNativeWalletConnectionFailed?.Invoke(errorMessage);
+        }
 
         private void OnWalletConnectionRestore(bool isRestored, WalletConfig restoredWallet = new())
         {
-            _isWalletConnected = true;
+            if (isRestored)
+            {
+                _isWalletConnected = true;
+            }
 
             OnWalletConnectionRestored?.Invoke(isRestored, restoredWallet);
         }
 
         private void OnWalletConnectionRestore(bool isRestored)
         {
-            _isWalletConnected = true;
+            if (isRestored)
+            {
+                _isWalletConnected = true;
+            }
 
             OnNativeWalletConnectionRestored?.Invoke(isRestored);
         }
