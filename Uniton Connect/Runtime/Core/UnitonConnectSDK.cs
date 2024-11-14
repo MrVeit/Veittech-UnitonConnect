@@ -63,7 +63,8 @@ namespace UnitonConnect.Core
         [SerializeField, Space] private bool _useCachedWalletsIcons;
         [Tooltip("Configuration of supported wallets for your dApp. You can change their order and number, and override the way their configurations are loaded by hosting it yourself")]
         [SerializeField, Space] private WalletsProvidersData _supportedWallets;
-        [SerializeField, Space, Range(15f, 120f)] private float _confirmTransactionDelay;
+        [Tooltip("Delay before requesting in blockchain to retrieve data about the sent transaction")]
+        [SerializeField, Space, Range(15f, 500f)] private float _confirmTransactionDelay;
 
         private NewWalletConfig _connectedWalletConfig;
 
@@ -1018,6 +1019,8 @@ namespace UnitonConnect.Core
 
         private void OnWalletConnectionRestore(bool isRestored, WalletConfig restoredWallet = new())
         {
+            _isWalletConnected = true;
+
             OnWalletConnectionRestored?.Invoke(isRestored, restoredWallet);
         }
 
@@ -1027,9 +1030,19 @@ namespace UnitonConnect.Core
 
         private void OnWalletConnectionUnPause() => OnWalletConnectonUnPaused?.Invoke();
 
-        private void OnWalletDisconnect() => OnWalletDisconnected?.Invoke();
+        private void OnWalletDisconnect()
+        {
+            _isWalletConnected = false;
 
-        private void OnNativeWalletDisconnect(bool isSuccess) => OnNativeWalletDisconnected?.Invoke(isSuccess);
+            OnWalletDisconnected?.Invoke();
+        }
+
+        private void OnNativeWalletDisconnect(bool isSuccess)
+        {
+            _isWalletConnected = false;
+
+            OnNativeWalletDisconnected?.Invoke(isSuccess);
+        }
 
         private void OnSendingTonFinish(SendTransactionResult? transactionResult,
             bool isSuccess)

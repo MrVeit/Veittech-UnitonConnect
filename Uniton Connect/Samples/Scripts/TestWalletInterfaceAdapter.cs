@@ -100,8 +100,7 @@ namespace UnitonConnect.Core.Demo
             {
                 var successConnectMessage = $"Wallet is connected, " +
                     $"full account address: {wallet.ToString()}, \n" +
-                    $"Public Key: {wallet.PublicKey}, " +
-                    $"State init: {wallet.StateInit}";
+                    $"Public Key: {wallet.PublicKey}";
 
                 var userAddress = $"{wallet.ToString()}";
                 var shortWalletAddress = WalletVisualUtils.ProcessWalletAddress(userAddress, 6);
@@ -115,9 +114,13 @@ namespace UnitonConnect.Core.Demo
                 _disconnectButton.interactable = true;
                 _sendTransactionButton.interactable = true;
                 _openNftCollectionButton.interactable = true;
-
-                return;
             }
+        }
+
+        private void WalletConnectionFailed(string message)
+        {
+            Debug.LogError($"Failed to connect " +
+                $"the wallet due to the following reason: {message}");
 
             _connectButton.interactable = true;
             _disconnectButton.interactable = false;
@@ -129,12 +132,6 @@ namespace UnitonConnect.Core.Demo
 
             Debug.LogWarning($"Connect status: " +
                 $"{_unitonSDK.IsWalletConnected}");
-        }
-
-        private void WalletConnectionFailed(string message)
-        {
-            Debug.LogError($"Failed to connect " +
-                $"the wallet due to the following reason: {message}");
         }
 
         private void WalletConnectionRestored(bool isRestored)
@@ -165,6 +162,9 @@ namespace UnitonConnect.Core.Demo
             _disconnectButton.interactable = false;
             _sendTransactionButton.interactable = false;
             _openNftCollectionButton.interactable = false;
+
+            _debugMessage.text = string.Empty;
+            _shortWalletAddress.text = string.Empty;
 
             Debug.Log($"Previous wallet successful disconnected");
         }

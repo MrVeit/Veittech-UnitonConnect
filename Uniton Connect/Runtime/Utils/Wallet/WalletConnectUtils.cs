@@ -21,8 +21,7 @@ namespace UnitonConnect.Core.Utils
         /// <returns></returns>
         public static bool IsAddressesMatch(string recipientAddress)
         {
-            var wallet = _unitonConnect.TonConnect.Wallet;
-            var authorizedWalletAddress = $"{wallet.Account.Address}";
+            var authorizedWalletAddress = _unitonConnect.Wallet.ToString();
 
             if (authorizedWalletAddress == recipientAddress)
             {
