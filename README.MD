@@ -16,10 +16,10 @@
 ### **Available functionality**
 - Connection of TON wallets (QR code or via Deep Link), 
 - Executing transactions via Toncoin,
-- Retrieving NFT collections from a connected wallet,
 - Reading wallet balance (as long as Toncoin is available),
-- Conversion of wallet addresses into different formats and their visualization,
-- Filtering of loaded nft collections by various filters: skam, collection address and so on.
+- Retrieving NFT collections from a connected wallet,
+- Filtering of loaded nft collections by various filters: skam, collection address and so on,
+- Conversion of wallet addresses into different formats and their visualization.
 
 ### **Developing functionality**
 - Reading balance of basic (GRAM, NOT, DOGS) and custom jettons (by wallet master address),
@@ -31,7 +31,7 @@
 
 # Technical Demo
 
-You can test the SDK without installation on a demo app [in your browser](https://mrveit.github.io/Veittech-UnitonConnect/) or directly [in the Telegram bot](https://t.me/UnitonConnect_bot/dAppStart).
+You can test the SDK without installation on a demo app [in your browser](https://mrveit.github.io/Veittech-UnitonConnect/) or directly [in the TMA (Telegram Mini App)](https://t.me/UnitonConnect_bot/dAppStart).
 
 # Supported Wallets & Platforms
 
@@ -254,7 +254,8 @@ public sealed class ConnectWalletExample: MonoBehaviour
 }
 ```
 
-**P.S:** Previously it was necessary to work with the type of connection to the wallet manually, determining the presence of this or that bridge in the loaded configuration. Since **version 0.2.9.5**, all connection is done through a native window! Now you don't need to make connection windows, create wallets icon for connection - all this is handled by native JS SDK.
+**P.S:** Previously it was necessary to work with the type of connection to the wallet manually, determining the presence of this or that bridge in the loaded configuration.
+Since **version 0.2.9.5**, all connection is done through a native window! Now you don't need to make connection windows, create wallets icon for connection - all this is handled by native JS SDK.
 
 After clicking on the button and calling the `Connect()` method, a native window will be opened, where the available wallets for connection will be displayed (depending on whether the web application is running on a PC or phone, their number will change).
 To nicely display the wallet address, the SDK has a method `WalletVisualUtils.ProcessWalletAddress(string address, int value)` that allows only the first and last characters of the address to be displayed.
@@ -383,15 +384,15 @@ public sealed class TransactionSendingExample: MonoBehaviour
 }
 ```
 
-This example shows a test implementation of sending TonCoin to my TON address.
+This example shows a test implementation of sending toncoins to my TON address.
 In the `UnitonConnectSDK.Instance.SendTransaction()` method it is necessary to pass the recipient address, the number of TON in `double` and the transaction comment (optionally, you can not use it and send without it - the SDK provides it). 
 If the transaction is successful, the `OnNativeSendingTonFinished` event will be called, where you can get its hash, which is parsed from Boc, which is passed to the native sdk.
 In case the transaction failed to be sent, the `OnNativeTransactionSendingFailed` event will be called, where you can get a potential reason for the failed transaction.
 
-P.S: to actually confirm the sending of the toncoin to the recipient's address, automatic processing of the transaction status in the blockchain has been added.
+**P.S:** to actually confirm the sending of the toncoin to the recipient's address, automatic processing of the transaction status in the blockchain has been added.
 To get a detailed status with all transaction information, subscribe to the `OnNativeTransactionConfirmed` event.
 
-**IMPORTANT:** transaction confirmation is done in real time, based on a snapshot of the blockchain via the Ton API. The processing time depends on the speed of the TON blockchain. You can adjust the processing time yourself (standard delay is 15 seconds).
+**IMPORTANT:** transaction confirmation is done `in real time`, based on a snapshot of the blockchain via the Ton API. The processing time depends **on the speed of the TON blockchain.** You can adjust the processing time yourself (standard delay is 15 seconds).
 
 ### Loading NFT collections
 
@@ -489,8 +490,8 @@ public sealed class LoadingNftsExample : MonoBehaviour
 }
 ```
 
-**IMPORTANT:** To download images from NFT collections, you cannot directly access the storage links, because each collection has its own servers configured. Therefore, an unsuccessful attempt to load a collection will return an empty picture due to CORS blocking the request.
-
+** IMPORTANT:** To download images from NFT collections, you cannot directly access the repository links because each collection has its own servers configured. 
+So if you try to load a collection unsuccessfully, you will get an empty image due to CORS blocking the request.
 To do this, you need to call the `await WalletVisualUtils.GetIconFromProxyServerAsync(iconUrl)` method, which calls your API server, which downloads the image from the source and gives it to your Unity client.
 
 **P.S:** In addition, when you attempt to load webP images, the server performs conversion to `JPEG format`.
