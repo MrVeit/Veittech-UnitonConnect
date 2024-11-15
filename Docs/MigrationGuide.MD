@@ -42,7 +42,8 @@ public sealed class OldInitExample: MonoBehaviour
 
         _loadedWallets = walletsConfigs;
 
-        Debug.Log($"List of available wallet configurations:        {JsonConvert.SerializeObject(walletsConfigs)}"); 
+        Debug.Log($"List of available wallet configurations:
+            {JsonConvert.SerializeObject(walletsConfigs)}"); 
     }
 
     private void SdkInitialized()
@@ -124,10 +125,10 @@ public sealed class OldConnectWalletExample: MonoBehaviour
         _connectTestWallet.onClick.AddListener(Connect);
     }
 
-    private void Connect()
+    private async void Connect()
     {
         if (_currentWalletConfig == null ||
-            string.isNullOrEmpty(_connectUrl)
+            string.isNullOrEmpty(_connectUrl))
         {
             Debug.LogWarning("Wallet is not connected");
 
@@ -142,16 +143,17 @@ public sealed class OldConnectWalletExample: MonoBehaviour
             Debug.Log("Start connection via Mobile App/TMA");
         }
 
-        if (WalletConnectUtils.HasJSBridge(_currentWalletConfig)
+        if (WalletConnectUtils.HasJSBridge(_currentWalletConfig))
         {
-            _unitonConnect.ConnectJavaScriptBridgeWalletViaDeeplink(
+            await _unitonConnect.ConnectJavaScriptBridgeWalletViaDeeplink(
                 _currentWalletConfig);
 
             Debug.Log("Start connection via Browser Extension");
         }
     }
 
-    private async Task GenerateConnectionElements(WalletConfig connectedConfig)
+    private async Task GenerateConnectionElements(
+            WalletConfig connectedConfig)
     {
         _currentWalletConfig = connectedConfig;
 
@@ -306,7 +308,8 @@ public sealed class OldRestoreConnectionExample: MonoBehaviour
 
         _loadedWalletConfig = loadedWalletConfig;
 
-        Debug.Log($"Wallet connection restored, {_unitonConnect.GetWalletAddress()}");
+        Debug.Log($"Wallet connection restored, 
+           loaded address: {_unitonConnect.GetWalletAddress()}");
     }
 }
 ```
@@ -338,9 +341,22 @@ public sealed class NewRestoreConnectionExample: MonoBehaviour
             return;
         }
 
-        Debug.Log($"Wallet connection restored, {_unitonConnect.Wallet.ToNonBounceable()}");
+        Debug.Log($"Wallet connection restored, 
+            loaded address: {_unitonConnect.Wallet.ToNonBounceable()}");
     }
 }
+```
+
+## **DISCONNECT WALLET**
+
+Before
+```c#
+
+```
+
+After
+```c#
+
 ```
 
 ## **SENDING TONCOIN**
