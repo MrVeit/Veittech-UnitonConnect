@@ -439,6 +439,84 @@ public sealed class NewDisconnectWalletExample : MonoBehaviour
 }
 ```
 
+## **LOADING TON BALANCE**
+
+Before
+```c#
+public sealed class OldTonBalanceLoaded: MonoBehaviour
+{
+    [SerializeField, Space] private TextMeshProUGUI _balanceBar;
+
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnTonBalanceClaimed -= TonBalanceClaimed;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        if (!_unitonConnect.IsWalletConnected)
+        {
+            Debug.LogWarning("Wallet is not connected");
+
+            return;
+        }
+
+        _unitonConnect.OnTonBalanceClaimed += TonBalanceClaimed;
+
+        _unitonConnect.UpdateTonBalance();
+    }
+
+    private void TonBalanceClaimed(decimal balance)
+    {
+        Debug.Log($"Loaded ton balance: {balance}");
+
+        _balanceBar.text = $"{balance} TON";
+    }
+}
+```
+
+After
+```c#
+public sealed class NewTonBalanceLoaded: MonoBehaviour
+{
+    [SerializeField, Space] private TextMeshProUGUI _balanceBar;
+
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnTonBalanceClaimed -= TonBalanceClaimed;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        if (!_unitonConnect.IsWalletConnected)
+        {
+            Debug.LogWarning("Wallet is not connected");
+
+            return;
+        }
+
+        _unitonConnect.OnTonBalanceClaimed += TonBalanceClaimed;
+
+        _unitonConnect.LoadBalance(ClassicTokenTypes.Toncoin);
+    }
+
+    private void TonBalanceClaimed(decimal balance)
+    {
+        Debug.Log($"Loaded ton balance: {balance}");
+
+        _balanceBar.text = $"{balance} TON";
+    }
+}
+```
+
 ## **SENDING TONCOIN**
 
 Before
@@ -451,17 +529,6 @@ After
 
 ```
 
-## **LOADING TON BALANCE**
-
-Before
-```c#
-
-```
-
-After
-```c#
-
-```
 
 ## **OTHER UTILS**
 
