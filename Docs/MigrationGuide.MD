@@ -1,6 +1,6 @@
-# Migrating from version 0.2.* to 0.2.9.5:
+# Migrating from version 0.2.* to 0.2.9.5
 
-Due to the migration from C#-based libraries for the .NET platform to the native javascript sdk Ton Connect UI, a number of changes have been made to the functionality of the sdk. Below will show implementations of the library functions in a working environment before and after the API change.
+By migrating from C# based libraries for the .NET platform to the native Javascript SDK Ton Connect UI, a number of changes have been made to the functionality of the SDK. The following shows how the library functions are implemented in a working environment before and after the API change.
 
 ## **SDK INITIALIZATION:**
 
@@ -272,7 +272,78 @@ public sealed class NewConnectWalletExample: MonoBehaviour
 }
 ```
 
-## **CONNECT WALLET**
+## **RESTORE WALLET CONNECTION**
+
+Before
+```c#
+public sealed class OldRestoreConnectionExample: MonoBehaviour
+{
+    private UnitonConnectSDK _unitonConnect;
+
+    private WalletConfig _loadedWalletConfig;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnWalletConnectionRestored -= WalletConnectionRestored;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _unitonConnect.OnWalletConnectionRestored += WalletConnectionRestored;
+    }
+
+    private void WalletConnectionRestored(bool isRestored,
+        WalletConfig loadedWalletConfig)
+    {
+        if (!isRestored)
+        {
+            Debug.LogWarning("Wallet connection was not restored");
+
+            return;
+        }
+
+        _loadedWalletConfig = loadedWalletConfig;
+
+        Debug.Log($"Wallet connection restored, {_unitonConnect.GetWalletAddress()}");
+    }
+}
+```
+
+After
+```c#
+public sealed class NewRestoreConnectionExample: MonoBehaviour
+{
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnNativeWalletConnectionRestored -= WalletConnectionRestored;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _unitonConnect.OnNativeWalletConnectionRestored += WalletConnectionRestored;
+    }
+
+    private void WalletConnectionRestored(bool isRestored)
+    {
+        if (!isRestored)
+        {
+            Debug.LogWarning("Wallet connection was not restored");
+
+            return;
+        }
+
+        Debug.Log($"Wallet connection restored, {_unitonConnect.Wallet.ToNonBounceable()}");
+    }
+}
+```
+
+## **SENDING TONCOIN**
 
 Before
 ```c#
@@ -284,7 +355,19 @@ After
 
 ```
 
-## **CONNECT WALLET**
+## **LOADING TON BALANCE**
+
+Before
+```c#
+
+```
+
+After
+```c#
+
+```
+
+## **OTHER UTILS**
 
 Before
 ```c#
