@@ -47,7 +47,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **Safe Pal Wallet**                           | ⚠️           | ⚠️           |
 | **OKX Wallet**                                | ✔️           | ✔️           |
 | **OKX Mini Wallet (TMA)**                     | ⚠️           | ⚠️           |
-| **Hot Wallet**                                | ❌           | ❌           |
+| **Hot Wallet (TMA)**                          | ❌           | ❌           |
 | **Bybit Wallet**                              | ✔️           | ✔️           |
 | **Gate Wallet**                               | ❌           | ⚠️           |
 | **Binance Web3 Wallet**                       | ⚠️           | ✔️           |
