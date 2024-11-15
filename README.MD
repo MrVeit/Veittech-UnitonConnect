@@ -179,7 +179,7 @@ After the first build and publishing the project to `Github Pages` or `another t
 
 # Usage Template
 
-Now it's time for some examples of how to use the Uniton Connect library API. 
+Now it's time for some examples of how to use the `Uniton Connect` library API. 
 All code available for use in the library is fully documented. If you have any questions when working with the library API,
 you can always see the implementation of all available functions in the `Example scene`.
 
@@ -257,8 +257,8 @@ public sealed class ConnectWalletExample: MonoBehaviour
 **P.S:** Previously it was necessary to work with the type of connection to the wallet manually, determining the presence of this or that bridge in the loaded configuration.
 Since **version 0.2.9.5**, all connection is done through a native window! Now you don't need to make connection windows, create wallets icon for connection - all this is handled by native JS SDK.
 
-After clicking on the button and calling the `Connect()` method, a native window will be opened, where the available wallets for connection will be displayed (depending on whether the web application is running on a PC or phone, their number will change).
-To nicely display the wallet address, the SDK has a method `WalletVisualUtils.ProcessWalletAddress(string address, int value)` that allows only the first and last characters of the address to be displayed.
+After clicking on the button and calling the `Connect()` method, a native window will open, displaying the wallets available for connection (depending on whether the web application is running on a PC or phone, their number will vary).
+Once the selected wallet is successfully connected, you can beautifully display its address. The SDK has a method `WalletVisualUtils.ProcessWalletAddress(string address, int value)` that shows only the first and last characters of the address.
 
 P.S: Starting from `version 0.2.8`, you can change the address format of a connected TON wallet.
 
@@ -490,7 +490,7 @@ public sealed class LoadingNftsExample : MonoBehaviour
 }
 ```
 
-** IMPORTANT:** To download images from NFT collections, you cannot directly access the repository links because each collection has its own servers configured. 
+**IMPORTANT:** To download images from NFT collections, you cannot directly access the repository links because each collection has its own servers configured. 
 So if you try to load a collection unsuccessfully, you will get an empty image due to CORS blocking the request.
 To do this, you need to call the `await WalletVisualUtils.GetIconFromProxyServerAsync(iconUrl)` method, which calls your API server, which downloads the image from the source and gives it to your Unity client.
 
