@@ -1,4 +1,4 @@
-# Migrating from version 0.2.* to 0.2.9.5
+# Migrating from version 0.2.* to 0.2.9.5+
 
 By migrating from C# based libraries for the .NET platform to the native Javascript SDK Ton Connect UI, a number of changes have been made to the functionality of the SDK. The following shows how the library functions are implemented in a working environment before and after the API change.
 
@@ -351,12 +351,92 @@ public sealed class NewRestoreConnectionExample: MonoBehaviour
 
 Before
 ```c#
+public sealed class OldDisconnectWalletExample : MonoBehaviour
+{
+    [SerializeField, Space] private Button _disconnectButton;
 
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnWalletDisconnected -= WalletDisconnected;
+
+        _disconnectButton.onClick.RemoveListener(Disconnect);
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _unitonConnect.OnWalletDisconnected += WalletDisconnected;
+
+        _disconnectButton.interactable = true;
+
+        _disconnectButton.onClick.AddListener(Disconnect);
+    }
+
+    private async void Disconnect()
+    {
+        await _unitonConnect.DisconnectWallet();
+    }
+
+    private void WalletDisconnected()
+    {
+        _disconnectButton.interactable = false;
+
+        Debug.Log($"Wallet successfully disconnected, " + 
+            $"status: {_unitonConnect.IsWalletConnected}");
+    }
+}
 ```
 
 After
 ```c#
+public sealed class NewDisconnectWalletExample : MonoBehaviour
+{
+    [SerializeField, Space] private Button _disconnectButton;
 
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnNativeWalletDisconnected -= WalletDisconnected;
+
+        _disconnectButton.onClick.RemoveListener(Disconnect);
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _unitonConnect.OnNativeWalletDisconnected += WalletDisconnected;
+
+        _disconnectButton.interactable = true;
+
+        _disconnectButton.onClick.AddListener(Disconnect);
+    }
+
+    private void Disconnect()
+    {
+        _unitonConnect.Disconnect();
+    }
+
+    private void WalletDisconnected(bool isSuccess)
+    {
+        if (!isSuccess)
+        {
+            Debug.LogWarning("Failed to disconnect wallet, " +
+                "something wrong...");
+
+            return;
+        }
+
+        _disconnectButton.interactable = false;
+
+        Debug.Log($"Wallet successfully disconnected, " + 
+            $"status: {_unitonConnect.IsWalletConnected}");
+    }
+}
 ```
 
 ## **SENDING TONCOIN**
