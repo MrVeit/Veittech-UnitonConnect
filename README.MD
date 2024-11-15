@@ -103,6 +103,10 @@ For the library to work correctly, the following dependencies **must be installe
 Initially they do not work due to lack of multithreading support in them,
 - **[Newtonsoft](https://www.youtube.com/watch?v=3H6xkl_EsvQ)** - modern solution for convenient work with json files.
 
+# Migration
+
+- **[0.2.* to 0.2.9.5](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/Docs/MigrationGuide.MD)**.
+
 # Installation
 
 [Download the latest version of the SDK via the .unityPackage file here](https://github.com/MrVeit/unity-ton-connect/releases).
