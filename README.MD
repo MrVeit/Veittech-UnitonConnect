@@ -105,7 +105,9 @@ Initially they do not work due to lack of multithreading support in them,
 
 # Migration
 
-- **[0.2.* to 0.2.9.5](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/Docs/MigrationGuide.MD)**.
+This section is for smooth migration between sdk versions, in case of a global API change.
+
+- **[From 0.2.* to 0.2.9.5](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/Docs/MigrationGuide.MD)**
 
 # Installation
 
