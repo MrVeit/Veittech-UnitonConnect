@@ -1,6 +1,6 @@
 # Migrating from 0.2.* to 0.2.9.5+
 
-By migrating from C# based libraries for the .NET platform to the native Javascript SDK Ton Connect UI, a number of changes have been made to the functionality of the SDK. The following shows how the library functions are implemented in a working environment before and after the API change.
+By migrating from [C# based TonSdk](https://github.com/continuation-team/TonSdk.NET) to the [native JS SDK Ton Connect UI](https://github.com/ton-connect/sdk/tree/main/packages/ui), a number of changes have been made to the functionality of the SDK. The following shows how the library functions are implemented in a working environment before and after the API change.
 
 ## **SDK INITIALIZATION:**
 
