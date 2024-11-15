@@ -41,7 +41,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **Ton Keeper**                                | ✔️           | ✔️           |
 | **My Ton Wallet**                             | ✔️           | ✔️           |
 | **Ton Hub**                                   | ⚠️           | ⚠️           |
-| **DeWallet (TNA)**                            | ⚠️           | ⚠️           |
+| **DeWallet (TMA)**                            | ⚠️           | ⚠️           |
 | **Bitget Wallet**                             | ✔️           | ✔️           |
 | **Bitget Web3 (TMA)**                         | ⚠️           | ✔️           |
 | **Safe Pal Wallet**                           | ⚠️           | ⚠️           |
