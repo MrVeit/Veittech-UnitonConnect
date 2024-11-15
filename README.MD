@@ -40,17 +40,21 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **Telegram Wallet**                           | ✔️           | ✔️           |
 | **Ton Keeper**                                | ✔️           | ✔️           |
 | **My Ton Wallet**                             | ✔️           | ✔️           |
-| **Ton Hub**                                   | ⚠️           | ✔️           |
-| **DeWallet**                                  | ⚠️           | ✔️           |
-| **Bitget Wallet**                             | ⚠️           | ✔️           |
-| **Safe Pal Wallet**                           | ⚠️           | ✔️           |
-| **OKX Wallet**                                | ❌           | ❌           |
-| **OKX TR Wallet (Turkiye)**                   | ❌           | ❌           |
-| **Hot Wallet**                                | ⚠️           | ✔️           |
-| **Bybit Wallet**                              | ⚠️           | ✔️           |
-| **Gate Wallet**                               | ⚠️           | ✔️           |
+| **Ton Hub**                                   | ⚠️           | ⚠️           |
+| **DeWallet**                                  | ⚠️           | ⚠️           |
+| **Bitget Wallet**                             | ✔️           | ✔️           |
+| **Bitget Web3 (TMA)**                         | ⚠️           | ✔️           |
+| **Safe Pal Wallet**                           | ⚠️           | ⚠️           |
+| **OKX Wallet**                                | ✔️           | ✔️           |
+| **OKX Mini Wallet (TMA)**                     | ⚠️           | ⚠️           |
+| **Hot Wallet**                                | ❌           | ❌           |
+| **Bybit Wallet**                              | ✔️           | ✔️           |
+| **Gate Wallet**                               | ❌           | ⚠️           |
 | **Binance Web3 Wallet**                       | ⚠️           | ✔️           |
-| **Fintopio Wallet**                           | ⚠️           | ⚠️           |
+| **Fintopio Wallet**                           | ✔️           | ✔️           |
+| **Open Mask**                                 | ✔️           | ✔️           |
+| **XTon Wallet**                               | ✔️           | ✔️           |
+| **Ton Wallet**                                | ✔️           | ✔️           |
 
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
@@ -63,15 +67,19 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **My Ton Wallet**              | 💻+📱    | 💻+📱    |
 | **Ton Hub**                    | 💻+📱    | 📱       |
 | **DeWallet**                   | ❌       | 💻+📱   |
-| **Bitget Wallet**              | 💻+📱    | 📱       |
-| **Safe Pal Wallet**            | 💻+📱    | 📱       |
-| **OKX Wallet**                 | ❌       | ❌      |
-| **OKX TR Wallet (Turkiye)**    | ❌       | ❌      |
-| **Hot Wallet**                 | ❌       | 💻+📱   |
-| **Bybit Wallet**               | 💻+📱    | 📱       |
-| **Gate Wallet**                | 💻+📱    | 📱       |
+| **Bitget Wallet**              | 💻+📱    | 💻+📱    |
+| **Bitget Web3 (TMA)**          | ❌       | 💻+📱    |
+| **Safe Pal Wallet**            | ❌       | 💻+📱   |
+| **OKX Wallet**                 | 💻+📱    | 💻+📱    |
+| **OKX Mini Wallet (TMA)**      | ❌       | 💻+📱   |
+| **Hot Wallet**                 | ❌       | ❌      |
+| **Bybit Wallet**               | 💻+📱    | 💻+📱    |
+| **Gate Wallet**                | ❌       | 📱       |
 | **Binance Web3 Wallet**        | 💻+📱    | 📱       |
-| **Fintopio Wallet**            | 💻+📱    | ❌      |
+| **Fintopio Wallet**            | 💻+📱    | 💻+📱   |
+| **Open Mask**                  | ❌       | 💻+📱   |
+| **XTon Wallet**                | ❌       | 💻+📱   |
+| **Ton Wallet**                 | ❌       | 💻+📱   |
 
 <sub>💻 Desktop Client</sub> &nbsp; <sub>📱 Mobile Client</sub> &nbsp; <sub>💻+📱 All Clients</sub> <sub>❌ Not Supported</sub>
 
