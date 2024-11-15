@@ -16,10 +16,10 @@
 ### **Available functionality**
 - Connection of TON wallets (QR code or via Deep Link), 
 - Executing transactions via Toncoin,
-- Retrieving NFT collections from a connected wallet,
 - Reading wallet balance (as long as Toncoin is available),
-- Conversion of wallet addresses into different formats and their visualization,
-- Filtering of loaded nft collections by various filters: skam, collection address and so on.
+- Retrieving NFT collections from a connected wallet,
+- Filtering of loaded nft collections by various filters: skam, collection address and so on,
+- Conversion of wallet addresses into different formats and their visualization.
 
 ### **Developing functionality**
 - Reading balance of basic (GRAM, NOT, DOGS) and custom jettons (by wallet master address),
@@ -31,7 +31,7 @@
 
 # Technical Demo
 
-You can test the SDK without installation on a demo app [in your browser](https://mrveit.github.io/Veittech-UnitonConnect/) or directly [in the Telegram bot](https://t.me/UnitonConnect_bot/dAppStart).
+You can test the SDK without installation on a demo app [in your browser](https://mrveit.github.io/Veittech-UnitonConnect/) or directly [in the TMA (Telegram Mini App)](https://t.me/UnitonConnect_bot/dAppStart).
 
 # Supported Wallets & Platforms
 
@@ -103,6 +103,12 @@ For the library to work correctly, the following dependencies **must be installe
 Initially they do not work due to lack of multithreading support in them,
 - **[Newtonsoft](https://www.youtube.com/watch?v=3H6xkl_EsvQ)** - modern solution for convenient work with json files.
 
+# Migration
+
+This section is for smooth migration between sdk versions, in case of a global API change.
+
+- **[From 0.2.* to 0.2.9.5](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/Docs/MigrationToNativeSDKGuide.MD)**
+
 # Installation
 
 [Download the latest version of the SDK via the .unityPackage file here](https://github.com/MrVeit/unity-ton-connect/releases).
@@ -122,27 +128,31 @@ The `UnitonConnectSDK` component has an option called `Initialize On Awake`. Whe
 Below is a test example of how it can look like.
 
 ```c#
-public sealed class InitializationUsageTemplate : MonoBehaviour
+public sealed class InitExample: MonoBehaviour
 {
-    private UnitonConnectSDK _unitonSDK;
-    
+    private UnitonConnectSDK _unitonConnect;
+
     private void OnDisable()
     {
-        _unitonSDK.OnInitialized -= UnitonConnectSDKInitialized;        
+        _unitonConnect.OnNativeInitialized -= SdkInitialized;
     }
 
     private void Start()
     {
-        _unitonSDK = UnitonConnectSDK.Instance;
+        _unitonConnect = UnitonConnectSDK.Instance;
 
-        _unitonSDK.OnInitialized += UnitonConnectSDKInitialized;        
+        _unitonConnect.OnNativeInitialized += SdkInitialized;
 
-        _unitonSDK.Initialize();
+        _unitonConnect.Initialize();
     }
 
-    private void UnitonConnectSDKInitialized()
+    private void SdkInitialized(bool isSuccess)
     {
-        Debug.Log("Success initialize Uniton Connect SDK");
+        if (isSuccess)
+        {
+            Debug.Log("Sdk has been successfully initialized, " + 
+              "you can test the functionality ^-^");
+        }
     }
 }
 ```
@@ -169,60 +179,7 @@ After the first build and publishing the project to `Github Pages` or `another t
 
 # Usage Template
 
-Now it's time for some examples of how to use the Uniton Connect library API. 
-After successful initialization, you can request from the SDK a list of available wallets for further use. 
-
-P.S: At this point, the library links to the **official repository with a json file** that lists the currently available wallets in the `Ton Connect ecosystem`. In future updates, you will have the option **to filter this list and generate**, similar to the configuration of your dApp, a json file with the crypto wallets used in the project.
-
-### SDK Initialization
-
-An example of a method call and processing its result is shown below:
-```c#
-public sealed class InitializationUsageTemplate: MonoBehaviour
-{
-    private UnitonConnectSDK _unitonSDK;
-
-    private List<WalletConfig> _loadedWallets;
-    
-    private void OnDisable()
-    {
-        _unitonSDK.OnInitialized -= UnitonConnectSDKInitialized;        
-    }
-
-    private void Start()
-    {
-        _unitonSDK = UnitonConnectSDK.Instance;
-
-        _unitonSDK.OnInitialized += UnitonConnectSDKInitialized;  
-
-        _unitonSDK.Initialize();
-
-        _unitonSDK.LoadWalletsConfigs(ProjectStorageConsts.
-            TEST_SUPPORTED_WALLETS_LINK, (walletsConfigs) =>
-            {
-                CreateWalletsList(walletsConfigs);
-            });
-    }
-
-    private void CreateWalletsList(IReadOnlyList<WalletConfig> walletsConfigs)
-    {
-        var walletsConfigs = WalletConnectUtils.GetSupportedWalletsListForUse(wallets);
-
-        Debug.Log($"Created {walletsConfigs.Capacity} wallets");
-
-        _loadedWallets = walletsConfigs;
-
-        Debug.Log($"List of available wallet configurations: {JsonConvert.SerializeObject(walletsConfigs)}"); 
-    }
-
-    private void UnitonConnectSDKInitialized()
-    {
-        Debug.Log("Success initialize Uniton Connect SDK");
-    }
-}
-```
-
-You can now process the filtered wallet configurations for later display in the UI, or cache them for use later.
+Now it's time for some examples of how to use the `Uniton Connect` library API. 
 All code available for use in the library is fully documented. If you have any questions when working with the library API,
 you can always see the implementation of all available functions in the `Example scene`.
 
@@ -231,138 +188,77 @@ you can always see the implementation of all available functions in the `Example
 Now we need to add callbacks to get the connection status of the wallet in the app.
 
 ```c#
-public sealed class ConnectionWalletUsageTemplate: MonoBehaviour
+public sealed class ConnectWalletExample: MonoBehaviour
 {
-    [SerializeField, Space] private Button _connectTestWallet;
-    [SerializeField, Space] private RawImage _qrCodePlace;
+    [SerializeField, Space] private Button _connectButton;
 
-    private UnitonConnectSDK _unitonSDK;
+    private UnitonConnectSDK _unitonConnect;
 
-    private List<WalletConfig> _loadedWallets;
-
-    private WalletConfig _currentWalletForConnect;
-
-    private string _connectURL;
-
-    public UnitonConnectSDK UnitonSDK => _unitonSDK;
-    public UserAssets.NFT NftStorage => _unitonSDK.Assets.NFT;
-    
-    public WalletConfig LatestAuthorizedWallet { get; private set; }
-    
-    private void OnDestroy()
+    private void OnDisable()
     {
-        _unitonSDK.OnInitialized -= UnitonConnectSDKInitialized;  
+        _connectButton.onClick.RemoveListener(Connect);
 
-        _unitonSDK.OnWalletConnectionFinished -= WalletConnectionFinished;
-        _unitonSDK.OnWalletConnectionFailed -= WalletConnectionFailed;  
+        _unitonConnect.OnNativeInitialized -= SdkInitialized;
 
-        _connectTestWallet.onClick.RemoveListener(ConnectWallet);    
+        _unitonConnect.OnNativeWalletConnectionFinished -= WalletConnectionFinished;
+        _unitonConnect.OnNativeWalletConnectionFailed -= WalletConnectionFailed;
     }
 
     private void Start()
     {
-        _connectTestWallet.onClick.AddListener(ConnectWallet);
+        _unitonConnect = UnitonConnectSDK.Instance;
 
-        _unitonSDK = UnitonConnectSDK.Instance;
+        _connectButton.interactable = false;
+        _connectButton.onClick.AddListener(Connect);
 
-        _unitonSDK.OnInitialized += UnitonConnectSDKInitialized; 
+        _unitonConnect.OnNativeInitialized += SdkInitialized;
 
-        _unitonSDK.OnWalletConnectionFinished += WalletConnectionFinished;
-        _unitonSDK.OnWalletConnectionFailed += WalletConnectionFailed; 
-
-        _unitonSDK.Initialize();
-
-        _unitonSDK.GetWalletsConfigs(ProjectStorageConsts.
-            START_TON_WALLETS_LINK, (walletsConfigs) =>
-            {
-                CreateWalletsList(walletsConfigs);
-            });
+        _unitonConnect.OnNativeWalletConnectionFinished += WalletConnectionFinished;
+        _unitonConnect.OnNativeWalletConnectionFailed += WalletConnectionFailed;
     }
 
-    private void CreateWalletsList(IReadOnlyList<WalletConfig> wallets)
+    private void Connect()
     {
-        var walletsConfigs = WalletConnectUtils.GetSupportedWalletsListForUse(wallets);
-
-        Debug.Log($"Created {walletsConfigs.Capacity} wallets");
-
-        _loadedWallets = walletsConfigs;
-
-        Debug.Log($"List of available wallet configurations: {JsonConvert.SerializeObject(walletsConfigs)}"); 
-
-        GenerateQRCode();
-    }
-
-    private async void GenerateQRCode()
-    {
-        _currentWalletForConnect = _loadedWallets[0];
-
-        _connectURL = await _unitonSDK.GenerateConnectURL(_currentWalletForConnect);
-        _qrCodePlace.texture = WalletVisualUtils.GetQRCodeFromUrl(_connectURL);
-    }
-
-    private void ConnectWallet()
-    {
-        if (WalletConnectUtils.HasHttpBridge(_currentWalletForConnect))
+        if (!_unitonConnect.IsInitialized)
         {
-            _unitonSDK.ConnectHttpBridgeWalletViaDeepLink(_currentWalletForConnect, _connectURL);
-        }
-        
-        if (WalletConnectUtils.HasJSBridge(_currentWalletForConnect) && _unitonSDK.IsUseWebWallets)
-        {
-            _unitonSDK.ConnectJavaScriptBridgeWalletViaDeeplink(_currentWalletForConnect);
-        }
-    }
-
-    private void UnitonConnectSDKInitialized()
-    {
-        Debug.Log("Success initialize Uniton Connect SDK");
-    }
-
-    private void WalletConnectionFinished(Wallet wallet)
-    {
-        if (UnitonConnectSDK.Instance.IsWalletConnected)
-        {
-           var successConnectMessage = $"Wallet is connected, full account address: {wallet.Account.Address}, \n" +
-               $"Platform: {wallet.Device.Platform}, " +
-               $"Name: {wallet.Device.AppName}, " +
-               $"Version: {wallet.Device.AppVersion}";
-
-           var shortWalletAddress = WalletVisualUtils.ProcessWalletAddress(
-               wallet.Account.Address.ToString(AddressType.Base64), 6);
-
-           Debug.Log($"Connected wallet short address: {shortWalletAddress}");
-
-           if (_loadedWallets != null)
-           {
-                 LatestAuthorizedWallet = WalletConnectUtils.GetConfigOfSpecifiedWallet(
-                   _loadedWallets, wallet.Device.AppName);
-
-                 Debug.Log($"The current wallet in the list is detected: " +
-                   $"{JsonConvert.SerializeObject(LatestAuthorizedWallet)}");
-           }
-
-           return;
+            Debug.LogWarning("Sdk is not initialized, connection canceled");
+  
+            return;
         }
 
-        Debug.LogWarning($"Connect status: {UnitonConnectSDK.Instance.IsWalletConnected}");
+        _unitonConnect.Connect();
     }
 
-    private void WalletConnectionFailed(string message)
+    private void SdkInitialized(bool isSuccess)
     {
-        Debug.LogError($"Failed to connect " +
-          $"the wallet due to the following reason: {message}");
+        _connectButton.interactable = isSuccess;
+    }
+
+    private void WalletConnectionFinished(NewWalletConfig wallet)
+    {
+        var userAddress = wallet.Address;
+
+        var successConnectMessage = $"Wallet is connected, " +
+            $"Address: {WalletConnectUtils.GetNonBounceableAddress(userAddress), \n}" +
+            $"Public Key: {wallet.PublicKey}";
+        var shortAddress = WalletVisualUtils.ProcessWalletAddress(userAddress, 6);
+
+        Debug.Log(successConnectMessage);
+        Debug.Log($"Parsed short address: {shortAddress}");
+    }
+
+    private void WalletConnectionFailed(string errorMessage)
+    {
+        Debug.LogError("Failed to connect wallet, reason: {errorMessage}");
     }
 }
 ```
 
-In this example, we create a link to connect to the current wallet in the `GenerateQRCode()` method, and generate a QR code to display on the connection panel.
-Then, in the `ConnectWallet()` method to which the button was subscribed, the current configuration is checked for a specific bridge and further connection is made when the connect button is clicked.
+**P.S:** Previously it was necessary to work with the type of connection to the wallet manually, determining the presence of this or that bridge in the loaded configuration.
+Since **version 0.2.9.5**, all connection is done through a native window! Now you don't need to make connection windows, create wallets icon for connection - all this is handled by native JS SDK.
 
-**P.S:** HTTP and JavaScript connection bridges are differentiated by the way the deep links are navigated to the cryptocurrency wallet application/extension in the browser.
-
-After successful connection via QR code or deep link, you will have connection status messages displayed in the console.
-Here you can process the connected wallet **to get its configuration** and use it when sending a transaction later.
-To nicely display the wallet address, the SDK has a method `WalletVisualUtils.ProcessWalletAddress(string address, int value)` that allows only the first and last characters of the address to be displayed.
+After clicking on the button and calling the `Connect()` method, a native window will open, displaying the wallets available for connection (depending on whether the web application is running on a PC or phone, their number will vary).
+Once the selected wallet is successfully connected, you can beautifully display its address. The SDK has a method `WalletVisualUtils.ProcessWalletAddress(string address, int value)` that shows only the first and last characters of the address.
 
 P.S: Starting from `version 0.2.8`, you can change the address format of a connected TON wallet.
 
@@ -370,6 +266,11 @@ Conversion to `HEX/RAW` format:
 ```c#
 string baseAddress = "UQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk-yXLZXmc2V5I";
 string hexAddress = WalletConnectUtils.GetHEXAddress(baseAddress); 
+
+// OR
+
+string currentAddress = UnitonConnectSDK.Istance.Wallet.ToString();
+string hexAddress = UnitonConnectSDK.Instance.Wallet.ToHex();
 
 //result: 0:c1da9d221d87032b762ad647658a2b5115a38af4b2329d4824fb25cb65799cd9
 ```
@@ -379,6 +280,10 @@ Conversion to `Bounceable` format:
 string baseAddress = "UQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk-yXLZXmc2V5I";
 string bounceableAddress = WalletConnectUtils.GetBounceableAddress(baseAddress); 
 
+// OR
+
+string hexAddress = UnitonConnectSDK.Instance.Wallet.ToBounceable();
+
 //result: EQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk+yXLZXmc2QON
 ```
 
@@ -387,64 +292,107 @@ Convert to `Non Bounceable` format:
 string baseAddress = "EQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk+yXLZXmc2QON";
 string nonBounceableAddress = WalletConnectUtils.GetNonBounceableAddress(baseAddress); 
 
+// OR
+
+string hexAddress = UnitonConnectSDK.Instance.Wallet.ToNonBounceable();
+
 //result: UQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk-yXLZXmc2V5I
 ```
 
-**IMPORTANT:**
-The `UnitonConnectSDK` has a `RestoreConnectionOnAwake` option that restores the last automatically saved session to the wallet. If it is activated, you can subscribe to the result of this event `UnitonConnectSDK.OnWalletConnectionRestored` and process the result if the response is successful.
+**IMPORTANT:** UnitonConnectSDK has an option that automatically restores the last saved wallet session. You can subscribe to the result of this event `UnitonConnectSDK.OnNativeWalletConnectionRestored` and handle the result via the boolean `isRestored`.
 
 ### Sending Toncoin
 
-After we plugged the wallet into the app. Now you can perform various operations with it.
 At the moment in `version 0.2.8`, from the list of interactions with the wallet there is `only sending Toncoin` to the desired address. 
 Therefore, below we will show an example of implementing only this function.
 
 **P.S:** When the wallet functionality in `SDK Uniton Connect` is updated, the examples in the documentation will be updated.
 
 ```c#
-public sealed class TransactionUsageTemplate : MonoBehaviour
+public sealed class TransactionSendingExample: MonoBehaviour
 {
-    [SerializeField, Space] private ConnectionWalletUsageTemplate _walletEntryPoint;
-    [SerializeField, Space] private Button _sendTransaction;
+    [SerializeField, Space] private Button _sendTransctionButton;
 
-    private const string CREATOR_WALLET_ADDRESS = "EQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4UrpH_";
-    private const double START_TON_AMOUNT = 0.01f;
+    private UnitonConnectSDK _unitonConnect;
+
+    private string _latestTransactionHash;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnNativeSendingTonFinished -= TransactionSendingFinished;
+        _unitonConnect.OnNativeTransactionConfirmed -= TonTransactionConfirmed;
+
+        _sendTransctionButton.onClick.RemoveListener(Send);
+    }
 
     private void Start()
     {
-        _walletEntryPoint.UnitonSDK.OnSendingTonFinished += TransactionSendingFinished;
+        _unitonConnect = UnitonConnectSDK.Instance;
 
-        _sendTransaction.onClick.AddListener(Send);
+        _unitonConnect.OnNativeSendingTonFinished += TransactionSendingFinished;
+        _unitonConnect.OnNativeTransactionConfirmed += TonTransactionConfirmed;
+
+        _sendTransctionButton.onClick.AddListener(Send);
     }
 
-    private void OnDestroy()
+    private void Send()
     {
-        _walletEntryPoint.UnitonSDK..OnSendingTonFinished -= TransactionSendingFinished;
-
-        _sendTransaction.onClick.RemoveListener(Send);  
-    }
-
-    private async void Send()
-    {
-        await UnitonConnectSDK.Instance.SendTon(_walletEntryPoint.LatestAuthorizedWallet,
-            CREATOR_WALLET_ADDRESS, START_TON_AMOUNT);
-    }
-
-    private void TransactionSendingFinished(SendTransactionResult? transactionResult, bool isSuccess)
-    {
-        if (isSuccess || transactionResult.HasValue)
+        if (!_unitonConnect.IsWalletConnected)
         {
-            Debug.Log($"Transaction sending was completed with status: {isSuccess}");
+            Debug.LogWarning("Wallet was not connected");
+
+            return;
         }
+
+        _unitonConnect.SendTransaction(ClassicTokenTypes.Toncoin,
+            "EQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4UrpH_", 
+            (double)10.0f, "Ton Foundation is scam!");
+    }
+
+    private void TransactionSendingFinished(string transactionHash)
+    {
+        _latestTransactionHash = transactionHash;
+
+        Debug.Log($"Ton transaction sended, hash: {transactionHash}");
+    }
+
+    private void TonTransactionConfirmed(
+        SuccessTransactionData transactionData)
+    {
+        Debug.Log($"Ton transaction {_latestTransactionHash} " +
+            $"confirmed with status: {transactionData.IsSuccess}");
+
+        var status = transactionData.IsSuccess;
+            var newBalance = transactionData.EndBalance.FromNanoton();
+            var fee = transactionData.TotalFees.FromNanoton();
+            var sendedAmount = transactionData.OutMessages[0].Value.FromNanoton();
+            var recipientAddress = transactionData.OutMessages[0].Recipient.Address;
+            var convertedAddress = WalletConnectUtils.GetNonBounceableAddress(recipientAddress);
+            var message = transactionData.OutMessages[0].DecodedBody.MessageText;
+
+        var transactionDetails = $"Loaded transaction data: \n" +
+                $"STATUS: {transactionData.IsSuccess},\n" +
+                $"HASH: {_latestTransactionHash},\n" +
+                $"NEW BALANCE: {newBalance} TON,\n" +
+                $"FEE: {fee} TON,\n" +
+                $"SENDED AMOUNT: {sendedAmount} TON,\n" +
+                $"RECIPIENT ADDRESS: {convertedAddress},\n" +
+                $"MESSAGE: {message}";
+
+        Debug.Log(transactionDetails);
     }
 }
 ```
 
-This example shows a test implementation of sending TonCoin to my TON address.
-In the `UnitonConnectSDK.Instance.SendTon()` method you need to pass the configuration of the last authorized wallet, the recipient address and the quantity in `double`. 
-If the transaction succeeds or fails, an `OnTransactionSendingFinished` event will be called, the result of which you can process.
+This example shows a test implementation of sending toncoins to my TON address.
+In the `UnitonConnectSDK.Instance.SendTransaction()` method it is necessary to pass the recipient address, the number of TON in `double` and the transaction comment (optionally, you can not use it and send without it - the SDK provides it). 
+If the transaction is successful, the `OnNativeSendingTonFinished` event will be called, where you can get its hash, which is parsed from Boc, which is passed to the native sdk.
+In case the transaction failed to be sent, the `OnNativeTransactionSendingFailed` event will be called, where you can get a potential reason for the failed transaction.
 
-**P.S:** The wallet configuration is used **to automatically redirect** when creating a transaction, for its subsequent confirmation.
+**P.S:** to actually confirm the sending of the toncoin to the recipient's address, automatic processing of the transaction status in the blockchain has been added.
+To get a detailed status with all transaction information, subscribe to the `OnNativeTransactionConfirmed` event.
+
+**IMPORTANT:** transaction confirmation is done `in real time`, based on a snapshot of the blockchain via the Ton API. The processing time depends **on the speed of the TON blockchain.** You can adjust the processing time yourself (standard delay is 15 seconds).
 
 ### Loading NFT collections
 
@@ -453,17 +401,18 @@ Starting with `version 0.2.8`, the ability to obtain NFT collections from a conn
 Below you can see the implementation of downloading all NFT collections:
 
 ```c#
-public sealed class LoadingNftCollectionsUsageTemplate : MonoBehaviour
+public sealed class LoadingNftsExample : MonoBehaviour
 {
-    [SerializeField, Space] private ConnectionWalletUsageTemplate _walletEntryPoint;
     [SerializeField, Space] private Button _loadAllNftCollections;
     [SerializeField] private Button _loadTargetNftCollection;
 
-    private UnitonConnectSDK _unitonConnect => _walletEntryPoint.UnitonSDK;
-    private UserAssets.NFT _nftStorage => _walletEntryPoint.NftStorage;
+    private UnitonConnectSDK _unitonConnect;
+    private UserAssets.NFT _nftStorage => _unitonConnect.UserAssets.Nft;
 
     private void Start()
     {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
         _nftStorage.OnNftCollectionsClaimed += NftCollectionsClaimed;
         _nftStorage.OnTargetNftCollectionClaimed += TargetNftCollectionClaimed;
 
@@ -531,7 +480,7 @@ public sealed class LoadingNftCollectionsUsageTemplate : MonoBehaviour
 
     private void TargetNftCollectionClaimed(NftCollectionData collection)
     {
-         UnitonConnectLogger.Log($"Loaded target nft collection:{collection.Items.Collection.Name}");
+         Debug.Log($"Loaded target nft collection:{collection.Items.Collection.Name}");
     }
 
     private void NftCollectionsNotFounded()
@@ -541,8 +490,8 @@ public sealed class LoadingNftCollectionsUsageTemplate : MonoBehaviour
 }
 ```
 
-**IMPORTANT:** To download images from NFT collections, you cannot directly access the storage links, because each collection has its own servers configured. Therefore, an unsuccessful attempt to load a collection will return an empty picture due to CORS blocking the request.
-
+**IMPORTANT:** To download images from NFT collections, you cannot directly access the repository links because each collection has its own servers configured. 
+So if you try to load a collection unsuccessfully, you will get an empty image due to CORS blocking the request.
 To do this, you need to call the `await WalletVisualUtils.GetIconFromProxyServerAsync(iconUrl)` method, which calls your API server, which downloads the image from the source and gives it to your Unity client.
 
 **P.S:** In addition, when you attempt to load webP images, the server performs conversion to `JPEG format`.
@@ -573,41 +522,38 @@ Starting with `version 0.2.8`, added possibility to get current balance of conne
 Implementation of current balance request is shown below:
 
 ```c#
-public sealed class LoadingTonBalanceUsageTemplate : MonoBehaviour
+public sealed class TonBalanceLoadingExample: MonoBehaviour
 {
-    [SerializeField, Space] private ConnectionWalletUsageTemplate _walletEntryPoint;
-    [SerializeField, Space] private Button _loadBalance;
-    [SerializeField] private TextMeshProUGUI _balanceBar;
+    [SerializeField, Space] private TextMeshProUGUI _balanceBar;
 
-    private UnitonConnectSDK _unitonConnect => _walletEntryPoint.UnitonSDK;
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnTonBalanceClaimed -= TonBalanceClaimed;
+    }
 
     private void Start()
     {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        if (!_unitonConnect.IsWalletConnected)
+        {
+            Debug.LogWarning("Wallet is not connected");
+
+            return;
+        }
+
         _unitonConnect.OnTonBalanceClaimed += TonBalanceClaimed;
 
-        _loadBalance.onClick.AddListener(LoadBalance);
+        _unitonConnect.LoadBalance(ClassicTokenTypes.Toncoin);
     }
 
-    private void OnDestroy()
+    private void TonBalanceClaimed(decimal balance)
     {
-        _unitonConnect.OnTonBalanceClaimed -= TonBalanceClaimed;
+        Debug.Log($"Loaded ton balance: {balance}");
 
-        _loadBalance.onClick.RemoveListener(LoadBalance);
-    }
-
-    private void LoadBalance();
-    {
-        _unitonConnect.UpdateTonBalance();
-    }
-
-    private void SetTonBalance(decimal balance)
-    {
-        _balanceBar.text = $"Balance: {balance} TON";
-    }
-
-    private void TonBalanceClaimed(decimal tonBalance)
-    {
-        SetTonBalance(tonBalance);
+        _balanceBar.text = $"{balance} TON";
     }
 }
 ```
@@ -617,10 +563,13 @@ If you need to transfer your Ton balance to Nanoton and reverse, you can use the
 ```c#
 private void TonBalanceClaimed(decimal tonBalance)
 {
-    SetTonBalance(tonBalance);
+    decimal nanotons = tonBalance.ToNanoton();
+    decimal tons = nanotons.FromNanoton()
 
-    decimal nanotons = UserAssetsUtils.ToNanoton(tonBalance);
-    decimal tons = UserAssetsUtils.FromNanoton(nanotons)
+    Debug.Log($"Loaded TON balance: {tonBalance}");
+    Debug.Log($"Loaded TON balance in nanotons: {nanotons}");
+
+    _balanceBar.text = $"{tonBalance} TON";
 }
 ```
 
