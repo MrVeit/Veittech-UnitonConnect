@@ -41,7 +41,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **Ton Keeper**                                | ✔️           | ✔️           |
 | **My Ton Wallet**                             | ✔️           | ✔️           |
 | **Ton Hub**                                   | ⚠️           | ⚠️           |
-| **DeWallet**                                  | ⚠️           | ⚠️           |
+| **DeWallet (TNA)**                            | ⚠️           | ⚠️           |
 | **Bitget Wallet**                             | ✔️           | ✔️           |
 | **Bitget Web3 (TMA)**                         | ⚠️           | ✔️           |
 | **Safe Pal Wallet**                           | ⚠️           | ⚠️           |
@@ -51,10 +51,10 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **Bybit Wallet**                              | ✔️           | ✔️           |
 | **Gate Wallet**                               | ❌           | ⚠️           |
 | **Binance Web3 Wallet**                       | ⚠️           | ✔️           |
-| **Fintopio Wallet**                           | ✔️           | ✔️           |
-| **Open Mask**                                 | ✔️           | ✔️           |
-| **XTon Wallet**                               | ✔️           | ✔️           |
-| **Ton Wallet**                                | ✔️           | ✔️           |
+| **Fintopio Wallet (TMA)**                     | ✔️           | ✔️           |
+| **Open Mask (Web Extension)**                 | ✔️           | ✔️           |
+| **XTon Wallet (Web Extension)**               | ✔️           | ✔️           |
+| **Ton Wallet (Web Extension)**                | ✔️           | ✔️           |
 
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
@@ -81,7 +81,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **XTon Wallet**                | ❌       | 💻+📱   |
 | **Ton Wallet**                 | ❌       | 💻+📱   |
 
-<sub>💻 Desktop Client</sub> &nbsp; <sub>📱 Mobile Client</sub> &nbsp; <sub>💻+📱 All Clients</sub> <sub>❌ Not Supported</sub>
+<sub>💻+📱 All Clients</sub> <sub>💻 Desktop Client</sub> &nbsp; <sub>📱 Mobile Client</sub> &nbsp; <sub>❌ Not Supported</sub>
 
 # Supported Tokens & Available Func
 
