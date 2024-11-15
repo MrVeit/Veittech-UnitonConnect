@@ -443,7 +443,7 @@ public sealed class NewDisconnectWalletExample : MonoBehaviour
 
 Before
 ```c#
-public sealed class OldTonBalanceLoaded: MonoBehaviour
+public sealed class OldTonBalanceLoaderExample: MonoBehaviour
 {
     [SerializeField, Space] private TextMeshProUGUI _balanceBar;
 
@@ -481,7 +481,7 @@ public sealed class OldTonBalanceLoaded: MonoBehaviour
 
 After
 ```c#
-public sealed class NewTonBalanceLoaded: MonoBehaviour
+public sealed class NewTonBalanceLoaderExample: MonoBehaviour
 {
     [SerializeField, Space] private TextMeshProUGUI _balanceBar;
 
@@ -521,23 +521,140 @@ public sealed class NewTonBalanceLoaded: MonoBehaviour
 
 Before
 ```c#
+public sealed class OldTransactionSendingExample: MonoBehaviour
+{
+    [SerializeField, Space] private Button _sendTransctionButton;
+    [SerializeField, Space] private OldConnectWalletExample _connectExample;
 
+    private UnitonConnectSDK _unitonConnect;
+
+    private WalletConfig _connectedConfig;
+
+    private void OnDisable()
+    {
+        _connectExample.OnWalletConnected -= WalletConfigClaimed;
+        _unitonConnect.OnSendingTonFinished -= TonSendingFinished;
+
+        _sendTransctionButton.onClick.RemoveListener(Send);
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _connectExample.OnWalletConnected += WalletConfigClaimed;
+        _unitonConnect.OnSendingTonFinished += TonSendingFinished;
+
+        _sendTransctionButton.onClick.AddListener(Send);
+    }
+
+    private async void Send()
+    {
+        if (_connectedConfig == null)
+        {
+            Debug.LogWarning("Wallet was not connected");
+
+            return;
+        }
+
+        await _unitonConnect.SendTon(_connectedConfig,
+            "EQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4UrpH_", (double)10.0f);
+    }
+
+    private void WalletConfigClaimed(WalletConfig config)
+    {
+        _connectedConfig = config;
+    }
+
+    private void TonSendingFinished(
+        SendTransactionResult? result, bool isSuccess)
+    {
+        if (!isSuccess || !result.HasValue)
+        {
+            Debug.LogError("Failed to send transaction for possible reasons:" +
+                    " not enough funds or unsuccessful connection to the wallet");
+
+            return;
+        }
+
+        Debug.Log($"Ton transaction sended, boc: {result.Boc}");
+    }
+}
 ```
 
 After
 ```c#
+public sealed class NewTransactionSendingExample: MonoBehaviour
+{
+    [SerializeField, Space] private Button _sendTransctionButton;
 
-```
+    private UnitonConnectSDK _unitonConnect;
 
+    private string _latestTransactionHash;
 
-## **OTHER UTILS**
+    private void OnDisable()
+    {
+        _unitonConnect.OnNativeSendingTonFinished -= TransactionSendingFinished;
+        _unitonConnect.OnNativeTransactionConfirmed -= TonTransactionConfirmed;
 
-Before
-```c#
+        _sendTransctionButton.onClick.RemoveListener(Send);
+    }
 
-```
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
 
-After
-```c#
+        _unitonConnect.OnNativeSendingTonFinished += TransactionSendingFinished;
+        _unitonConnect.OnNativeTransactionConfirmed += TonTransactionConfirmed;
 
+        _sendTransctionButton.onClick.AddListener(Send);
+    }
+
+    private void Send()
+    {
+        if (!_unitonConnect.IsWalletConnected)
+        {
+            Debug.LogWarning("Wallet was not connected");
+
+            return;
+        }
+
+        _unitonConnect.SendTransaction(ClassicTokenTypes.Toncoin,
+            "EQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4UrpH_", 
+            (double)10.0f, "Ton Foundation is scam!");
+    }
+
+    private void TransactionSendingFinished(string transactionHash)
+    {
+        _latestTransactionHash = transactionHash;
+
+        Debug.Log($"Ton transaction sended, hash: {transactionHash}");
+    }
+
+    private void TonTransactionConfirmed(
+        SuccessTransactionData transactionData)
+    {
+        Debug.Log($"Ton transaction {_latestTransactionHash} " +
+            $"confirmed with status: {transactionData.IsSuccess}");
+
+        var status = transactionData.IsSuccess;
+            var newBalance = transactionData.EndBalance.FromNanoton();
+            var fee = transactionData.TotalFees.FromNanoton();
+            var sendedAmount = transactionData.OutMessages[0].Value.FromNanoton();
+            var recipientAddress = transactionData.OutMessages[0].Recipient.Address;
+            var convertedAddress = WalletConnectUtils.GetNonBounceableAddress(recipientAddress);
+            var message = transactionData.OutMessages[0].DecodedBody.MessageText;
+
+        var transactionDetails = $"Loaded transaction data: \n" +
+                $"STATUS: {transactionData.IsSuccess},\n" +
+                $"HASH: {_latestTransactionHash},\n" +
+                $"NEW BALANCE: {newBalance} TON,\n" +
+                $"FEE: {fee} TON,\n" +
+                $"SENDED AMOUNT: {sendedAmount} TON,\n" +
+                $"RECIPIENT ADDRESS: {convertedAddress},\n" +
+                $"MESSAGE: {message}";
+
+        Debug.Log(transactionDetails);
+    }
+}
 ```
