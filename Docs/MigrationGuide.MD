@@ -308,8 +308,8 @@ public sealed class OldRestoreConnectionExample: MonoBehaviour
 
         _loadedWalletConfig = loadedWalletConfig;
 
-        Debug.Log($"Wallet connection restored, 
-           loaded address: {_unitonConnect.GetWalletAddress()}");
+        Debug.Log($"Wallet connection restored, " + 
+           $"loaded address: {_unitonConnect.GetWalletAddress()}");
     }
 }
 ```
@@ -341,8 +341,8 @@ public sealed class NewRestoreConnectionExample: MonoBehaviour
             return;
         }
 
-        Debug.Log($"Wallet connection restored, 
-            loaded address: {_unitonConnect.Wallet.ToNonBounceable()}");
+        Debug.Log($"Wallet connection restored, " +
+            $"loaded address: {_unitonConnect.Wallet.ToNonBounceable()}");
     }
 }
 ```
