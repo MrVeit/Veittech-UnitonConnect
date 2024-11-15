@@ -1,4 +1,4 @@
-# Migrating from version 0.2.* to 0.2.9.5+
+# Migrating from 0.2.* to 0.2.9.5+
 
 By migrating from C# based libraries for the .NET platform to the native Javascript SDK Ton Connect UI, a number of changes have been made to the functionality of the SDK. The following shows how the library functions are implemented in a working environment before and after the API change.
 
@@ -48,8 +48,8 @@ public sealed class OldInitExample: MonoBehaviour
 
     private void SdkInitialized()
     {
-        Debug.Log("Sdk has been successfully initialized, 
-              you can test the functionality ^-^");
+        Debug.Log("Sdk has been successfully initialized, " +
+              "you can test the functionality ^-^");
     }
 }
 ```
@@ -78,8 +78,8 @@ public sealed class NewInitExample: MonoBehaviour
     {
         if (isSuccess)
         {
-            Debug.Log("Sdk has been successfully initialized, 
-              you can test the functionality ^-^");
+            Debug.Log("Sdk has been successfully initialized, " + 
+              "you can test the functionality ^-^");
         }
     }
 }
@@ -177,8 +177,8 @@ public sealed class OldConnectWalletExample: MonoBehaviour
             return;
         }
   
-        var successConnectMessage = $"Wallet is connected, full account address:
-              {wallet.Account.Address}, \n" +
+        var successConnectMessage = $"Wallet is connected, " +
+               $"full address: {wallet.Account.Address}, \n" +
                $"Platform: {wallet.Device.Platform}, " +
                $"Name: {wallet.Device.AppName}, " +
                $"Version: {wallet.Device.AppVersion}";
