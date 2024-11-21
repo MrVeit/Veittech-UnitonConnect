@@ -14,7 +14,7 @@
 **UNITON CONNECT** is a user-friendly solution for working with the TON ecosystem inside web applications on Unity. 
 
 ### **Available functionality**
-- Connection of TON wallets (QR code or via Deep Link), 
+- Connecting TON wallets through the native window that Telegram users are used to,
 - Executing transactions via Toncoin,
 - Reading wallet balance (as long as Toncoin is available),
 - Retrieving NFT collections from a connected wallet,
@@ -52,9 +52,9 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **Gate Wallet**                               | ❌           | ⚠️           |
 | **Binance Web3 Wallet**                       | ⚠️           | ✔️           |
 | **Fintopio Wallet (TMA)**                     | ✔️           | ✔️           |
-| **Open Mask (Web Extension)**                 | ✔️           | ✔️           |
-| **XTon Wallet (Web Extension)**               | ✔️           | ✔️           |
-| **Ton Wallet (Web Extension)**                | ✔️           | ✔️           |
+| **Open Mask (Web Extension)**                 | ✔️           | ❌           |
+| **XTon Wallet (Web Extension)**               | ✔️           | ❌           |
+| **Ton Wallet (Web Extension)**                | ✔️           | ❌           |
 
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
@@ -67,19 +67,19 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **My Ton Wallet**              | 💻+📱    | 💻+📱    |
 | **Ton Hub**                    | 💻+📱    | 📱       |
 | **DeWallet (TMA)**             | ❌       | 💻+📱   |
-| **Bitget Wallet**              | 💻+📱    | 💻+📱    |
-| **Bitget Web3 (TMA)**          | ❌       | 💻+📱    |
+| **Bitget Wallet**              | 💻+📱    | 💻+📱   |
+| **Bitget Web3 (TMA)**          | ❌       | 💻+📱   |
 | **Safe Pal Wallet**            | ❌       | 💻+📱   |
-| **OKX Wallet**                 | 💻+📱    | 💻+📱    |
+| **OKX Wallet**                 | 💻+📱    | 💻+📱   |
 | **OKX Mini Wallet (TMA)**      | ❌       | 💻+📱   |
 | **Hot Wallet (TMA)**           | ❌       | ❌      |
-| **Bybit Wallet**               | 💻+📱    | 💻+📱    |
-| **Gate Wallet**                | ❌       | 📱       |
-| **Binance Web3 Wallet**        | 💻+📱    | 📱       |
+| **Bybit Wallet**               | 💻+📱    | 💻+📱   |
+| **Gate Wallet**                | ❌       | 📱      |
+| **Binance Web3 Wallet**        | 💻+📱    | 📱      |
 | **Fintopio Wallet (TMA)**      | 💻+📱    | 💻+📱   |
-| **Open Mask (Web Extension)**  | ❌       | 💻+📱   |
-| **XTon Wallet (Web Extension)**| ❌       | 💻+📱   |
-| **Ton Wallet (Web Extension)** | ❌       | 💻+📱   |
+| **Open Mask (Web Extension)**  | ❌       | 💻     |
+| **XTon Wallet (Web Extension)**| ❌       | 💻     |
+| **Ton Wallet (Web Extension)** | ❌       | 💻     |
 
 <sub>💻+📱 All Clients</sub> <sub>💻 Desktop Client</sub> &nbsp; <sub>📱 Mobile Client</sub> &nbsp; <sub>❌ Not Supported</sub>
 
