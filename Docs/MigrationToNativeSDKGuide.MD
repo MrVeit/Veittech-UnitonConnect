@@ -658,3 +658,6 @@ public sealed class NewTransactionSendingExample: MonoBehaviour
     }
 }
 ```
+
+**IMPORTANT:** All methods marked as `Obsolute` will be removed or hidden from public access (this applies to utilities and other things that will only be used inside the SDK) after a couple of library version updates.
+On this occasion, backwards compatibility is still temporarily preserved for a smooth transition between versions, but not forever, sorry for the inconvenience :0
