@@ -656,7 +656,7 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            OnWalletConnectionRestore(isSuccess);
+            OnWalletConnectionRestore(isSuccess, new WalletConfig());
         }
 
         private IEnumerator ConfirmTransactionFromBlockchain(string transactionHash)
@@ -887,7 +887,7 @@ namespace UnitonConnect.Core
             ProjectStorageConsts.DeleteConnectionKey(keyConnection);
             ProjectStorageConsts.DeleteConnectionKey(lastEventId);
 
-            OnWalletConnectionRestore(false);
+            OnWalletConnectionRestore(false, new WalletConfig());
         }
 
         private void OpenWalletViaDeepLink(string deepLinkURL)
@@ -995,16 +995,6 @@ namespace UnitonConnect.Core
 
         private void OnNativeWalletConnectionFinish(NewWalletConfig walletConfig)
         {
-            if (!IsWalletConnected)
-            {
-                OnNativeWalletDisconnect(true);
-
-                UnitonConnectLogger.Log("Connection to the wallet has been successfully disconnected," +
-                    " the storage of the previous session has been cleaned up");
-
-                return;
-            }
-
             _isWalletConnected = true;
 
             _connectedWalletConfig = walletConfig;

@@ -147,10 +147,10 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            OnWalletSuccessfullyConnected?.Invoke(walletConfig);
-
-            UnitonConnectLogger.Log($"Wallet successfully connected, " + 
+            UnitonConnectLogger.Log($"Wallet successfully connected, " +
                 $"address: {WalletConnectUtils.GetNonBounceableAddress(walletConfig.Address)}");
+
+            OnWalletSuccessfullyConnected?.Invoke(walletConfig);
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
@@ -258,9 +258,9 @@ namespace UnitonConnect.Core
             Action<string> walletConnectionDetectFailed, Action<bool> connectionRestored)
         {
             OnInitialized = sdkInitialized;
+            OnWalletConnectionRestored = connectionRestored;
             OnWalletSuccessfullyConnected = walletConnectionDetected;
             OnWalletConnectFailed = walletConnectionDetectFailed;
-            OnWalletConnectionRestored = connectionRestored;
 
             Init(manifestUrl, OnInitialize);
             InitTonWeb();
