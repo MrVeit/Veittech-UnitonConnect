@@ -147,10 +147,10 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            OnWalletSuccessfullyConnected?.Invoke(walletConfig);
-
-            UnitonConnectLogger.Log($"Wallet successfully connected, " + 
+            UnitonConnectLogger.Log($"Wallet successfully connected, " +
                 $"address: {WalletConnectUtils.GetNonBounceableAddress(walletConfig.Address)}");
+
+            OnWalletSuccessfullyConnected?.Invoke(walletConfig);
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
@@ -254,15 +254,19 @@ namespace UnitonConnect.Core
         }
 
         internal static void Init(string manifestUrl, 
-            Action<bool> sdkInitialized, Action<bool> connectionRestored)
+            Action<bool> sdkInitialized, Action<NewWalletConfig> walletConnectionDetected,
+            Action<string> walletConnectionDetectFailed, Action<bool> connectionRestored)
         {
             OnInitialized = sdkInitialized;
             OnWalletConnectionRestored = connectionRestored;
+            OnWalletSuccessfullyConnected = walletConnectionDetected;
+            OnWalletConnectFailed = walletConnectionDetectFailed;
 
             Init(manifestUrl, OnInitialize);
             InitTonWeb();
 
             SubscribeToRestoreConnection(OnWalletConnectionRestore);
+            SubscribeToStatusChange(OnWalletConnect);
         }
 
         internal static void Connect(

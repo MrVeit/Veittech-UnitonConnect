@@ -3,16 +3,13 @@ using UnitonConnect.Core.Demo;
 
 namespace UnitonConnect.Core.Data
 {
-    public sealed class TestCloseChooseWalletButton : TestBaseButton
+    public sealed class TestOpenModalConnectionWindowButton : TestBaseButton
     {
         [SerializeField, Space] private TestWalletInterfaceAdapter _interfaceAdapter;
-        [SerializeField, Space] private TestChooseWalletPanel _panel;
 
         public sealed override void OnClick()
         {
-            _interfaceAdapter.UnitonSDK.PauseConnection();
-
-            _panel.Close();
+            _interfaceAdapter.UnitonSDK.Connect();
         }
     }
 }

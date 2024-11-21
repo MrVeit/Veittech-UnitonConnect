@@ -255,7 +255,8 @@ namespace UnitonConnect.Core
             if (IsSupporedPlatform())
             {
                 TonConnectBridge.Init(dAppManifestLink,
-                    OnInitialize, OnWalletConnectionRestore);
+                    OnInitialize, OnNativeWalletConnectionFinish, 
+                    OnNativeWalletConnectionFail, OnWalletConnectionRestore);
             }
 
             OnInitialize();
@@ -655,7 +656,7 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            OnWalletConnectionRestore(isSuccess);
+            OnWalletConnectionRestore(isSuccess, new WalletConfig());
         }
 
         private IEnumerator ConfirmTransactionFromBlockchain(string transactionHash)
@@ -886,7 +887,7 @@ namespace UnitonConnect.Core
             ProjectStorageConsts.DeleteConnectionKey(keyConnection);
             ProjectStorageConsts.DeleteConnectionKey(lastEventId);
 
-            OnWalletConnectionRestore(false);
+            OnWalletConnectionRestore(false, new WalletConfig());
         }
 
         private void OpenWalletViaDeepLink(string deepLinkURL)
@@ -985,8 +986,6 @@ namespace UnitonConnect.Core
                     " the storage of the previous session has been cleaned up");
             }
 
-            _isWalletConnected = true;
-
             _isWalletConnected = _tonConnect.IsConnected;
 
             Wallet = new UserWallet(wallet.Account.Address.ToString(), null);
@@ -996,23 +995,24 @@ namespace UnitonConnect.Core
 
         private void OnNativeWalletConnectionFinish(NewWalletConfig walletConfig)
         {
-            if (!IsWalletConnected)
-            {
-                OnNativeWalletDisconnect(true);
-
-                UnitonConnectLogger.Log("Connection to the wallet has been successfully disconnected," +
-                    " the storage of the previous session has been cleaned up");
-            }
-
             _isWalletConnected = true;
 
             _connectedWalletConfig = walletConfig;
 
-            var nonBouceableAddress = WalletConnectUtils.GetNonBounceableAddress(walletConfig.Address);
+            var nonBouceableAddress = WalletConnectUtils
+                .GetNonBounceableAddress(walletConfig.Address);
 
-            Wallet = new UserWallet(nonBouceableAddress, walletConfig);
+            var updatedConfig = new NewWalletConfig()
+            {
+                Address = nonBouceableAddress,
+                Chain = walletConfig.Chain,
+                PublicKey = walletConfig.PublicKey,
+                StateInit = walletConfig.StateInit,
+            };
 
-            OnNativeWalletConnectionFinished?.Invoke(walletConfig);
+            Wallet = new UserWallet(nonBouceableAddress, updatedConfig);
+
+            OnNativeWalletConnectionFinished?.Invoke(updatedConfig);
         }
 
         private void OnWalletConnectionFail(string errorMessage)
@@ -1063,6 +1063,8 @@ namespace UnitonConnect.Core
         private void OnNativeWalletDisconnect(bool isSuccess)
         {
             _isWalletConnected = false;
+
+            Wallet = new UserWallet(null, null);
 
             OnNativeWalletDisconnected?.Invoke(isSuccess);
         }
