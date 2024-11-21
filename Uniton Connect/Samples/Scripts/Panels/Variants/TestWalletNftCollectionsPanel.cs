@@ -5,7 +5,6 @@ using TMPro;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.View;
-using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.DeFi;
 
@@ -104,7 +103,7 @@ namespace UnitonConnect.Core.Demo
             {
                 var iconUrl = nft.Get500x500ResolutionWebp();
 
-                UnitonConnectLogger.Log($"Claimed icon by urL: {iconUrl}");
+                Debug.Log($"Claimed icon by urL: {iconUrl}");
 
                 var nftIcon = await WalletVisualUtils.GetIconFromProxyServerAsync(iconUrl);
                 var nftName = nft.Metadata.ItemName;
@@ -117,7 +116,7 @@ namespace UnitonConnect.Core.Demo
 
                 nftVisual.Add(newNftView);
 
-                UnitonConnectLogger.Log($"Created NFT View with name: {nftName}");
+                Debug.Log($"Created NFT View with name: {nftName}");
             }
 
             return nftVisual;

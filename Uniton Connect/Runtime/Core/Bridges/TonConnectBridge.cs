@@ -254,15 +254,19 @@ namespace UnitonConnect.Core
         }
 
         internal static void Init(string manifestUrl, 
-            Action<bool> sdkInitialized, Action<bool> connectionRestored)
+            Action<bool> sdkInitialized, Action<NewWalletConfig> walletConnectionDetected,
+            Action<string> walletConnectionDetectFailed, Action<bool> connectionRestored)
         {
             OnInitialized = sdkInitialized;
+            OnWalletSuccessfullyConnected = walletConnectionDetected;
+            OnWalletConnectFailed = walletConnectionDetectFailed;
             OnWalletConnectionRestored = connectionRestored;
 
             Init(manifestUrl, OnInitialize);
             InitTonWeb();
 
             SubscribeToRestoreConnection(OnWalletConnectionRestore);
+            SubscribeToStatusChange(OnWalletConnect);
         }
 
         internal static void Connect(

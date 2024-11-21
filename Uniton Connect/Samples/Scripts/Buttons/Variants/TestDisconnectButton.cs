@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnitonConnect.Core.Demo;
-using UnitonConnect.Core.Utils.Debugging;
 
 namespace UnitonConnect.Core.Data
 {
@@ -10,11 +9,11 @@ namespace UnitonConnect.Core.Data
 
         public sealed override void OnClick()
         {
-            UnitonConnectLogger.Log("The disconnecting process of the previously connected wallet has been started");
+            Debug.Log("The disconnecting process of the previously connected wallet has been started");
 
             _interfaceAdapter.UnitonSDK.Disconnect();
 
-            UnitonConnectLogger.Log("Success disconnect");
+            Debug.Log("Success disconnect");
 
         }
     }

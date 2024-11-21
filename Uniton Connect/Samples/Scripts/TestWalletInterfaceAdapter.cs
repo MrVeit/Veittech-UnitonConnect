@@ -19,7 +19,6 @@ namespace UnitonConnect.Core.Demo
         [SerializeField] private Button _sendTransactionButton;
         [SerializeField] private Button _openNftCollectionButton;
         [SerializeField, Space] private TestWalletNftCollectionsPanel _nftCollectionPanel;
-        [SerializeField, Space] private GameObject _loadWalletsAnimation;
 
         private string _latestTransactionHash;
 
