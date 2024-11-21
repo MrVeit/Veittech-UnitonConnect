@@ -55,9 +55,9 @@ window.addEventListener("load", function ()
   var buildUrl = "Build";
   var loaderUrl = buildUrl + "/Veittech-UnitonConnect-WebPage.loader.js";
   var config = {
-    dataUrl: buildUrl + "/bf42c207cb4b733383911f4fcdc1d81f.data.unityweb",
-    frameworkUrl: buildUrl + "/afd136be582ad48dba08d2ed8f2739de.js.unityweb",
-    codeUrl: buildUrl + "/00cca244390cd5d138ae36f160050f1a.wasm.unityweb",
+    dataUrl: buildUrl + "/a04ec2e66e1ca2bb25a13ac856be4b52.data.unityweb",
+    frameworkUrl: buildUrl + "/aa667e931da766790e01d5b321515d00.js.unityweb",
+    codeUrl: buildUrl + "/9d25286ca863b2fbb608c6b9b8eb247d.wasm.unityweb",
     streamingAssetsUrl: "StreamingAssets",
     companyName: "Veittech",
     productName: "Uniton Connect",
@@ -110,7 +110,7 @@ window.addEventListener("load", function ()
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
 
-    console.log("Telegram web app has been expanded to full screen");
+    console.log("Telegram Web App has been expanded to full screen");
 
     var version = Telegram.WebApp.version;
     var versionFloat = parseFloat(version);
