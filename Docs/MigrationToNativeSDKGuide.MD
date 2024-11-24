@@ -663,7 +663,7 @@ public sealed class NewTransactionSendingExample: MonoBehaviour
 
 If you are using your own project build template, you will need to edit the index.html file to add Java Script references to these two libraries.
 
-``html
+```html
 <script src=“https://unpkg.com/@tonconnect/ui@2.0.9/dist/tonconnect-ui.min.js”></script>
 <script src=“https://unpkg.com/tonweb@0.0.66/dist/tonweb.js”></script>
 ```
