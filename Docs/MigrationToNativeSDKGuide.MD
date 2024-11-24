@@ -661,7 +661,7 @@ public sealed class NewTransactionSendingExample: MonoBehaviour
 
 ## **EDITING BUILD TEMPLATE**
 
-If you are using your own project build template, you will need to edit the index.html file to add Java Script references to these two libraries.
+If you are using your own project build template, you will need to edit the `index.html` file to add Java Script references to these two libraries.
 
 ```html
 <script src="https://unpkg.com/@tonconnect/ui@2.0.9/dist/tonconnect-ui.min.js"></script>
@@ -670,7 +670,7 @@ If you are using your own project build template, you will need to edit the inde
 
 You can add it to `<head>` or `<body>` - it doesn't make any difference how early you put it and where you put it, as it will work fine.
 
-For example, the Uniton Connect template for assembly looks like this now:
+For example, the `Uniton Connect` template for assembly looks like this now:
 ```html
 <!DOCTYPE html>
 <html lang="en-us">
