@@ -659,5 +659,17 @@ public sealed class NewTransactionSendingExample: MonoBehaviour
 }
 ```
 
+## **EDITING BUILD TEMPLATE**
+
+If you are using your own project build template, you will need to edit the index.html file to add Java Script references to these two libraries.
+
+``html
+<script src=“https://unpkg.com/@tonconnect/ui@2.0.9/dist/tonconnect-ui.min.js”></script>
+<script src=“https://unpkg.com/tonweb@0.0.66/dist/tonweb.js”></script>
+```
+
+P.S:
+You can add it to `<head>` or `<body>` - it doesn't make any difference how early you put it and where you put it, as it will work fine.
+
 **IMPORTANT:** All methods marked as `Obsolute` will be removed or hidden from public access (this applies to utilities and other things that will only be used inside the SDK) after a couple of library version updates.
 On this occasion, backwards compatibility is still temporarily preserved for a smooth transition between versions, but not forever, sorry for the inconvenience :0
