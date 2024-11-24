@@ -664,12 +664,42 @@ public sealed class NewTransactionSendingExample: MonoBehaviour
 If you are using your own project build template, you will need to edit the index.html file to add Java Script references to these two libraries.
 
 ```html
-<script src=“https://unpkg.com/@tonconnect/ui@2.0.9/dist/tonconnect-ui.min.js”></script>
-<script src=“https://unpkg.com/tonweb@0.0.66/dist/tonweb.js”></script>
+<script src="https://unpkg.com/@tonconnect/ui@2.0.9/dist/tonconnect-ui.min.js"></script>
+<script src="https://unpkg.com/tonweb@0.0.66/dist/tonweb.js"></script>
 ```
 
-P.S:
 You can add it to `<head>` or `<body>` - it doesn't make any difference how early you put it and where you put it, as it will work fine.
+
+For example, the Uniton Connect template for assembly looks like this now:
+```html
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Uniton Connect Demo</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <link rel="manifest" href="manifest.webmanifest">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://unpkg.com/@tonconnect/ui@2.0.9/dist/tonconnect-ui.min.js"></script>
+    <script src="https://unpkg.com/tonweb@0.0.66/dist/tonweb.js"></script>
+  </head>
+  <body>
+    <div id="unity-container">
+      <canvas id="unity-canvas" width={{{ WIDTH }}} height={{{ HEIGHT }}} tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-logo"></div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+      </div>
+      <div id="unity-warning"> </div>
+    </div>
+    <script src="index.js"></script>
+  </body>
+</html>
+```
 
 **IMPORTANT:** All methods marked as `Obsolute` will be removed or hidden from public access (this applies to utilities and other things that will only be used inside the SDK) after a couple of library version updates.
 On this occasion, backwards compatibility is still temporarily preserved for a smooth transition between versions, but not forever, sorry for the inconvenience :0
