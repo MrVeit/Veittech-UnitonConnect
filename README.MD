@@ -100,8 +100,9 @@ You can test the SDK without installation on a demo app [in your browser](https:
 
 For the library to work correctly, the following dependencies **must be installed** in the project before use:
 - **[WebGL Threading Patcher](https://github.com/VolodymyrBS/WebGLThreadingPatcher)** allows you to run asynchronous operations in a single thread in WebGL builds. Initially they do not work due to lack of multithreading support in them,
-**IMPORTANT:** will be removed in future releases as it is relevant for older TonSdk .NET based implementation.
 - **[Newtonsoft](https://www.youtube.com/watch?v=3H6xkl_EsvQ)** - modern solution for convenient work with json files.
+
+**IMPORTANT:** `WebGL Threading Patcher` will be removed in future releases as it is relevant for older `TonSdk .NET` based implementation.
 
 # Migration
 
