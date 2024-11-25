@@ -1,6 +1,6 @@
 {
-    "name": "Uniton Connect",
-    "short_name": "Uniton Connect",
+    "name": "Test Uniton Connect",
+    "short_name": "Test Uniton Connect",
     "start_url": "index.html",
     "display": "fullscreen",
     "background_color": "#000000",
