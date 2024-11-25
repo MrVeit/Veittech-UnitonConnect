@@ -8,17 +8,17 @@ const tonConnectBridge = {
             {
                 console.log(`[UNITON CONNECT] Detected Unity version 2023+`);
 
-                const length = lengthBytesUTF8(string) + 1;
+                const length = lengthBytesUTF8(stringData) + 1;
 
                 ptr = _malloc(length);
 
-                stringToUTF8(string, ptr, length);
+                stringToUTF8(stringData, ptr, length);
 
                 return ptr;
             }
 
-            return allocate(intArrayFromString(string), 'i8', ALLOC_NORMAL);
-        }
+            return allocate(intArrayFromString(stringData), 'i8', ALLOC_NORMAL);
+        },
 
         isAvailableSDK: function()
         {
