@@ -239,6 +239,7 @@ namespace UnitonConnect.Core
                 return;
             }
 
+            /*
             _tonConnectOptions = GetOptions(dAppManifestLink);
             _remoteStorage = GetRemoteStorage();
             _additionalConnectOptions = GetAdditionalConnectOptions();
@@ -246,11 +247,12 @@ namespace UnitonConnect.Core
             _tonConnect = GetTonConnectInstance(_tonConnectOptions,
                 _remoteStorage, _additionalConnectOptions);
 
-            Assets = new UserAssets(this, this);
-
             _tonConnect.OnStatusChange(OnWalletConnectionFinish, OnWalletConnectionFail);
 
             RestoreConnectionAsync(_remoteStorage);
+            */
+
+            Assets = new UserAssets(this, this);
 
             if (IsSupporedPlatform())
             {
