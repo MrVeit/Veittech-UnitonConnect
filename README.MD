@@ -103,6 +103,7 @@ For the library to work correctly, the following dependencies **must be installe
 - **[Newtonsoft](https://www.youtube.com/watch?v=3H6xkl_EsvQ)** - modern solution for convenient work with json files.
 
 **IMPORTANT:** `WebGL Threading Patcher` will be removed in future releases as it is relevant for older `TonSdk .NET` based implementation.
+Not supported in `Unity 2023 and above`, so only use the sdk in **NATIVE VERSION** where it is not needed.
 
 # Migration
 
