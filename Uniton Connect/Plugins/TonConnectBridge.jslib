@@ -1,5 +1,25 @@
 const tonConnectBridge = {
     $tonConnect: {
+        allocString: function (stringData)
+        {
+            let ptr;
+
+            if (typeof allocate === 'undefined')
+            {
+                console.log(`[UNITON CONNECT] Detected Unity version 2023+`);
+
+                const length = lengthBytesUTF8(stringData) + 1;
+
+                ptr = _malloc(length);
+
+                stringToUTF8(stringData, ptr, length);
+
+                return ptr;
+            }
+
+            return allocate(intArrayFromString(stringData), 'i8', ALLOC_NORMAL);
+        },
+
         isAvailableSDK: function()
         {
             if (!window.tonConnectUI)
@@ -44,7 +64,7 @@ const tonConnectBridge = {
 
                 dynCall('vi', callback, [1]);
             }
-            catch (eror)
+            catch (error)
             {
                 dynCall('vi', callback, [0]);
             }
@@ -58,7 +78,7 @@ const tonConnectBridge = {
 
                 dynCall('vi', callback, [1]);
             }
-            catch (eror)
+            catch (error)
             {
                 dynCall('vi', callback, [0]);
             }
@@ -70,17 +90,15 @@ const tonConnectBridge = {
             {
                 await window.tonConnectUI.disconnect();
 
-                const statusPtr = allocate(
-                    intArrayFromString("200"), 'i8', ALLOC_NORMAL);
+                const statusPtr = tonConnect.allocString("200");
 
                 dynCall('vi', callback, [statusPtr]);
 
                 _free(statusPtr);
             }
-            catch (eror)
+            catch (error)
             {
-                const statusPtr = allocate(
-                    intArrayFromString("500"), 'i8', ALLOC_NORMAL);
+                const statusPtr = tonConnect.allocString("500");
 
                 dynCall('vi', callback, [statusPtr]);
 
@@ -101,8 +119,7 @@ const tonConnectBridge = {
                 if (wallet)
                 {
                     const walletInfo = JSON.stringify(window.tonConnectUI.account);
-                    const walletPtr = allocate(
-                        intArrayFromString(walletInfo), 'i8', ALLOC_NORMAL);
+                    const walletPtr = tonConnect.allocString(walletInfo);
 
                     console.log(`Parsed account: ` +
                         `${JSON.stringify(window.tonConnectUI.account)}`);
@@ -114,8 +131,7 @@ const tonConnectBridge = {
                     return;
                 }
 
-                const statusPtr = allocate(
-                    intArrayFromString("CONNECT_FAILED"), 'i8', ALLOC_NORMAL);
+                const statusPtr = tonConnect.allocString("CONNECT_FAILED");
 
                 dynCall('vi', callback, [statusPtr]);
 
@@ -163,8 +179,7 @@ const tonConnectBridge = {
                 console.log(`[UNITON CONNECT] Transaction signed:`, event.detail);
 
                 const signedData = JSON.stringify(event.detail);
-                const signedPtr = allocate(intArrayFromString(
-                    signedData), 'i8', ALLOC_NORMAL);
+                const signedPtr = tonConnect.allocString(signedData);
 
                 dynCall('vi', successCallback, [signedPtr]);
 
@@ -176,8 +191,7 @@ const tonConnectBridge = {
                 console.warn(`[UNITON CONNECT] Transaction signing failed:`, event.detail);
 
                 const failedData = JSON.stringify(event.detail);
-                const failedPtr = allocate(intArrayFromString(
-                    failedData), 'i8', ALLOC_NORMAL);
+                const failedPtr = tonConnect.allocString(failedData);
 
                 dynCall('vi', errorCallback, [failedPtr]);
 
@@ -262,7 +276,7 @@ const tonConnectBridge = {
         {
             if (!tonConnect.isAvailableSDK()) 
             {
-                const nullPtr = allocate(intArrayFromString("null"), 'i8', ALLOC_NORMAL);
+                const nullPtr = tonConnect.allocString("null");
 
                 dynCall('vi', callback, [nullPtr]);
 
@@ -290,7 +304,7 @@ const tonConnectBridge = {
             
                 if (!result || !result.boc)
                 {
-                    const emptyPtr = allocate(intArrayFromString("EMPTY_BOC"), 'i8', ALLOC_NORMAL);
+                    const emptyPtr = tonConnect.allocString("EMPTY_BOC");
 
                     console.error(`[UNITON CONNECT] No BOC returned from transaction`);
 
@@ -309,7 +323,7 @@ const tonConnectBridge = {
 
                 console.log(`[UNITON CONNECT] Parsed transaction hash: ${hashBase64}`);
 
-                const hashPtr = allocate(intArrayFromString(hashBase64), 'i8', ALLOC_NORMAL);
+                const hashPtr = tonConnect.allocString(hashBase64);
 
                 dynCall('vi', callback, [hashPtr]);
 
@@ -317,7 +331,7 @@ const tonConnectBridge = {
             }
             catch (error)
             {
-                const errorPtr = allocate(intArrayFromString(""), 'i8', ALLOC_NORMAL);
+                const errorPtr = tonConnect.allocString("");
             
                 dynCall('vi', callback, [errorPtr]);
 

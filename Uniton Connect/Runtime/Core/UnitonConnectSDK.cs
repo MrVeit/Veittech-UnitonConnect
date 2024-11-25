@@ -51,6 +51,8 @@ namespace UnitonConnect.Core
         }
 
         [Header("SDK Settings"), Space]
+        [Tooltip("Additional flag to initialize a specific version of sdk, to avoid problems when used on Unity versions 2023 and higher")]
+        [SerializeField] private SdkTypes _version;
         [Tooltip("Enable if you want to test the SDK without having to upload data about your dApp")]
         [SerializeField, Space] private bool _testMode;
         [Tooltip("Enable if you want to activate SDK logging for detailed analysis before releasing a dApp")]
@@ -239,18 +241,29 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            _tonConnectOptions = GetOptions(dAppManifestLink);
-            _remoteStorage = GetRemoteStorage();
-            _additionalConnectOptions = GetAdditionalConnectOptions();
-
-            _tonConnect = GetTonConnectInstance(_tonConnectOptions,
-                _remoteStorage, _additionalConnectOptions);
-
             Assets = new UserAssets(this, this);
 
-            _tonConnect.OnStatusChange(OnWalletConnectionFinish, OnWalletConnectionFail);
+            if (_version == SdkTypes.Old)
+            {
+                _tonConnectOptions = GetOptions(dAppManifestLink);
+                _remoteStorage = GetRemoteStorage();
+                _additionalConnectOptions = GetAdditionalConnectOptions();
 
-            RestoreConnectionAsync(_remoteStorage);
+                _tonConnect = GetTonConnectInstance(_tonConnectOptions,
+                    _remoteStorage, _additionalConnectOptions);
+
+                _tonConnect.OnStatusChange(OnWalletConnectionFinish, OnWalletConnectionFail);
+
+                RestoreConnectionAsync(_remoteStorage);
+
+                OnInitialize();
+
+                _isInitialized = true;
+
+                UnitonConnectLogger.Log("Old SDK successfully initialized");
+
+                return;
+            }
 
             if (IsSupporedPlatform())
             {
@@ -259,11 +272,9 @@ namespace UnitonConnect.Core
                     OnNativeWalletConnectionFail, OnWalletConnectionRestore);
             }
 
-            OnInitialize();
-
             _isInitialized = true;
 
-            UnitonConnectLogger.Log("SDK successfully initialized");
+            UnitonConnectLogger.Log("Native SDK successfully initialized");
         }
 
         /// <summary>
@@ -1093,5 +1104,11 @@ namespace UnitonConnect.Core
         private void OnSendingTonFail(string errorMessage) => OnNativeTransactionSendingFailed?.Invoke(errorMessage);
 
         private void OnSendingTonConfirm(SuccessTransactionData transactionData) => OnNativeTransactionConfirmed?.Invoke(transactionData);
+    }
+
+    public enum SdkTypes
+    {
+        Old,
+        Native
     }
 }
