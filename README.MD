@@ -13,7 +13,7 @@
 
 **UNITON CONNECT** is a user-friendly solution for working with the TON ecosystem inside web applications on Unity. 
 
-# **Sdk Functionality:**
+# **SDK Functionality:**
 - [x] Connecting TON wallets,
 - [x] Reading Toncoin balance,
 - [ ] Reading Jettons balance,
@@ -25,8 +25,9 @@
 - [ ] Creating and mint Jettons,
 - [ ] Creating and mint NFT collections,
 - [ ] Birning available NFT collections,
-- [x] Filtering of loaded nft collections by various filters: skam, collection address and so on,
-- [x] Conversion of wallet addresses into different formats and their visualization.
+- [ ] Getting current price of Toncoi and Jettons,
+- [x] Filter downloaded nft collections by various filters: skam, collection address and so on,
+- [x] Convert wallet addresses to different formats and visualize them.
 
 # Technical Demo
 
