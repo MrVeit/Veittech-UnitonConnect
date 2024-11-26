@@ -29,10 +29,12 @@ This reflects the functionality already added to the library as well as that pla
 - [ ] Swapping Jettons to Toncoin and reverse,
 - [ ] Creating and mint Jettons,
 - [ ] Creating and mint NFT collections,
-- [ ] Birning available NFT collections,
-- [ ] Getting current price of Toncoin and Jettons,
-- [x] Filter downloaded nft collections by various filters: skam, collection address and so on,
-- [x] Convert wallet addresses to different formats and visualize them.
+- [ ] Burning available NFT collections,
+- [x] Additional utilities,
+  - [x] Filter nft collections by various filters: skam, collection address and so on,
+  - [x] Conversion of the number of tokens to nanotons and vice versa,
+  - [x] Conversion of wallet addresses to different formats and visualize them,
+  - [ ] Getting current price of Toncoin and Jettons.
 
 # Technical Demo
 
