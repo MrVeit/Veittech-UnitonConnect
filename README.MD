@@ -31,10 +31,10 @@ This reflects the functionality already added to the library as well as that pla
 - [ ] Creating and mint NFT collections,
 - [ ] Burning available NFT collections,
 - [x] Additional utilities,
- - [x] Filter nft collections by various filters: skam, collection address and so on,
- - [x] Conversion of the number of tokens to nanotons and vice versa,
- - [x] Conversion of wallet addresses to different formats and visualize them,
- - [ ] Getting current price of Toncoin and Jettons.
+  - [x] Filter nft collections by various filters: skam, collection address and so on,
+  - [x] Conversion of the number of tokens to nanotons and vice versa,
+  - [x] Conversion of wallet addresses to different formats and visualize them,
+  - [ ] Getting current price of Toncoin and Jettons.
 
 # Technical Demo
 
