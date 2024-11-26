@@ -13,21 +13,26 @@
 
 **UNITON CONNECT** is a user-friendly solution for working with the TON ecosystem inside web applications on Unity. 
 
-### **Available functionality**
-- Connecting TON wallets through the native window that Telegram users are used to,
-- Executing transactions via Toncoin,
-- Reading wallet balance (as long as Toncoin is available),
-- Retrieving NFT collections from a connected wallet,
-- Filtering of loaded nft collections by various filters: skam, collection address and so on,
-- Conversion of wallet addresses into different formats and their visualization.
+# **SDK Functionality:**
 
-### **Developing functionality**
-- Reading balance of basic (GRAM, NOT, DOGS) and custom jettons (by wallet master address),
-- Sending basic and custom jettons, 
-- Sending NFTs from available collections on the connected wallet,
-- Swapping custom and basic jettons to toncoin and reverse,
-- Creating and mint of custom jettons,
-- Creating and mint NFT collections.
+This reflects the functionality already added to the library as well as that planned on the roadmap.
+
+**P.S:** the list of features can be expanded if the community needs them.
+
+- [x] Connecting TON wallets,
+- [x] Reading Toncoin balance,
+- [ ] Reading Jettons balance,
+- [x] Reading available NFT collections,
+- [x] Sending Toncoin between wallets,
+- [ ] Sending Jettons between wallets,
+- [ ] Sending NFT collections between wallets,
+- [ ] Swapping Jettons to Toncoin and reverse,
+- [ ] Creating and mint Jettons,
+- [ ] Creating and mint NFT collections,
+- [ ] Birning available NFT collections,
+- [ ] Getting current price of Toncoin and Jettons,
+- [x] Filter downloaded nft collections by various filters: skam, collection address and so on,
+- [x] Convert wallet addresses to different formats and visualize them.
 
 # Technical Demo
 
@@ -103,7 +108,7 @@ For the library to work correctly, the following dependencies **must be installe
 - **[Newtonsoft](https://www.youtube.com/watch?v=3H6xkl_EsvQ)** - modern solution for convenient work with json files.
 
 **IMPORTANT:** `WebGL Threading Patcher` will be removed in future releases as it is relevant for older `TonSdk .NET` based implementation.
-Not supported in `Unity 2023 and above`, so only use the sdk in **NATIVE VERSION** where it is not needed.
+Not supported in **Unity 2023 and above**, so only use the sdk in **NATIVE VERSION** where it is not needed.
 
 # Migration
 
