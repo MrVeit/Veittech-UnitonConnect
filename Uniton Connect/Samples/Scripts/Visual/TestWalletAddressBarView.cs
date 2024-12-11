@@ -34,8 +34,6 @@ namespace UnitonConnect.Core.Demo
         private void SetShortAddress(string fullAddress)
         {
             ShortAddress = WalletVisualUtils.ProcessWalletAddress(fullAddress, 6);
-
-            _addressBar.text = ShortAddress;
         }
     }
 }
