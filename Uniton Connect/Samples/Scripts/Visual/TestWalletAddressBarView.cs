@@ -13,16 +13,19 @@ namespace UnitonConnect.Core.Demo
 
         private void OnEnable()
         {
-            _addressBar.onValueChanged.AddListener(SetShortAddress);
+            _addressBar.onValueChanged.AddListener(Set);
         }
 
         private void OnDisable()
         {
-            _addressBar.onDeselect.RemoveListener(SetShortAddress);
+            _addressBar.onValueChanged.RemoveListener(Set);
         }
 
         public void Set(string address)
         {
+            Debug.Log($"Recipient address has been changed:" +
+                $" {address}, old value: {FullAddress}");
+
             FullAddress = address;
 
             SetShortAddress(address);
