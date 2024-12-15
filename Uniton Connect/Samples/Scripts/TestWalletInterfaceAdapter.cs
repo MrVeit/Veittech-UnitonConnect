@@ -11,7 +11,6 @@ namespace UnitonConnect.Core.Demo
 {
     public sealed class TestWalletInterfaceAdapter : MonoBehaviour
     {
-        [SerializeField, Space] private WalletsProvidersData _walletsStorage;
         [SerializeField, Space] private TextMeshProUGUI _debugMessage;
         [SerializeField] private TextMeshProUGUI _shortWalletAddress;
         [SerializeField, Space] private Button _connectButton;
