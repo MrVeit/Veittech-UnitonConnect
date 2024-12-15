@@ -272,11 +272,12 @@ const tonConnectBridge = {
         },
 
         getJettonTransactionPayload: async function(nanoInJetton,
-            recipient, jettonMasterAddress, nanoInTonForGas, message)
+            sender, recipient, jettonMasterAddress, nanoInTonForGas, message)
         {
             const tonWeb = window.tonWeb;
 
             const recipientAddress = new tonWeb.Address(recipient);
+            const senderAddress = new tonWeb.Address(sender);
             const masterAddress = new tonWeb.Address(jettonMasterAddress);
 
             let forwardPayload = new tonWeb.boc.Cell();
@@ -290,12 +291,12 @@ const tonConnectBridge = {
             let transferBody = new tonWeb.boc.Cell();
             
             transferBody.bits.writeUint(0xf8a7ea5, 32);
-            transferBody.bits.writeUint(Date.now(), 64);
+            transferBody.bits.writeUint(BigInt(Math.floor(Math.random() * 1e18)), 64);
             transferBody.bits.writeCoins(nanoInJetton); // JETTON AMOUNT FOR TRANSFER
             transferBody.bits.writeAddress(recipientAddress);
-            transferBody.bits.writeAddress(recipientAddress);
+            transferBody.bits.writeAddress(senderAddress);
             transferBody.bits.writeBit(0);
-            transferBody.bits.writeCoins(tonWeb.utils.toNano("1"));
+            transferBody.bits.writeCoins(tonWeb.utils.toNano("0.05"));
 
             if (message)
             {
@@ -341,14 +342,14 @@ const tonConnectBridge = {
 
             const jettonAmount = UTF8ToString(nanoInTon);
             const gasFee = UTF8ToString(nanoInTonForGas);
-            const address = UTF8ToString(recipientAddress);
+            const recipient = UTF8ToString(recipientAddress);
+            const sender = tonWeb.Address.parse(window.tonConnectUI.account.address);
             const masterAddress = UTF8ToString(jettonMasterAddress);
 
             let payloadMessage= UTF8ToString(message);
 
-            console.log(`Received jetton transaction data: 
-                amount: ${jettonAmount}, gas fee: ${gasFee}, recipient address: ${address},
-                master jetton address: ${masterAddress}`);
+            console.log(`Received jetton transaction data: amount: ${jettonAmount},` +
+                `gas fee: ${gasFee}, recipient address: ${address}, master jetton address: ${masterAddress}`);
 
             if (payloadMessage === "CLEAR")
             {
@@ -356,7 +357,7 @@ const tonConnectBridge = {
             }
 
             const transactionData = await tonConnect.getJettonTransactionPayload(
-                jettonAmount, address, masterAddress, gasFee, payloadMessage);
+                jettonAmount, sender, recipient, masterAddress, gasFee, payloadMessage);
 
             console.log(`Loaded transaction payload: ${JSON.stringify(transactionData)}`);
 
