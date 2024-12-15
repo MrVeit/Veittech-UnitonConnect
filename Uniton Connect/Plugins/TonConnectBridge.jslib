@@ -340,10 +340,10 @@ const tonConnectBridge = {
 
             const tonWeb = window.tonWeb;
 
+            const sender = window.tonConnectUI.account.address;
             const jettonAmount = UTF8ToString(nanoInTon);
             const gasFee = UTF8ToString(nanoInTonForGas);
             const recipient = UTF8ToString(recipientAddress);
-            const sender = tonWeb.Address.parse(window.tonConnectUI.account.address);
             const masterAddress = UTF8ToString(jettonMasterAddress);
 
             let payloadMessage= UTF8ToString(message);
