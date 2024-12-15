@@ -349,7 +349,7 @@ const tonConnectBridge = {
             let payloadMessage= UTF8ToString(message);
 
             console.log(`Received jetton transaction data: amount: ${jettonAmount},` +
-                `gas fee: ${gasFee}, recipient address: ${address}, master jetton address: ${masterAddress}`);
+                `gas fee: ${gasFee}, sender: ${sender} recipient address: ${recipient}, master jetton address: ${masterAddress}`);
 
             if (payloadMessage === "CLEAR")
             {
