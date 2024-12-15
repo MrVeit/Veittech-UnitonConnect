@@ -291,7 +291,7 @@ const tonConnectBridge = {
             let transferBody = new tonWeb.boc.Cell();
             
             transferBody.bits.writeUint(0xf8a7ea5, 32);
-            transferBody.bits.writeUint(BigInt(Math.floor(Math.random() * 1e18)), 64);
+            transferBody.bits.writeUint(Math.floor(Math.random() * 1e6), 64);
             transferBody.bits.writeCoins(nanoInJetton); // JETTON AMOUNT FOR TRANSFER
             transferBody.bits.writeAddress(recipientAddress);
             transferBody.bits.writeAddress(senderAddress);
