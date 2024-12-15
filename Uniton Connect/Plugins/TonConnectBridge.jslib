@@ -230,7 +230,7 @@ const tonConnectBridge = {
             }
         },
 
-        getTransactionPayload: async function(nanoInTon, 
+        getTonTransactionPayload: async function(nanoInTon, 
             recipientAddress, message)
         {
             const tonWeb = window.tonWeb;
@@ -271,6 +271,126 @@ const tonConnectBridge = {
             return transactionData;
         },
 
+        getJettonTransactionPayload: async function(nanoInJetton,
+            recipient, jettonMasterAddress, nanoInTonForGas, message)
+        {
+            const tonWeb = window.tonWeb;
+
+            const recipientAddress = new tonWeb.Address(recipient);
+            const masterAddress = new tonWeb.Address(jettonMasterAddress);
+
+            let forwardPayload = new tonWeb.boc.Cell();
+
+            forwardPayload.bits.writeUint(0, 32);
+
+            if (message)
+            {
+                forwardPayload.bits.writeString(message);
+            }
+
+            let transferBody = new tonWeb.boc.Cell();
+            transferBody.bits.writeUint(0xf8a7ea5, 32);
+            transferBody.bits.writeUint(0, 64);
+            transferBody.bits.writeCoins(nanoInJetton); // JETTON AMOUNT FOR TRANSFER
+            transferBody.bits.writeAddress(recipientAddress);
+            transferBody.bits.writeAddress(recipientAddress);
+            transferBody.bits.writeBit(0);
+            transferBody.bits.writeCoins(tonWeb.utils.toNano("0.025"));
+            transferBody.bits.writeBit(1);
+            transferBody.refs.push(forwardPayload);
+
+            let payload = tonWeb.utils.bytesToBase64(await transferBody.toBoc());
+
+            const transactionData = {
+                validUntil: Math.floor(Date.now() / 1000) + 360,
+                messages: [
+                {
+                    address: masterAddress.toString(true),
+                    amount: nanoInTonForGas, /// GAS FEE
+                    payload: payload,
+                }
+            ]};
+
+            return transactionData;
+        },
+
+        sendJettonTransaction: async function(nanoInTon,
+            recipientAddress, jettonMasterAddress, 
+            nanoInTonForGas, message, callback)
+        {
+            if (!tonConnect.isAvailableSDK())
+            {
+                const nullPtr = tonConnect.allocString("null");
+
+                dynCall('vi', callback, [nullPtr]);
+
+                _free(nullPtr);
+
+                return;
+            }
+
+            const tonWeb = window.tonWeb;
+
+            const jettonAmount = UTF8ToString(nanoInTon);
+            const gasFee = UTF8ToString(nanoInTonForGas);
+            const address = UTF8ToString(recipientAddress);
+            const masterAddress = UTF8ToString(jettonMasterAddress);
+
+            let payloadMessage= UTF8ToString(message);
+
+            if (payloadMessage === "CLEAR")
+            {
+                payloadMessage = null;
+            }
+
+            const transactionData = await tonConnect.getJettonTransactionPayload(
+                jettonAmount, address, masterAddress, gasFee, payloadMessage);
+
+            try
+            {
+                const result = await window.tonConnectUI.sendTransaction(transactionData,
+                {
+                    modals: ['before', 'success', 'error'],
+                    notifications: ['before', 'success', 'error']
+                });
+
+                if (!result || !result.boc)
+                {
+                    const emptyPtr = tonConnect.allocString("EMPTY_BOC");
+
+                    console.error(`[UNITON CONNECT] No BOC returned from jetton transaction`);
+
+                    dynCall('vi', callback, [emptyPtr]);
+
+                    _free(emptyPtr);
+
+                    return;
+                }
+                
+                let claimedBoc = result.boc;
+
+                const bocBytes = tonWeb.utils.base64ToBytes(claimedBoc);
+                const bocCellBytes = await tonWeb.boc.Cell.oneFromBoc(bocBytes).hash();
+                const hashBase64 = tonWeb.utils.bytesToBase64(bocCellBytes);
+
+                console.log(`[UNITON CONNECT] Parsed jetton transaction hash: ${hashBase64}`);
+
+                const hashPtr = tonConnect.allocString(hashBase64);
+
+                dynCall('vi', callback, [hashPtr]);
+
+                _free(hashPtr);
+            }
+            catch (error)
+            {
+                const errorPtr = tonConnect.allocString("");
+            
+                dynCall('vi', callback, [errorPtr]);
+
+                _free(errorPtr);
+            }
+        },
+
         sendTransaction: async function(nanoInTon, 
             recipientAddress, message, callback) 
         {
@@ -291,7 +411,7 @@ const tonConnectBridge = {
             const address = UTF8ToString(recipientAddress);
             const payloadMessage = UTF8ToString(message);
 
-            const transactionData = await tonConnect.getTransactionPayload(
+            const transactionData = await tonConnect.getTonTransactionPayload(
                 nanotons, address, payloadMessage);
 
             try
@@ -399,6 +519,20 @@ const tonConnectBridge = {
         recipientAddress, message, callback)
     {
         tonConnect.sendTransaction(nanoInTon, recipientAddress, message, callback);
+    },
+
+    SendJettonTransaction: function(nanoInTon, masterAddress, 
+        recipientAddress, gasFee, callback)
+    {
+        tonConnect.sendJettonTransaction(nanoInTon, recipientAddress, 
+            masterAddress, gasFee, "CLEAR", callback);
+    },
+
+    SendJettonTransactionWithMessage: function(nanoInTon, masterAddress, 
+        recipientAddress, gasFee, message, callback)
+    {
+        tonConnect.sendJettonTransaction(nanoInTon, recipientAddress, 
+            masterAddress, gasFee, message, callback);
     }
 };
 

@@ -49,9 +49,18 @@ namespace UnitonConnect.Core
 
         [DllImport("__Internal")]
         private static extern void UnSubscribeToTransactionEvents();
+
+        [DllImport("__Internal")]
+        private static extern void SendJettonTransaction(string nanoTons, string masterAddress,
+            string recipientAddress, string gasFee, Action<string> onJettonTransactionSended);
+
+        [DllImport("__Internal")]
+        private static extern void SendJettonTransactionWithMessage(string nanoTons, string masterAddress,
+            string recipientAddress, string gasFee, string message, Action<string> onJettonTransactionSended);
+
         #endregion
 
-#region NATIVE_CALLBACKS
+        #region NATIVE_CALLBACKS
         [MonoPInvokeCallback(typeof(Action<int>))]
         private static void OnInitialize(int statusCode)
         {
@@ -210,6 +219,41 @@ namespace UnitonConnect.Core
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnJettonTransactionSend(string parsedHash)
+        {
+            if (string.IsNullOrEmpty(parsedHash))
+            {
+                var message = $"Failed to send jetton transaction, something wrong...";
+
+                UnitonConnectLogger.LogError(message);
+
+                OnJettonTransactionSendFailed?.Invoke(message);
+
+                CloseModal(OnModalWindowClose);
+
+                return;
+            }
+
+            if (parsedHash == EMPTY_BOC_ERROR)
+            {
+                var message = $"Jetton transaction successfully sended, but no returned Boc";
+
+                UnitonConnectLogger.LogError(message);
+
+                OnJettonTransactionSendFailed?.Invoke(message);
+
+                CloseModal(OnModalWindowClose);
+
+                return;
+            }
+
+            UnitonConnectLogger.Log($"Jetton transaction successfully sended," +
+                $"parsed hash: {parsedHash}");
+
+            OnJettonTransactionSended?.Invoke(parsedHash);
+        }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
         private static void OnTransactionSuccessfullySign(string eventData)
         {
             UnitonConnectLogger.Log($"Transaction successfully signed with data: {eventData}");
@@ -244,6 +288,9 @@ namespace UnitonConnect.Core
 
         private static Action<string> OnTonTransactionSended;
         private static Action<string> OnTonTransactionSendFailed;
+
+        private static Action<string> OnJettonTransactionSended;
+        private static Action<string> OnJettonTransactionSendFailed;
 
         private static Action<SuccessTransactionData> OnTonTransctionConfirmed;
 
@@ -304,6 +351,22 @@ namespace UnitonConnect.Core
                 null, transactionSended, transactionSendFailed);
         }
 
+        internal static void SendJetton(string masterAddress, 
+            string recipientAddress, decimal amount, decimal gasFee, 
+            Action<string> transactionSended, Action<string> transactionSendFailed)
+        {
+            SendJettonByParams(masterAddress, recipientAddress, amount,
+                gasFee, null, transactionSended, transactionSendFailed);
+        }
+
+        internal static void SendJetton(string masterAddress,
+            string recipientAddress, decimal amount, decimal gasFee,
+            string message, Action<string> transactionSended, Action<string> transactionSendFailed)
+        {
+            SendJettonByParams(masterAddress, recipientAddress, amount,
+                gasFee, message, transactionSended, transactionSendFailed);
+        }
+
         private static void SendTonByParams(string recipientAddress,
             decimal tonAmount, string message, Action<string> transactionSended, 
             Action<string> transactionSendFailed)
@@ -326,6 +389,32 @@ namespace UnitonConnect.Core
 
             SendTransactionWithMessage(tonInNanotons, 
                 targetAddress, message, OnTransactionSend);
+        }
+
+        private static void SendJettonByParams(string masterAddress,
+            string recipient, decimal amount, decimal gasFee, string message, 
+            Action<string> transactionSended, Action<string> transactionSendFailed)
+        {
+            OnJettonTransactionSended = transactionSended;
+            OnJettonTransactionSendFailed = transactionSendFailed;
+
+            SubscribeToTransactionEvents(OnTransactionSuccessfullySign,
+                OnTransactionSignFail);
+
+            var recipientAddress = WalletConnectUtils.GetHEXAddress(recipient);
+            var amountInNanotons = UserAssetsUtils.ToNanoton(amount).ToString();
+            var gasFeeInNanotons = UserAssetsUtils.ToNanoton(gasFee).ToString();
+
+            if (string.IsNullOrEmpty(message))
+            {
+                SendJettonTransaction(amountInNanotons, masterAddress,
+                    recipientAddress, gasFeeInNanotons, OnJettonTransactionSend);
+
+                return;
+            }
+
+            SendJettonTransactionWithMessage(amountInNanotons, masterAddress,
+                recipientAddress, gasFeeInNanotons, message, OnJettonTransactionSend);
         }
 
         private static bool IsSuccess(int statusCode)
