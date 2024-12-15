@@ -281,23 +281,31 @@ const tonConnectBridge = {
 
             let forwardPayload = new tonWeb.boc.Cell();
 
-            forwardPayload.bits.writeUint(0, 32);
-
             if (message)
             {
+                forwardPayload.bits.writeUint(0, 32);
                 forwardPayload.bits.writeString(message);
             }
 
             let transferBody = new tonWeb.boc.Cell();
+            
             transferBody.bits.writeUint(0xf8a7ea5, 32);
-            transferBody.bits.writeUint(0, 64);
+            transferBody.bits.writeUint(Date.now(), 64);
             transferBody.bits.writeCoins(nanoInJetton); // JETTON AMOUNT FOR TRANSFER
             transferBody.bits.writeAddress(recipientAddress);
             transferBody.bits.writeAddress(recipientAddress);
             transferBody.bits.writeBit(0);
-            transferBody.bits.writeCoins(tonWeb.utils.toNano("0.025"));
-            transferBody.bits.writeBit(1);
-            transferBody.refs.push(forwardPayload);
+            transferBody.bits.writeCoins(tonWeb.utils.toNano("1"));
+
+            if (message)
+            {
+                transferBody.bits.writeBit(1);
+                transferBody.refs.push(forwardPayload);
+            }
+            else
+            {
+                transferBody.bits.writeBit(0);
+            }
 
             let payload = tonWeb.utils.bytesToBase64(await transferBody.toBoc());
 
@@ -338,6 +346,10 @@ const tonConnectBridge = {
 
             let payloadMessage= UTF8ToString(message);
 
+            console.log(`Received jetton transaction data: 
+                amount: ${jettonAmount}, gas fee: ${gasFee}, recipient address: ${address},
+                master jetton address: ${masterAddress}`);
+
             if (payloadMessage === "CLEAR")
             {
                 payloadMessage = null;
@@ -345,6 +357,8 @@ const tonConnectBridge = {
 
             const transactionData = await tonConnect.getJettonTransactionPayload(
                 jettonAmount, address, masterAddress, gasFee, payloadMessage);
+
+            console.log(`Loaded transaction payload: ${JSON.stringify(transactionData)}`);
 
             try
             {

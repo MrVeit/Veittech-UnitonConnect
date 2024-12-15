@@ -13,7 +13,7 @@ namespace UnitonConnect.Core.Demo
             var message = "Sending Jetton by Uniton Connect";
 
             TonConnectBridge.SendJetton(xEmpireJettonAddress, 
-                recipient, amount, (decimal)gasFee, message, (transactionHash) =>
+                recipient, amount, (decimal)gasFee, (transactionHash) =>
                 {
                     Debug.Log($"[UNITON CONNECT] Jetton transaction successfully sended, hash: {transactionHash}");
                 },
