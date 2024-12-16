@@ -277,7 +277,7 @@ const tonConnectBridge = {
             {
                 const tonWeb = window.tonWeb;
 
-                const jettonMaster = new tonWeb.utils.Address(jettonMaster);
+                const jettonMaster = new tonWeb.utils.Address(address);
                 const owner = new tonWeb.utils.Address(ownerAddress);
 
                 const method = 'get_wallet_address';
@@ -323,14 +323,18 @@ const tonConnectBridge = {
             {
                 const tonWeb = window.tonWeb;
 
+                const beginCell = tonWeb.utils.beginCell;
+                const Address = tonWeb.utils.Address;
+                const toNano = tonWeb.utils.toNano;
+
                 const JETTON_MASTER_ADDRESS = "0:b113a994b5024a16719f69139328eb759596c38a25f59028b146fecdc3621dfe";
                 const forwardTonAmount = "0.05";
                 const forwardAmountInNano = tonWeb.utils.toNano(forwardTonAmount);
 
-                const amountInNano = tonWeb.utils.toNano(UTF8ToString(amount));
-                const sender = new tonWeb.utils.Address(UTF8ToString(senderAddress));
-                const recipient = new tonWeb.utils.Address(UTF8ToString(recipientAddress));
-                const jettonMaster = new tonWeb.utils.Address(JETTON_MASTER_ADDRESS);
+                const amountInNano = toNano(UTF8ToString(amount));
+                const sender = new Address(UTF8ToString(senderAddress));
+                const recipient = new Address(UTF8ToString(recipientAddress));
+                const jettonMaster = new Address(JETTON_MASTER_ADDRESS);
 
                 const senderJettonWallet = await tonConnect.getJettonWalletAddress(
                     jettonMaster.toString(), sender.toString());
