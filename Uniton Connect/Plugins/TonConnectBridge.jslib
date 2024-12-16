@@ -280,9 +280,16 @@ const tonConnectBridge = {
                 const jettonMaster = new tonWeb.utils.Address(address);
                 const owner = new tonWeb.utils.Address(ownerAddress);
 
+                console.log(`Parsed jetton master address: ${jettonMaster}`);
+                console.log(`Parsed owner address: ${owner}`);
+
                 const method = 'get_wallet_address';
-                const stack = [
-                    ['tvmSlice', owner.toSlice()],
+                const stack = 
+                [
+                    [
+                        'tvmSlice',
+                        owner.toBoc(false).toString("base64")
+                    ]
                 ];
 
                 const result = await tonWeb.provider.call(
@@ -293,7 +300,7 @@ const tonConnectBridge = {
                     throw new Error("Empty result from Jetton Master contract");
                 }  
 
-                const walletAddress = result.stack[0][1].toString();
+                const walletAddress = tonWeb.utils.bytesToBase64(result.stack[0][1]);
 
                 console.log(`Jetton Wallet address: ${walletAddress}`);
 
@@ -339,17 +346,18 @@ const tonConnectBridge = {
                 const senderJettonWallet = await tonConnect.getJettonWalletAddress(
                     jettonMaster.toString(), sender.toString());
 
-                const body = tonWeb.utils
-                    .beginCell()
-                    .storeUint(0xf8a7ea5, 32)
-                    .storeUint(0, 64)
-                    .storeCoins(amountInNano)
-                    .storeAddress(recipient)
-                    .storeAddress(sender)
-                    .storeUint(0, 1)
-                    .storeCoins(forwardAmountInNano)
-                    .storeUint(0, 1)
-                    .endCell();
+                console.log(`Parsed jetton sender address: ${senderJettonWallet}`);
+
+                const body = new tonWeb.boc.Cell();
+
+                body.bits.writeUint(260734629, 32);
+                body.bits.writeUint(0, 64);       
+                body.bits.writeCoins(amountInNano);
+                body.bits.writeAddress(recipient);
+                body.bits.writeAddress(sender);
+                body.bits.writeUint(0, 1);
+                body.bits.writeCoins(forwardAmountInNano);
+                body.bits.writeUint(0, 1);
 
                 const transaction = {
                     validUntil: Math.floor(Date.now() / 1000) + 360,
