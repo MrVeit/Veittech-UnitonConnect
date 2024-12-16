@@ -1,3 +1,4 @@
+using UnitonConnect.Core.Utils;
 using UnityEngine;
 
 namespace UnitonConnect.Core.Demo
@@ -6,13 +7,12 @@ namespace UnitonConnect.Core.Demo
     {
         public sealed override void OnClick()
         {
-            var xEmpireJettonAddress = "EQB4zZusHsbU2vVTPqjhlokIOoiZhEdCMT703CWEzhTOo__X";
+            var sender = UnitonConnectSDK.Instance.Wallet.ToHex();
             var recipient = "UQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4Ursw6";
-            var amount = 1000;
-            var message = "Sending Jetton by Uniton Connect";
+            var amount = "0.5";
 
-            TonConnectBridge.SendJetton(xEmpireJettonAddress, 
-                recipient, amount, (transactionHash) =>
+            TonConnectBridge.SendJetton(amount, 
+                sender, recipient, (transactionHash) =>
                 {
                     Debug.Log($"[UNITON CONNECT] Jetton transaction successfully sended, hash: {transactionHash}");
                 },

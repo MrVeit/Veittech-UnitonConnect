@@ -18,9 +18,6 @@ namespace UnitonConnect.Core
         private static extern void InitTonWeb();
 
         [DllImport("__Internal")]
-        private static extern void InitTonAssetsSDK(Action<int> onInitialized);
-
-        [DllImport("__Internal")]
         private static extern void OpenModal(Action<int> onModalWindowOpened);
 
         [DllImport("__Internal")]
@@ -54,8 +51,8 @@ namespace UnitonConnect.Core
         private static extern void UnSubscribeToTransactionEvents();
 
         [DllImport("__Internal")]
-        private static extern void SendJettonTransaction(string masterAddress, string amount,
-            string recipientAddress, Action<string> onJettonTransactionSended);
+        private static extern void SendJettonTransaction(string amount,
+            string senderAddress, string recipientAddress, Action<string> onJettonTransactionSended);
 
         #endregion
 
@@ -69,27 +66,10 @@ namespace UnitonConnect.Core
 
             if (isSuccess)
             {
-                InitTonAssetsSDK(OnTonAssetsSDKInitialize);
-
                 return;
             }
 
             UnitonConnectLogger.LogError($"Failed to initialize Uniton Connect sdk, something wrong...");
-        }
-
-        [MonoPInvokeCallback(typeof(Action<int>))]
-        private static void OnTonAssetsSDKInitialize(int statusCode)
-        {
-            var isSuccess = IsSuccess(statusCode);
-            
-            OnTonAssetsSDKInitialized?.Invoke(isSuccess);
-
-            if (isSuccess)
-            {
-                return;
-            }
-
-            UnitonConnectLogger.LogError($"Failed to iniitialize Ton Assets SDK...");
         }
 
         [MonoPInvokeCallback(typeof(Action<int>))]
@@ -292,7 +272,6 @@ namespace UnitonConnect.Core
         private static readonly string EMPTY_BOC_ERROR = "EMPTY_BOC";
 
         private static Action<bool> OnInitialized;
-        private static Action<bool> OnTonAssetsSDKInitialized;
 
         private static Action<bool> OnModalWindowOpened;
         private static Action<bool> OnModalWindowClosed;
@@ -368,12 +347,11 @@ namespace UnitonConnect.Core
                 null, transactionSended, transactionSendFailed);
         }
 
-        internal static void SendJetton(string masterAddress, 
-            string recipientAddress, decimal amount, Action<string> transactionSended, 
-            Action<string> transactionSendFailed)
+        internal static void SendJetton(string amount, string sender,
+            string recipient, Action<string> transactionSended, Action<string> transactionSendFailed)
         {
-            SendJettonByParams(masterAddress, recipientAddress, amount,
-                null, transactionSended, transactionSendFailed);
+            SendJettonByParams(amount, sender, recipient,
+                transactionSended, transactionSendFailed);
         }
 
         private static void SendTonByParams(string recipientAddress,
@@ -400,9 +378,8 @@ namespace UnitonConnect.Core
                 targetAddress, message, OnTransactionSend);
         }
 
-        private static void SendJettonByParams(string masterAddress,
-            string recipient, decimal amount, string message, 
-            Action<string> transactionSended, Action<string> transactionSendFailed)
+        private static void SendJettonByParams(string amount, string sender, 
+            string recipient, Action<string> transactionSended, Action<string> transactionSendFailed)
         {
             OnJettonTransactionSended = transactionSended;
             OnJettonTransactionSendFailed = transactionSendFailed;
@@ -410,16 +387,7 @@ namespace UnitonConnect.Core
             SubscribeToTransactionEvents(OnTransactionSuccessfullySign,
                 OnTransactionSignFail);
 
-            var recipientAddress = WalletConnectUtils.GetHEXAddress(recipient);
-            var amountInNanotons = UserAssetsUtils.ToNanoton(amount).ToString();
-
-            if (string.IsNullOrEmpty(message))
-            {
-                SendJettonTransaction(masterAddress, amountInNanotons,
-                    recipientAddress, OnJettonTransactionSend);
-
-                return;
-            }
+            SendJettonTransaction(amount, sender, recipient, OnJettonTransactionSend);
         }
 
         private static bool IsSuccess(int statusCode)

@@ -56,53 +56,6 @@ const tonConnectBridge = {
             window.tonWeb = new TonWeb();
         },
 
-        initAssetsSDK: function(callback)
-        {
-            if (!window.tonConnectUI)
-            {
-                console.error("Ton Connect UI is not initialized");
-
-                dynCall('vi', callback, [0]);
-
-                return;
-            }
-
-            try
-            {
-                var sdk = window.sdk;
-
-                var TonConnectProvider = sdk.TonConnectProvider;
-                var AssetsSDK = sdk.AssetsSDK;
-
-                window.tonConnectSender = new TonConnectProvider(window.tonConnectUI);
-
-                AssetsSDK.create(
-                {
-                    sender: window.tonConnectSender,
-                })
-                .then(function (instance)
-                {
-                    window.tonAssetsSDK =instance;
-
-                    console.log("Ton Assets SDK initialized");
-
-                    dynCall('vi', callback, [1]);
-                })
-                .catch(function (error)
-                {
-                    console.error("Failed to initialize Assets SDK", error);
-
-                    dynCall('vi', callback, [0]);
-                });
-            }
-            catch (error)
-            {
-                console.error("Failed to initialize Assets SDK", error);
-
-                dynCall('vi', callback, [0]);
-            }
-        },
-
         openModal: async function(callback)
         {
             try
@@ -318,49 +271,118 @@ const tonConnectBridge = {
             return transactionData;
         },
 
-        sendJettonTransaction: function(jettonMasterAddress,
-            amount, recipientAddress, callback)
+        getJettonWalletAddress: async function(address, ownerAddress)
         {
-            const jettonAddress = UTF8ToString(jettonMasterAddress);
-            const recipient = UTF8ToString(recipientAddress);
-            const jettonAmount = UTF8ToString(amount);
-
-            if (!window.tonAssetsSDK)
+            try
             {
-                console.error("Assets SDK is not initialized");
+                const tonWeb = window.tonWeb;
 
-                const errorPtr = tonConnect.allocString("Assets SDK is not initialized");
+                const jettonMaster = new tonWeb.utils.Address(jettonMaster);
+                const owner = new tonWeb.utils.Address(ownerAddress);
 
-                dynCall('vi1', callback, [errorPtr]);
+                const method = 'get_wallet_address';
+                const stack = [
+                    ['tvmSlice', owner.toSlice()],
+                ];
 
-                _free(errorPtr);
+                const result = await tonWeb.provider.call(
+                    jettonMaster.toString(), method, stack);
+
+                if (!result || !result.stack || result.stack.length === 0)
+                {
+                    throw new Error("Empty result from Jetton Master contract");
+                }  
+
+                const walletAddress = result.stack[0][1].toString();
+
+                console.log(`Jetton Wallet address: ${walletAddress}`);
+
+                return walletAddress;
+            }
+            catch (error)
+            {
+                console.error(`Failed to get Jetton Wallet address`, error);
+            }
+        },
+
+        sendJettonTransaction: async function(amount, 
+            senderAddress, recipientAddress, callback)
+        {
+            if (!tonConnect.isAvailableSDK())
+            {
+                const errorMessage = tonConnect.allocString("SDK is not initialized");
+
+                dynCall('vi', callback, [errorMessage]);
+
+                _free(errorMessage);
 
                 return;
             }
 
-            const jettonWallet = window.tonAssetsSDK.openJettonWallet(jettonAddress);
-
-            jettonWallet.send(window.tonConnectSender, 
-                recipient, jettonAmount).then(function (result) 
+            try
             {
-                console.log("Jetton transaction sended", result);
+                const tonWeb = window.tonWeb;
 
-                var hashPtr = tonConnect.allocString(JSON.stringify(result));
+                const JETTON_MASTER_ADDRESS = "0:b113a994b5024a16719f69139328eb759596c38a25f59028b146fecdc3621dfe";
+                const forwardTonAmount = "0.05";
+                const forwardAmountInNano = tonWeb.utils.toNano(forwardTonAmount);
 
-                dynCall('vi', callback, [hashPtr]);
+                const amountInNano = tonWeb.utils.toNano(UTF8ToString(amount));
+                const sender = new tonWeb.utils.Address(UTF8ToString(senderAddress));
+                const recipient = new tonWeb.utils.Address(UTF8ToString(recipientAddress));
+                const jettonMaster = new tonWeb.utils.Address(JETTON_MASTER_ADDRESS);
 
-                _free(hashPtr);
-            })
-            .catch(function (error)
+                const senderJettonWallet = await tonConnect.getJettonWalletAddress(
+                    jettonMaster.toString(), sender.toString());
+
+                const body = tonWeb.utils
+                    .beginCell()
+                    .storeUint(0xf8a7ea5, 32)
+                    .storeUint(0, 64)
+                    .storeCoins(amountInNano)
+                    .storeAddress(recipient)
+                    .storeAddress(sender)
+                    .storeUint(0, 1)
+                    .storeCoins(forwardAmountInNano)
+                    .storeUint(0, 1)
+                    .endCell();
+
+                const transaction = {
+                    validUntil: Math.floor(Date.now() / 1000) + 360,
+                    messages: [
+                        {
+                            address: senderJettonWallet,
+                            amount: forwardAmountInNano.toString(),
+                            payload: body.toBoc().toString("base64"),
+                        },
+                    ],
+                };
+
+                const result = await window.tonConnectUI.sendTransaction(transaction,
+                {
+                    modals: ['before', 'success', 'error']
+                });
+
+                console.log(`Jetton Transaction sent successfully:`, result);
+
+                const resultPtr = tonConnect.allocString(JSON.stringify(result));
+
+                console.log(`Result Jetton transaction: ${resultPtr}`);
+
+                dynCall("vi", callback, [resultPtr]);
+
+                _free(resultPtr);
+            }
+            catch (error)
             {
-                console.error("Jetton transaction failed", error);
+                console.error(`Jetton Transaction Error:`, error);
 
-                var errorPtr = tonConnect.allocString("TRANSACTION_FAILED");
+                const errorPtr = tonConnect.allocString("TRANSACTION_FAILED");
 
                 dynCall('vi', callback, [errorPtr]);
 
                 _free(errorPtr);
-            });
+            }
         },
 
         sendTransaction: async function(nanoInTon, 
@@ -442,11 +464,6 @@ const tonConnectBridge = {
         tonConnect.initTonWeb();
     },
 
-    InitTonAssetsSDK: function(callback)
-    {
-        tonConnect.initAssetsSDK(callback);
-    },
-
     OpenModal: function(callback)
     {
         tonConnect.openModal(callback);
@@ -498,11 +515,11 @@ const tonConnectBridge = {
         tonConnect.sendTransaction(nanoInTon, recipientAddress, message, callback);
     },
 
-    SendJettonTransaction: function(masterAddress, 
-        amount, recipientAddress, callback)
+    SendJettonTransaction: function(amount,
+        senderAddress, recipientAddress, callback)
     {
-        tonConnect.sendJettonTransaction(masterAddress, amount, 
-            recipientAddress, callback);
+        tonConnect.sendJettonTransaction(amount, 
+            senderAddress, recipientAddress, callback);
     }
 };
 
