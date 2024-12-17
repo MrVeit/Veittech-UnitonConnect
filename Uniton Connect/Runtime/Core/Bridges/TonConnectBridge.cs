@@ -51,8 +51,8 @@ namespace UnitonConnect.Core
         private static extern void UnSubscribeToTransactionEvents();
 
         [DllImport("__Internal")]
-        private static extern void SendJettonTransaction(string amount,
-            string senderAddress, string recipientAddress, Action<string> onJettonTransactionSended);
+        private static extern void SendJettonTransaction(
+            string payload, Action<string> onJettonTransactionSended);
 
         #endregion
 
@@ -387,7 +387,9 @@ namespace UnitonConnect.Core
             SubscribeToTransactionEvents(OnTransactionSuccessfullySign,
                 OnTransactionSignFail);
 
-            SendJettonTransaction(amount, sender, recipient, OnJettonTransactionSend);
+            SendJettonTransaction("te6cckEBAQEAWgAAsJpaofgAAAAAAAAAAEHc1lAIAZ+Aknzk6C4j4rTR" +
+                "qq+WFLZQAShmCqN1MkC0cNf7/CldADB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk+yXLZXmc2S" +
+                "AX14QBAquv5", OnJettonTransactionSend);
         }
 
         private static bool IsSuccess(int statusCode)

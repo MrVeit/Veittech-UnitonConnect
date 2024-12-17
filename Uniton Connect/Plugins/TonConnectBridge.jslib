@@ -271,49 +271,7 @@ const tonConnectBridge = {
             return transactionData;
         },
 
-        getJettonWalletAddress: async function(address, ownerAddress)
-        {
-            try
-            {
-                const tonWeb = window.tonWeb;
-
-                const jettonMaster = new tonWeb.utils.Address(address);
-                const owner = new tonWeb.utils.Address(ownerAddress);
-
-                console.log(`Parsed jetton master address: ${jettonMaster}`);
-                console.log(`Parsed owner address: ${owner}`);
-
-                const method = 'get_wallet_address';
-                const stack = 
-                [
-                    [
-                        'tvmSlice',
-                        owner.toBoc(false).toString("base64")
-                    ]
-                ];
-
-                const result = await tonWeb.provider.call(
-                    jettonMaster.toString(), method, stack);
-
-                if (!result || !result.stack || result.stack.length === 0)
-                {
-                    throw new Error("Empty result from Jetton Master contract");
-                }  
-
-                const walletAddress = tonWeb.utils.bytesToBase64(result.stack[0][1]);
-
-                console.log(`Jetton Wallet address: ${walletAddress}`);
-
-                return walletAddress;
-            }
-            catch (error)
-            {
-                console.error(`Failed to get Jetton Wallet address`, error);
-            }
-        },
-
-        sendJettonTransaction: async function(amount, 
-            senderAddress, recipientAddress, callback)
+        sendTransactionWithPayload: async function(payload, callback)
         {
             if (!tonConnect.isAvailableSDK())
             {
@@ -326,71 +284,50 @@ const tonConnectBridge = {
                 return;
             }
 
+            const tonWeb = window.tonWeb;
+
+            const transactionData = UTF8ToString(payload);
+
+            console.log(`Parsed jetton transaction payload: ${transactionData}`);
+
             try
             {
-                const tonWeb = window.tonWeb;
-
-                const beginCell = tonWeb.utils.beginCell;
-                const Address = tonWeb.utils.Address;
-                const toNano = tonWeb.utils.toNano;
-
-                const JETTON_MASTER_ADDRESS = "0:b113a994b5024a16719f69139328eb759596c38a25f59028b146fecdc3621dfe";
-                const forwardTonAmount = "0.05";
-                const forwardAmountInNano = tonWeb.utils.toNano(forwardTonAmount);
-
-                const amountInNano = toNano(UTF8ToString(amount));
-                const sender = new Address(UTF8ToString(senderAddress));
-                const recipient = new Address(UTF8ToString(recipientAddress));
-                const jettonMaster = new Address(JETTON_MASTER_ADDRESS);
-
-                const senderJettonWallet = await tonConnect.getJettonWalletAddress(
-                    jettonMaster.toString(), sender.toString());
-
-                console.log(`Parsed jetton sender address: ${senderJettonWallet}`);
-
-                const body = new tonWeb.boc.Cell();
-
-                body.bits.writeUint(260734629, 32);
-                body.bits.writeUint(0, 64);       
-                body.bits.writeCoins(amountInNano);
-                body.bits.writeAddress(recipient);
-                body.bits.writeAddress(sender);
-                body.bits.writeUint(0, 1);
-                body.bits.writeCoins(forwardAmountInNano);
-                body.bits.writeUint(0, 1);
-
-                const transaction = {
-                    validUntil: Math.floor(Date.now() / 1000) + 360,
-                    messages: [
-                        {
-                            address: senderJettonWallet,
-                            amount: forwardAmountInNano.toString(),
-                            payload: body.toBoc().toString("base64"),
-                        },
-                    ],
-                };
-
-                const result = await window.tonConnectUI.sendTransaction(transaction,
+                const result = await window.tonConnectUI.sendTransaction(transactionData, 
                 {
                     modals: ['before', 'success', 'error']
                 });
+            
+                if (!result || !result.boc)
+                {
+                    const emptyPtr = tonConnect.allocString("EMPTY_BOC");
 
-                console.log(`Jetton Transaction sent successfully:`, result);
+                    console.error(`No BOC returned from transaction`);
 
-                const resultPtr = tonConnect.allocString(JSON.stringify(result));
+                    dynCall('vi', callback, [emptyPtr]);
 
-                console.log(`Result Jetton transaction: ${resultPtr}`);
+                    _free(emptyPtr);
 
-                dynCall("vi", callback, [resultPtr]);
+                    return;
+                }
+                
+                let claimedBoc = result.boc;
 
-                _free(resultPtr);
+                const bocBytes = tonWeb.utils.base64ToBytes(claimedBoc);
+                const bocCellBytes = await tonWeb.boc.Cell.oneFromBoc(bocBytes).hash();
+                const hashBase64 = tonWeb.utils.bytesToBase64(bocCellBytes);
+
+                console.log(`Parsed jetton transaction hash: ${hashBase64}`);
+
+                const hashPtr = tonConnect.allocString(hashBase64);
+
+                dynCall('vi', callback, [hashPtr]);
+
+                _free(hashPtr);
             }
             catch (error)
             {
-                console.error(`Jetton Transaction Error:`, error);
-
-                const errorPtr = tonConnect.allocString("TRANSACTION_FAILED");
-
+                const errorPtr = tonConnect.allocString("");
+            
                 dynCall('vi', callback, [errorPtr]);
 
                 _free(errorPtr);
@@ -527,11 +464,9 @@ const tonConnectBridge = {
         tonConnect.sendTransaction(nanoInTon, recipientAddress, message, callback);
     },
 
-    SendJettonTransaction: function(amount,
-        senderAddress, recipientAddress, callback)
+    SendJettonTransaction: function(payload, callback)
     {
-        tonConnect.sendJettonTransaction(amount, 
-            senderAddress, recipientAddress, callback);
+        tonConnect.sendTransactionWithPayload(payload, callback);
     }
 };
 
