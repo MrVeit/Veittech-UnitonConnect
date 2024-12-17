@@ -51,8 +51,8 @@ namespace UnitonConnect.Core
         private static extern void UnSubscribeToTransactionEvents();
 
         [DllImport("__Internal")]
-        private static extern void SendJettonTransaction(
-            string payload, Action<string> onJettonTransactionSended);
+        private static extern void SendJettonTransaction(string jettonMaster, string amount,
+            string payload, Action<string> transactionSended);
 
         #endregion
 
@@ -347,11 +347,11 @@ namespace UnitonConnect.Core
                 null, transactionSended, transactionSendFailed);
         }
 
-        internal static void SendJetton(string amount, string sender,
-            string recipient, Action<string> transactionSended, Action<string> transactionSendFailed)
+        internal static void SendJetton(string jettonMaster, string amount, 
+            string payload, Action<string> transactionSended, Action<string> transactionSendFailed)
         {
-            SendJettonByParams(amount, sender, recipient,
-                transactionSended, transactionSendFailed);
+            SendJettonByParams(jettonMaster, amount, 
+                payload, transactionSended, transactionSendFailed);
         }
 
         private static void SendTonByParams(string recipientAddress,
@@ -378,8 +378,8 @@ namespace UnitonConnect.Core
                 targetAddress, message, OnTransactionSend);
         }
 
-        private static void SendJettonByParams(string amount, string sender, 
-            string recipient, Action<string> transactionSended, Action<string> transactionSendFailed)
+        private static void SendJettonByParams(string jettonMaster, string amount,
+            string payload, Action<string> transactionSended, Action<string> transactionSendFailed)
         {
             OnJettonTransactionSended = transactionSended;
             OnJettonTransactionSendFailed = transactionSendFailed;
@@ -387,9 +387,7 @@ namespace UnitonConnect.Core
             SubscribeToTransactionEvents(OnTransactionSuccessfullySign,
                 OnTransactionSignFail);
 
-            SendJettonTransaction("te6cckEBAQEAWgAAsJpaofgAAAAAAAAAAEHc1lAIAZ+Aknzk6C4j4rTR" +
-                "qq+WFLZQAShmCqN1MkC0cNf7/CldADB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk+yXLZXmc2S" +
-                "AX14QBAquv5", OnJettonTransactionSend);
+            SendJettonTransaction(jettonMaster, amount, payload, OnJettonTransactionSend);
         }
 
         private static bool IsSuccess(int statusCode)

@@ -271,7 +271,8 @@ const tonConnectBridge = {
             return transactionData;
         },
 
-        sendTransactionWithPayload: async function(payload, callback)
+        sendTransactionWithPayload: async function(
+            jettonMasterAddress, amount, payload, callback)
         {
             if (!tonConnect.isAvailableSDK())
             {
@@ -286,12 +287,24 @@ const tonConnectBridge = {
 
             const tonWeb = window.tonWeb;
 
-            const transactionData = UTF8ToString(payload);
+            const jettonMaster = UTF8ToString(jettonMasterAddress);
+            const amountInNano = UTF8ToString(amount);
+            const transactionPayload = UTF8ToString(payload);
 
             console.log(`Parsed jetton transaction payload: ${transactionData}`);
 
             try
             {
+                transactionData = {
+                    validUntil: Math.floor(Date.now() / 1000) + 360,
+                    messages: [
+                    {  
+                        address: jettonMaster, 
+                        amount: amountInNano,
+                        payload: transactionPayload
+                    }
+                ]};
+
                 const result = await window.tonConnectUI.sendTransaction(transactionData, 
                 {
                     modals: ['before', 'success', 'error']
@@ -464,9 +477,11 @@ const tonConnectBridge = {
         tonConnect.sendTransaction(nanoInTon, recipientAddress, message, callback);
     },
 
-    SendJettonTransaction: function(payload, callback)
+    SendJettonTransaction: function(jettonMasterAddress, 
+        amount, payload, callback)
     {
-        tonConnect.sendTransactionWithPayload(payload, callback);
+        tonConnect.sendTransactionWithPayload(jettonMasterAddress, 
+            amount, payload, callback);
     }
 };
 
