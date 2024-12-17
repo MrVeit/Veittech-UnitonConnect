@@ -11,7 +11,8 @@ namespace UnitonConnect.Core.Demo
             var gasFeeInNano = $"{gasFee.ToNanoton()}";
 
             var jettonWalletContract = "0:a6fc37ba5d8816e5e87506d97a5df9518b67f9c7271b11cd5b5e5421ce73213e"; // MY USDT JETTON WALLET
-            var payload = "te6cckEBAQEAVQAApg+KfqUABil8zT7W+DA9CQgBmIXSoQ8FMzUOUUqXFbQci+0muieb5E7kkN/Zk1UMX+sAMHanSIdhwMrdirWR2WKK1EVo4r0sjKdSCT7JctleZzZAGFHcBg==";
+            var payload = "te6cckEBAQEAVAAApA+KfqUABil86sRpQCYaiAGYhdKhDwUzNQ5RSpcVtByL7Sa6J5vkTuSQ39mTVQ" +
+                "xf6wAwdqdIh2HAyt2KtZHZYorURWjivSyMp1IJPsly2V5nNkBnKfcU";
 
             TonConnectBridge.SendJetton(jettonWalletContract, 
                 gasFeeInNano, payload, (transactionHash) =>
