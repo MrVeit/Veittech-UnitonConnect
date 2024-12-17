@@ -291,7 +291,7 @@ const tonConnectBridge = {
             const amountInNano = UTF8ToString(amount);
             const transactionPayload = UTF8ToString(payload);
 
-            console.log(`Parsed jetton transaction payload: ${transactionData}`);
+            console.log(`Parsed jetton transaction payload: ${transactionPayload}`);
 
             try
             {
@@ -304,6 +304,8 @@ const tonConnectBridge = {
                         payload: transactionPayload
                     }
                 ]};
+
+                console.log(`Parsed jetton transaction data: ${JSON.stringify(transactionData)}`);
 
                 const result = await window.tonConnectUI.sendTransaction(transactionData, 
                 {
