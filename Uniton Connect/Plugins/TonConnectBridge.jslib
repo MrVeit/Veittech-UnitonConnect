@@ -272,7 +272,7 @@ const tonConnectBridge = {
         },
 
         sendTransactionWithPayload: async function(
-            jettonMasterAddress, amount, payload, callback)
+            jettonMasterAddress, gasFeeAmount, payload, callback)
         {
             if (!tonConnect.isAvailableSDK())
             {
@@ -288,7 +288,7 @@ const tonConnectBridge = {
             const tonWeb = window.tonWeb;
 
             const jettonMaster = UTF8ToString(jettonMasterAddress);
-            const amountInNano = UTF8ToString(amount);
+            const gasFee = UTF8ToString(gasFeeAmount);
             const transactionPayload = UTF8ToString(payload);
 
             console.log(`Parsed jetton transaction payload: ${transactionPayload}`);
@@ -300,7 +300,7 @@ const tonConnectBridge = {
                     messages: [
                     {  
                         address: jettonMaster, 
-                        amount: amountInNano,
+                        amount: gasFee,
                         payload: transactionPayload
                     }
                 ]};
