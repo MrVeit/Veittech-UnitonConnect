@@ -272,7 +272,7 @@ const tonConnectBridge = {
         },
 
         sendTransactionWithPayload: async function(
-            jettonMasterAddress, gasFeeAmount, payload, callback)
+            senderJettonAddress, gasFeeAmount, payload, callback)
         {
             if (!tonConnect.isAvailableSDK())
             {
@@ -287,7 +287,7 @@ const tonConnectBridge = {
 
             const tonWeb = window.tonWeb;
 
-            const jettonMaster = UTF8ToString(jettonMasterAddress);
+            const jettonSender = UTF8ToString(senderJettonAddress);
             const gasFee = UTF8ToString(gasFeeAmount);
             const transactionPayload = UTF8ToString(payload);
 
@@ -299,7 +299,7 @@ const tonConnectBridge = {
                     validUntil: Math.floor(Date.now() / 1000) + 360,
                     messages: [
                     {  
-                        address: jettonMaster, 
+                        address: jettonSender, 
                         amount: gasFee,
                         payload: transactionPayload
                     }
@@ -479,10 +479,10 @@ const tonConnectBridge = {
         tonConnect.sendTransaction(nanoInTon, recipientAddress, message, callback);
     },
 
-    SendJettonTransaction: function(jettonMasterAddress, 
+    SendJettonTransaction: function(senderJettonAddress, 
         amount, payload, callback)
     {
-        tonConnect.sendTransactionWithPayload(jettonMasterAddress, 
+        tonConnect.sendTransactionWithPayload(senderJettonAddress, 
             amount, payload, callback);
     }
 };

@@ -10,7 +10,7 @@ namespace UnitonConnect.Core.Demo
             decimal gasFee = (decimal)0.05f;
             var gasFeeInNano = $"{gasFee.ToNanoton()}";
 
-            var jettonMasterAddress = "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs"; // USDT JETTON
+            var jettonMasterAddress = "EQCm/De6XYgW5eh1Btl6XflRi2f5xycbEc1bXlQhznMhPvJZ"; // MY USDT JETTON WALLET
             var payload = "te6cckEBAQEAWQAArg+KfqUAAAAAAAAAADB6EggBmIXSoQ8FMzUOUUqXFbQci" +
                 "+0muieb5E7kkN/Zk1UMX+sAKb8N7pdiBbl6HUG2Xpd+VGLZ/nHJxsRzVteVCHOcyE+IBfXhAB1EkPQ=";
 
