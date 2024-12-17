@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using AOT;
 using Newtonsoft.Json;
@@ -347,10 +348,10 @@ namespace UnitonConnect.Core
                 null, transactionSended, transactionSendFailed);
         }
 
-        internal static void SendJetton(string jettonMaster, string amount, 
+        internal static void SendJetton(string senderJettonWalletContract, string amount, 
             string payload, Action<string> transactionSended, Action<string> transactionSendFailed)
         {
-            SendJettonByParams(jettonMaster, amount, 
+            SendJettonByParams(senderJettonWalletContract, amount, 
                 payload, transactionSended, transactionSendFailed);
         }
 
@@ -378,7 +379,7 @@ namespace UnitonConnect.Core
                 targetAddress, message, OnTransactionSend);
         }
 
-        private static void SendJettonByParams(string jettonMaster, string amount,
+        private static void SendJettonByParams(string senderJettonWalletContract, string amount,
             string payload, Action<string> transactionSended, Action<string> transactionSendFailed)
         {
             OnJettonTransactionSended = transactionSended;
@@ -387,7 +388,7 @@ namespace UnitonConnect.Core
             SubscribeToTransactionEvents(OnTransactionSuccessfullySign,
                 OnTransactionSignFail);
 
-            SendJettonTransaction(jettonMaster, amount, payload, OnJettonTransactionSend);
+            SendJettonTransaction(senderJettonWalletContract, amount, payload, OnJettonTransactionSend);
         }
 
         private static bool IsSuccess(int statusCode)
