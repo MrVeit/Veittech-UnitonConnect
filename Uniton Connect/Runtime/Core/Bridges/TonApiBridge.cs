@@ -105,8 +105,8 @@ namespace UnitonConnect.ThirdParty.TonAPI
             }
         }
 
-        internal static IEnumerator GetTransactionPayload(string amount,
-            string gasFee, string senderTonAddress, 
+        internal static IEnumerator GetTransactionPayload(decimal amount,
+            decimal gasFee, string senderTonAddress, 
             string recipientJettonAddress, Action<string> payloadLoaded)
         {
             var apiUrl = ProjectStorageConsts.GetRuntimeAppStorage().Data.ServerApiLink;

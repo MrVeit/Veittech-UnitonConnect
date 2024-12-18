@@ -7,10 +7,10 @@ namespace UnitonConnect.Core.Data
     public sealed class TransactionPayloadComponentsData
     {
         [JsonProperty("amount")]
-        public string JettonAmount { get; set; }
+        public decimal JettonAmount { get; set; }
 
         [JsonProperty("gasFee")]
-        public string GasFeeInTon { get; set; }
+        public decimal GasFeeInTon { get; set; }
 
         [JsonProperty("senderAddress")]
         public string SenderTonAddress { get; set; }

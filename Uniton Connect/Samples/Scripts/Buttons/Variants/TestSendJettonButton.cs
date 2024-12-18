@@ -17,10 +17,13 @@ namespace UnitonConnect.Core.Demo
 
         public sealed override void OnClick()
         {
+            Debug.Log($"Parsed amount: {_amountBar.text} and fee: {_gasFeeBar.text}");
+
             decimal gasFee = GetTransactionAmount(_gasFeeBar.text);
             decimal amount = GetTransactionAmount(_amountBar.text);
 
             var gasFeeInNano = $"{gasFee.ToNanoton()}";
+
             var hexMasterAddress = USDT_MASTER_WALLET_ADDRESS;
 
 #if UNITY_EDITOR
@@ -57,7 +60,7 @@ namespace UnitonConnect.Core.Demo
 
                     Debug.Log($"Parsed sender jetton address: {senderJettonAddress}");
 
-                    StartCoroutine(TonApiBridge.GetTransactionPayload($"{amount}", $"{gasFee}",
+                    StartCoroutine(TonApiBridge.GetTransactionPayload(amount, gasFee,
                         senderAddress, recipientJettonAddress, (transactionPayload) =>
                     {
                         TransactionPayloadParsed(senderJettonAddress, gasFeeInNano, transactionPayload);
@@ -91,18 +94,7 @@ namespace UnitonConnect.Core.Demo
 
         private decimal GetTransactionAmount(string textBar)
         {
-            if (textBar.IndexOf(",") != -1)
-            {
-                var parsedAmount = textBar.Replace(",", ".");
-
-                textBar = parsedAmount;
-
-                Debug.Log($"Parsed amount: {parsedAmount}");
-            }
-
-            var amount = decimal.Parse(textBar);
-
-            return amount;
+            return decimal.Parse(textBar);
         }
 
         private void GetJettonWallet(string address, string masterAddress, Action<string> addressParsed)
