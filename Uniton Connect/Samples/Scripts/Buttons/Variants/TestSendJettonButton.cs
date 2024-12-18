@@ -62,6 +62,13 @@ var hexMasterAddress = USDT_MASTER_WALLET_ADDRESS;
                     TransactionPayloadParsed(senderJettonAddress, gasFeeInNano, _payloadBar.text);
                 });
             });
+
+            /*
+            var jettonWalletContract = "0:a6fc37ba5d8816e5e87506d97a5df9518b67f9c7271b11cd5b5e5421ce73213e"; // MY USDT JETTON WALLET
+            var payload = "";
+
+            TransactionPayloadParsed(jettonWalletContract, gasFeeInNano, payload);
+            */
         }
 
         private void TransactionPayloadParsed(string senderJettonAddress,

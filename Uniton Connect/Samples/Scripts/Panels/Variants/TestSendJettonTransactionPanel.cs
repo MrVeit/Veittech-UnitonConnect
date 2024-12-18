@@ -16,7 +16,7 @@ namespace UnitonConnect.Core.Demo
         private string _transactionHash;
 
         private const string CREATOR_TON_WALLET_ADDRESS =
-            "UQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4Ursw6";
+            "0:cfc0493e72741711f15a68d557cb0a5b280094330551ba99205a386bfdfe14ae";
 
         private const float START_AMOUNT = 0.005f;
         private const float START_FEE = 0.02f;
