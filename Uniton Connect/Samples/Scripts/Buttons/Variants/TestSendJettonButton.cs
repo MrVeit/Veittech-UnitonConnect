@@ -17,10 +17,13 @@ namespace UnitonConnect.Core.Demo
 
         public sealed override void OnClick()
         {
-            decimal gasFee = decimal.Parse(_gasFeeBar.text);
-            decimal amount = decimal.Parse(_amountBar.text);
+            decimal gasFee = GetTransactionAmount(_gasFeeBar.text);
+            decimal amount = GetTransactionAmount(_amountBar.text);
 
             var gasFeeInNano = $"{gasFee.ToNanoton()}";
+            var gasFeeFromNano = $"{decimal.Parse(gasFeeInNano).FromNanoton()}";
+
+            Debug.Log($"Test gas fee conver to nano: {gasFeeInNano} and from nano: {gasFeeFromNano}");
 
             var hexMasterAddress = USDT_MASTER_WALLET_ADDRESS;
 
@@ -88,6 +91,15 @@ namespace UnitonConnect.Core.Demo
             {
                 Debug.LogError($"[UNITON CONNECT] Failed to send jetton transaction, reason: {error}");
             });
+        }
+
+        private decimal GetTransactionAmount(string textBar)
+        {
+            var parsedAmount = textBar.Replace(",", ".");
+
+            var amount = decimal.Parse(parsedAmount);
+
+            return amount;
         }
 
         private void GetJettonWallet(string address, string masterAddress, Action<string> addressParsed)
