@@ -69,7 +69,7 @@ namespace UnitonConnect.ThirdParty.TonAPI
                 yield break;
             }
 
-            var url = $"https://toncenter.com/api/v3/jetton/wallets?owner_address={tonAddress}";
+            var url = $"https://toncenter.com/api/v3/jetton/wallets?owner_address={tonAddress}&exclude_zero_balance=false&limit=50&offset=0";
 
             using (UnityWebRequest request = UnityWebRequest.Get(url))
             {

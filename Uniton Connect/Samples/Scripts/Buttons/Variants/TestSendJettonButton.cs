@@ -26,9 +26,9 @@ namespace UnitonConnect.Core.Demo
             var hexMasterAddress = USDT_MASTER_WALLET_ADDRESS;
 
 #if UNITY_EDITOR
-            var senderAddress = "UQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk-yXLZXmc2V5I";
+            var senderAddress = "0:c1da9d221d87032b762ad647658a2b5115a38af4b2329d4824fb25cb65799cd9";
 #else
-            var senderAddress = UnitonConnectSDK.Instance.Wallet.ToNonBounceable();
+            var senderAddress = UnitonConnectSDK.Instance.Wallet.ToHex();
 #endif
 
             string recipientJettonAddress = string.Empty;
