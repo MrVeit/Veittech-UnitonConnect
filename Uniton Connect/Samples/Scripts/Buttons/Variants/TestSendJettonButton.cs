@@ -29,7 +29,7 @@ namespace UnitonConnect.Core.Demo
 #if UNITY_EDITOR
             var senderAddress = "0:c1da9d221d87032b762ad647658a2b5115a38af4b2329d4824fb25cb65799cd9";
 #else
-            var senderAddress = UnitonConnectSDK.Instance.Wallet.ToString();
+            var senderAddress = UnitonConnectSDK.Instance.Wallet.ToHex();
 #endif
 
             string recipientJettonAddress = string.Empty;
@@ -59,8 +59,10 @@ namespace UnitonConnect.Core.Demo
 
                     Debug.Log($"Parsed sender jetton address: {senderJettonAddress}");
 
+                    var senderTonAddress = UnitonConnectSDK.Instance.Wallet.ToNonBounceable();
+
                     StartCoroutine(TonApiBridge.GetTransactionPayload(amount, gasFee,
-                        senderAddress, recipientJettonAddress, (transactionPayload) =>
+                        senderTonAddress, recipientJettonAddress, (transactionPayload) =>
                     {
                         TransactionPayloadParsed(senderJettonAddress, gasFeeInNano, transactionPayload);
                     }));
