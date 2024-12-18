@@ -105,8 +105,8 @@ namespace UnitonConnect.ThirdParty.TonAPI
             }
         }
 
-        internal static IEnumerator GetTransactionPayload(string amountInNano,
-            string gasFeeInNano, string senderTonAddress, 
+        internal static IEnumerator GetTransactionPayload(string amount,
+            string gasFee, string senderTonAddress, 
             string recipientJettonAddress, Action<string> payloadLoaded)
         {
             var apiUrl = ProjectStorageConsts.GetRuntimeAppStorage().Data.ServerApiLink;
@@ -124,8 +124,8 @@ namespace UnitonConnect.ThirdParty.TonAPI
 
             var payloadData = new TransactionPayloadComponentsData()
             {
-                JettonAmount = amountInNano,
-                GasFeeInTon = gasFeeInNano,
+                JettonAmount = amount,
+                GasFeeInTon = gasFee,
                 RecipientJettonAddress = recipientJettonAddress,
                 SenderTonAddress = senderTonAddress,
             };

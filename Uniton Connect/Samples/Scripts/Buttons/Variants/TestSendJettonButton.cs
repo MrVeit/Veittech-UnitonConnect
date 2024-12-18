@@ -18,10 +18,9 @@ namespace UnitonConnect.Core.Demo
         public sealed override void OnClick()
         {
             decimal gasFee = decimal.Parse(_gasFeeBar.text);
-            var gasFeeInNano = $"{gasFee.ToNanoton()}";
-
             decimal amount = decimal.Parse(_amountBar.text);
-            var amountInNano = $"{amount.ToNanoton()}";
+
+            var gasFeeInNano = $"{gasFee.ToNanoton()}";
 
             var hexMasterAddress = USDT_MASTER_WALLET_ADDRESS;
 
@@ -35,7 +34,7 @@ namespace UnitonConnect.Core.Demo
             string senderJettonAddress = string.Empty;
             string jettonTransactionPayload = string.Empty;
 
-            Debug.Log($"Parsed gas in nano: {gasFeeInNano}, amount in nano: {amountInNano}, master address: {hexMasterAddress}");
+            Debug.Log($"Parsed gas in nano: {gasFeeInNano}, amount: {amount}, master address: {hexMasterAddress}");
 
             GetJettonWallet(_walletAddressView.FullAddress, hexMasterAddress, (address) =>
             {
@@ -59,8 +58,8 @@ namespace UnitonConnect.Core.Demo
 
                     Debug.Log($"Parsed sender jetton address: {senderJettonAddress}");
 
-                    StartCoroutine(TonApiBridge.GetTransactionPayload(amountInNano, gasFeeInNano,
-                    senderAddress, recipientJettonAddress, (transactionPayload) =>
+                    StartCoroutine(TonApiBridge.GetTransactionPayload($"{amount}", $"{gasFee}",
+                        senderAddress, recipientJettonAddress, (transactionPayload) =>
                     {
                         TransactionPayloadParsed(senderJettonAddress, gasFeeInNano, transactionPayload);
                     }));
