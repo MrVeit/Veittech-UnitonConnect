@@ -31,7 +31,7 @@ namespace UnitonConnect.Editor.Common
         public const string DEFAULT_SUPPORTED_WALLETS_LINK = "https://mrveit.github.io/Veittech-UnitonConnect/supportedWallets.json";
         public const string TEST_SUPPORTED_WALLETS_LINK = "https://raw.githubusercontent.com/ton-blockchain/wallets-list/main/wallets-v2.json";
 
-        private const string GET_NFT_IMAGE_CONVERTER = "/get-nft-image?url=";
+        private const string GET_NFT_IMAGE_CONVERTER = "/api/uniton-connect/v1/assets/item-icon?url=";
 
         public static string GetTestAppManifest()
         {

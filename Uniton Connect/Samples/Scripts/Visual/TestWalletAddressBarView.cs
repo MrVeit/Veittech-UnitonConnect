@@ -28,6 +28,8 @@ namespace UnitonConnect.Core.Demo
 
             FullAddress = address;
 
+            _addressBar.text = FullAddress;
+
             SetShortAddress(address);
         }
 
