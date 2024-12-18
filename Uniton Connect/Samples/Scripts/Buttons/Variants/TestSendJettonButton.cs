@@ -21,10 +21,6 @@ namespace UnitonConnect.Core.Demo
             decimal amount = GetTransactionAmount(_amountBar.text);
 
             var gasFeeInNano = $"{gasFee.ToNanoton()}";
-            var gasFeeFromNano = $"{decimal.Parse(gasFeeInNano).FromNanoton()}";
-
-            Debug.Log($"Test gas fee conver to nano: {gasFeeInNano} and from nano: {gasFeeFromNano}");
-
             var hexMasterAddress = USDT_MASTER_WALLET_ADDRESS;
 
 #if UNITY_EDITOR
@@ -95,9 +91,16 @@ namespace UnitonConnect.Core.Demo
 
         private decimal GetTransactionAmount(string textBar)
         {
-            var parsedAmount = textBar.Replace(",", ".");
+            if (textBar.IndexOf(",") != -1)
+            {
+                var parsedAmount = textBar.Replace(",", ".");
 
-            var amount = decimal.Parse(parsedAmount);
+                textBar = parsedAmount;
+
+                Debug.Log($"Parsed amount: {parsedAmount}");
+            }
+
+            var amount = decimal.Parse(textBar);
 
             return amount;
         }
