@@ -23,7 +23,7 @@ namespace UnitonConnect.Core.Demo
 
         public void Init()
         {
-            _amountBar.text = START_AMOUNT.ToString();
+            //_amountBar.text = START_AMOUNT.ToString();
             _gasFeeBar.text = START_FEE.ToString();
 
             _targetWalletAddress.Set(CREATOR_TON_WALLET_ADDRESS);
