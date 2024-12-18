@@ -132,6 +132,8 @@ namespace UnitonConnect.ThirdParty.TonAPI
 
             var jsonData = JsonConvert.SerializeObject(payloadData);
 
+            Debug.Log($"Transaciton data before create payload: {jsonData}");
+
             using (UnityWebRequest request = new(responseUrl, UnityWebRequest.kHttpVerbPOST))
             {
                 var bodyRaw = Encoding.UTF8.GetBytes(jsonData);

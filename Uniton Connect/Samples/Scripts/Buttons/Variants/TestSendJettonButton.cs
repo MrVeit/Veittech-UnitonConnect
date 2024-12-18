@@ -29,34 +29,33 @@ namespace UnitonConnect.Core.Demo
 #if UNITY_EDITOR
             var senderAddress = "0:c1da9d221d87032b762ad647658a2b5115a38af4b2329d4824fb25cb65799cd9";
 #else
-            var senderAddress = UnitonConnectSDK.Instance.Wallet.ToHex();
+            var senderAddress = UnitonConnectSDK.Instance.Wallet.ToString();
 #endif
 
             string recipientJettonAddress = string.Empty;
             string senderJettonAddress = string.Empty;
-            string jettonTransactionPayload = string.Empty;
 
             Debug.Log($"Parsed gas in nano: {gasFeeInNano}, amount: {amount}, master address: {hexMasterAddress}");
 
-            GetJettonWallet(_walletAddressView.FullAddress, hexMasterAddress, (address) =>
+            GetJettonWallet(_walletAddressView.FullAddress, hexMasterAddress, (recipient) =>
             {
-                if (string.IsNullOrEmpty(address))
+                if (string.IsNullOrEmpty(recipient))
                 {
                     return;
                 }
 
-                recipientJettonAddress = address.ToLower();
+                recipientJettonAddress = recipient.ToLower();
 
                 Debug.Log($"Parsed recipient jetton address: {recipientJettonAddress}");
 
-                GetJettonWallet(senderAddress, hexMasterAddress, (address) =>
+                GetJettonWallet(senderAddress, hexMasterAddress, (sender) =>
                 {
-                    if (string.IsNullOrEmpty(address))
+                    if (string.IsNullOrEmpty(sender))
                     {
                         return;
                     }
 
-                    senderJettonAddress = address;
+                    senderJettonAddress = sender;
 
                     Debug.Log($"Parsed sender jetton address: {senderJettonAddress}");
 
@@ -80,6 +79,8 @@ namespace UnitonConnect.Core.Demo
             }
 
             Debug.Log($"Parsed jetton transaction payload: {payload}");
+            Debug.Log($"Transaction data before send, sender jetton address: {senderJettonAddress}," +
+                $"gas fee in nano: {gasFeeInNano}, payload: {payload}");
 
             TonConnectBridge.SendJetton(senderJettonAddress,
                 gasFeeInNano, payload, (transactionHash) =>
