@@ -19,14 +19,13 @@ namespace UnitonConnect.Core.Demo
         {
             Debug.Log($"Parsed amount: {_payloadBar.text} and fee: {_gasFeeBar.text}");
 
-            decimal gasFee = (decimal)0.0185f;
+            decimal gasFee = (decimal)0.05f;
             //decimal amount = GetTransactionAmount(_payloadBar.text);
 
             var gasFeeInNano = $"{gasFee.ToNanoton()}";
 
             var jettonWalletContract = "0:a6fc37ba5d8816e5e87506d97a5df9518b67f9c7271b11cd5b5e5421ce73213e"; // MY USDT JETTON WALLET
-            var payload = "te6cckEBAQEAWAAArA+KfqUABimQXMX6oCE4iAGYhdKhDwUzNQ5RSpcVtByL7Sa6J5vkTuSQ39mTVQxf" +
-                "6wAwdqdIh2HAyt2KtZHZYorURWjivSyMp1IJPsly2V5nNkgCNJNAPuSfgg==";
+            var payload = "te6cckEBAQEAWAAArA+KfqUABimQigveWCE4iAGYhdKhDwUzNQ5RSpcVtByL7Sa6J5vkTuSQ39mTVQxf6wAwdqdIh2HAyt2KtZHZYorURWjivSyMp1IJPsly2V5nNkgF9eEAWogaLQ==";
 
             TransactionPayloadParsed(jettonWalletContract, gasFeeInNano, payload);
 
