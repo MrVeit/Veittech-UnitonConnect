@@ -326,13 +326,6 @@ namespace UnitonConnect.Core.Utils
         private static string ConvertAddressByType(string address, AddressType type,
             AddressStringifyOptions options = null)
         {
-            if (!_unitonConnect.IsWalletConnected)
-            {
-                UnitonConnectLogger.LogWarning($"Wallet is not connected, address is empty");
-
-                return string.Empty;
-            }
-
             return GetAddress(address).ToString(type, options);
         }
 

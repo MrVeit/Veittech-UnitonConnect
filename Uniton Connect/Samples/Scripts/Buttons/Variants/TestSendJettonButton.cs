@@ -59,8 +59,10 @@ namespace UnitonConnect.Core.Demo
 
                     Debug.Log($"Parsed sender jetton address: {senderJettonAddress}");
 
+                    var recipientTonHexAddress = WalletConnectUtils.GetHEXAddress(_walletAddressView.FullAddress);
+
                     StartCoroutine(TonApiBridge.GetTransactionPayload(amount, forwardFee,
-                        senderAddress, recipientJettonAddress, (parsedPayload) =>
+                        senderAddress, recipientTonHexAddress, (parsedPayload) =>
                     {
                         if (string.IsNullOrEmpty(parsedPayload))
                         {
