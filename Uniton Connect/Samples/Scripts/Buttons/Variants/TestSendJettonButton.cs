@@ -10,7 +10,8 @@ namespace UnitonConnect.Core.Demo
     public sealed class TestSendJettonButton : TestBaseButton
     {
         [SerializeField, Space] private TMP_InputField _gasFeeBar;
-        [SerializeField] private TMP_InputField _amountBar;
+        [SerializeField] private TMP_InputField _forwardFeeBar;
+        [SerializeField, Space] private TMP_InputField _amountBar;
         [SerializeField, Space] private TestWalletAddressBarView _walletAddressView;
 
         private const string USDT_MASTER_WALLET_ADDRESS = "0:b113a994b5024a16719f69139328eb759596c38a25f59028b146fecdc3621dfe";
@@ -21,6 +22,7 @@ namespace UnitonConnect.Core.Demo
 
             decimal gasFee = GetTransactionAmount(_gasFeeBar.text);
             decimal amount = GetTransactionAmount(_amountBar.text);
+            decimal forwardFee = GetTransactionAmount(_forwardFeeBar.text);
 
             var gasFeeInNano = gasFee.ToNanoton();
 
@@ -57,7 +59,7 @@ namespace UnitonConnect.Core.Demo
 
                     Debug.Log($"Parsed sender jetton address: {senderJettonAddress}");
 
-                    StartCoroutine(TonApiBridge.GetTransactionPayload(amount, gasFee,
+                    StartCoroutine(TonApiBridge.GetTransactionPayload(amount, forwardFee,
                         senderAddress, recipientJettonAddress, (parsedPayload) =>
                     {
                         if (string.IsNullOrEmpty(parsedPayload))
