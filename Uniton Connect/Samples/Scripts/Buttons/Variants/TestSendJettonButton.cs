@@ -66,7 +66,7 @@ namespace UnitonConnect.Core.Demo
                         }
 
                         TransactionPayloadParsed(senderJettonAddress, 
-                            $"{gasFeeInNano}", _amountBar.text);
+                            $"{gasFeeInNano}", parsedPayload);
                     }));
                 });
             });
