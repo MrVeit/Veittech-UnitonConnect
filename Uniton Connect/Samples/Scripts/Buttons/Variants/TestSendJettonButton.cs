@@ -10,37 +10,19 @@ namespace UnitonConnect.Core.Demo
     public sealed class TestSendJettonButton : TestBaseButton
     {
         [SerializeField, Space] private TMP_InputField _gasFeeBar;
-        [SerializeField] private TMP_InputField _payloadBar;
+        [SerializeField] private TMP_InputField _amountBar;
         [SerializeField, Space] private TestWalletAddressBarView _walletAddressView;
 
         private const string USDT_MASTER_WALLET_ADDRESS = "0:b113a994b5024a16719f69139328eb759596c38a25f59028b146fecdc3621dfe";
 
         public sealed override void OnClick()
         {
-            Debug.Log($"Parsed amount: {_payloadBar.text} and fee: {_gasFeeBar.text}");
+            Debug.Log($"Parsed amount: {_amountBar.text} and fee: {_gasFeeBar.text}");
 
-            decimal gasFee = (decimal)0.025f;
-            //decimal amount = GetTransactionAmount(_payloadBar.text);
+            decimal gasFee = GetTransactionAmount(_gasFeeBar.text);
+            decimal amount = GetTransactionAmount(_amountBar.text);
 
-            var gasFeeInNano = $"{gasFee.ToNanoton()}";
-
-            var jettonWalletContract = "EQCm_De6XYgW5eh1Btl6XflRi2f5xycbEc1bXlQhznMhPvJZ"; // MY USDT JETTON WALLET
-            var payload = "te6cckEBAQEAWAAArA+KfqUABimcKI7EkCA+iAGPhEQpx8i+S769PjvU3XMvyzF" +
-                "JAZhDgy9dsypdvznVqwAwdqdIh2HAyt2KtZHZYorURWjivSyMp1IJPsly2V5nNkgC+vCAD4BPig==";
-
-
-            TonConnectBridge.SendJetton(jettonWalletContract,
-                gasFeeInNano, payload, (transactionHash) =>
-            {
-                Debug.Log($"[UNITON CONNECT] Jetton transaction successfully sended, hash: {transactionHash}");
-            },
-            (error) =>
-            {
-                Debug.LogError($"[UNITON CONNECT] Failed to send jetton transaction, reason: {error}");
-            });
-
-            /*
-var hexMasterAddress = USDT_MASTER_WALLET_ADDRESS;
+            var gasFeeInNano = gasFee.ToNanoton();
 
 #if UNITY_EDITOR
             var senderAddress = "0:c1da9d221d87032b762ad647658a2b5115a38af4b2329d4824fb25cb65799cd9";
@@ -51,9 +33,9 @@ var hexMasterAddress = USDT_MASTER_WALLET_ADDRESS;
             string recipientJettonAddress = string.Empty;
             string senderJettonAddress = string.Empty;
 
-            Debug.Log($"Parsed gas in nano: {gasFeeInNano}, master address: {hexMasterAddress}");
+            Debug.Log($"Parsed gas in nano: {gasFeeInNano}, master address: {USDT_MASTER_WALLET_ADDRESS}");
 
-            GetJettonWallet(_walletAddressView.FullAddress, hexMasterAddress, (recipient) =>
+            GetJettonWallet(_walletAddressView.FullAddress, USDT_MASTER_WALLET_ADDRESS, (recipient) =>
             {
                 if (string.IsNullOrEmpty(recipient))
                 {
@@ -64,7 +46,7 @@ var hexMasterAddress = USDT_MASTER_WALLET_ADDRESS;
 
                 Debug.Log($"Parsed recipient jetton address: {recipientJettonAddress}");
 
-                GetJettonWallet(senderAddress, hexMasterAddress, (sender) =>
+                GetJettonWallet(senderAddress, USDT_MASTER_WALLET_ADDRESS, (sender) =>
                 {
                     if (string.IsNullOrEmpty(sender))
                     {
@@ -75,10 +57,19 @@ var hexMasterAddress = USDT_MASTER_WALLET_ADDRESS;
 
                     Debug.Log($"Parsed sender jetton address: {senderJettonAddress}");
 
-                    TransactionPayloadParsed(senderJettonAddress, gasFeeInNano, _payloadBar.text);
+                    StartCoroutine(TonApiBridge.GetTransactionPayload(amount, gasFee,
+                        senderAddress, recipientJettonAddress, (parsedPayload) =>
+                    {
+                        if (string.IsNullOrEmpty(parsedPayload))
+                        {
+                            return;
+                        }
+
+                        TransactionPayloadParsed(senderJettonAddress, 
+                            $"{gasFeeInNano}", _amountBar.text);
+                    }));
                 });
             });
-            */
         }
 
         private void TransactionPayloadParsed(string senderJettonAddress,
