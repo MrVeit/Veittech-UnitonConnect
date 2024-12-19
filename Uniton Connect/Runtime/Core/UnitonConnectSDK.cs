@@ -60,11 +60,6 @@ namespace UnitonConnect.Core
         [Tooltip("Turn it off if you want to do your own cdk initialization in your scripts")]
         [SerializeField, Space] private bool _initializeOnAwake;
         [Header("Ton Connect Settings"), Space]
-        [SerializeField, Space] private WalletsListData _walletsListConfig;
-        [Tooltip("Enable if you want to instantly receive wallet icons in your interface without waiting for them to be downloaded from the server")]
-        [SerializeField, Space] private bool _useCachedWalletsIcons;
-        [Tooltip("Configuration of supported wallets for your dApp. You can change their order and number, and override the way their configurations are loaded by hosting it yourself")]
-        [SerializeField, Space] private WalletsProvidersData _supportedWallets;
         [Tooltip("Delay before requesting in blockchain to retrieve data about the sent transaction")]
         [SerializeField, Space, Range(15f, 500f)] private float _confirmTransactionDelay;
 
@@ -89,16 +84,13 @@ namespace UnitonConnect.Core
         public TonConnect TonConnect => _tonConnect;
         public NewWalletConfig ConnectedWalletConfig => _connectedWalletConfig;
 
-        public List<WalletProviderConfig> SupportedWallets => _supportedWallets.Config;
-
         public bool IsInitialized => _isInitialized;
         public bool IsTestMode => _testMode;
         public bool IsDebugMode => _debugMode;
         public bool IsWalletConnected => _isWalletConnected;
 
         public bool IsUseWebWallets => false;
-
-        public bool IsUseCachedWalletsIcons => _useCachedWalletsIcons;
+        public bool IsUseCachedWalletsIcons => false;
         public bool IsActiveRestoreConnection => _restoreConnectionOnAwake;
 
         [Obsolete("Starting with version 0.2.9.5 and above, " +
@@ -245,24 +237,7 @@ namespace UnitonConnect.Core
 
             if (_version == SdkTypes.Old)
             {
-                _tonConnectOptions = GetOptions(dAppManifestLink);
-                _remoteStorage = GetRemoteStorage();
-                _additionalConnectOptions = GetAdditionalConnectOptions();
 
-                _tonConnect = GetTonConnectInstance(_tonConnectOptions,
-                    _remoteStorage, _additionalConnectOptions);
-
-                _tonConnect.OnStatusChange(OnWalletConnectionFinish, OnWalletConnectionFail);
-
-                RestoreConnectionAsync(_remoteStorage);
-
-                OnInitialize();
-
-                _isInitialized = true;
-
-                UnitonConnectLogger.Log("Old SDK successfully initialized");
-
-                return;
             }
 
             if (IsSupporedPlatform())
@@ -910,19 +885,6 @@ namespace UnitonConnect.Core
             RemoteStorage storage, AdditionalConnectOptions connectOptions)
         {
             return new TonConnect(options, storage, connectOptions);
-        }
-
-        private TonConnectOptions GetOptions(string manifestLink)
-        {
-            TonConnectOptions options = new()
-            {
-                ManifestUrl = manifestLink,
-
-                WalletsListSource = _walletsListConfig.SourceLink,
-                WalletsListCacheTTLMs = _walletsListConfig.CachedTimeToLive
-            };
-
-            return options;
         }
 
         private RemoteStorage GetRemoteStorage()

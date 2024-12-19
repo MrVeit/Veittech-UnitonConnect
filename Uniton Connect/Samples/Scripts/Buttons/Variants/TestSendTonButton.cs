@@ -13,8 +13,15 @@ namespace UnitonConnect.Core.Demo
 
         public sealed override void OnClick()
         {
-            _userInterfaceAdapter.UnitonSDK.SendTransaction(ClassicTokenTypes.Toncoin,
-                _addressBar.FullAddress, ParseAmountFromBar(_amountBar.text), _messageBar.text);
+            var amount = ParseAmountFromBar(_amountBar.text);
+            var recipient = _addressBar.FullAddress;
+            var message = _messageBar.text;
+
+            Debug.Log($"Start creating transaction with ton amount: " +
+                $"{amount} by recipient: {recipient} with message {message}");
+
+            _userInterfaceAdapter.UnitonSDK.SendTransaction(
+                ClassicTokenTypes.Toncoin, recipient, amount, message);
         }
 
         private decimal ParseAmountFromBar(string amountFromBar)

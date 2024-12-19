@@ -11,12 +11,12 @@ namespace UnitonConnect.Core.Demo
 {
     public sealed class TestWalletInterfaceAdapter : MonoBehaviour
     {
-        [SerializeField, Space] private WalletsProvidersData _walletsStorage;
         [SerializeField, Space] private TextMeshProUGUI _debugMessage;
         [SerializeField] private TextMeshProUGUI _shortWalletAddress;
         [SerializeField, Space] private Button _connectButton;
         [SerializeField] private Button _disconnectButton;
         [SerializeField] private Button _sendTransactionButton;
+        [SerializeField] private Button _sendJettonTransactionButton;
         [SerializeField] private Button _openNftCollectionButton;
         [SerializeField, Space] private TestWalletNftCollectionsPanel _nftCollectionPanel;
 
@@ -74,6 +74,7 @@ namespace UnitonConnect.Core.Demo
             {
                 _disconnectButton.interactable = false;
                 _sendTransactionButton.interactable = false;
+                _sendJettonTransactionButton.interactable = false;
                 _openNftCollectionButton.interactable = false;
             }
 
@@ -113,6 +114,7 @@ namespace UnitonConnect.Core.Demo
                 _connectButton.interactable = false;
                 _disconnectButton.interactable = true;
                 _sendTransactionButton.interactable = true;
+                _sendJettonTransactionButton.interactable = true;
                 _openNftCollectionButton.interactable = true;
             }
         }
@@ -125,6 +127,7 @@ namespace UnitonConnect.Core.Demo
             _connectButton.interactable = true;
             _disconnectButton.interactable = false;
             _sendTransactionButton.interactable = false;
+            _sendJettonTransactionButton.interactable = false;
             _openNftCollectionButton.interactable = false;
 
             _debugMessage.text = string.Empty;
@@ -144,6 +147,7 @@ namespace UnitonConnect.Core.Demo
             _connectButton.interactable = false;
             _disconnectButton.interactable = true;
             _sendTransactionButton.interactable = true;
+            _sendJettonTransactionButton.interactable = true;
             _openNftCollectionButton.interactable = true;
 
             Debug.Log($"Connection to previously connected wallet restored");
@@ -161,6 +165,7 @@ namespace UnitonConnect.Core.Demo
             _connectButton.interactable = true;
             _disconnectButton.interactable = false;
             _sendTransactionButton.interactable = false;
+            _sendJettonTransactionButton.interactable = false;
             _openNftCollectionButton.interactable = false;
 
             _debugMessage.text = string.Empty;

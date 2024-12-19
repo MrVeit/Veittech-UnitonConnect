@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using AOT;
 using Newtonsoft.Json;
@@ -49,9 +50,14 @@ namespace UnitonConnect.Core
 
         [DllImport("__Internal")]
         private static extern void UnSubscribeToTransactionEvents();
+
+        [DllImport("__Internal")]
+        private static extern void SendJettonTransaction(string jettonMaster, string amount,
+            string payload, Action<string> transactionSended);
+
         #endregion
 
-#region NATIVE_CALLBACKS
+        #region NATIVE_CALLBACKS
         [MonoPInvokeCallback(typeof(Action<int>))]
         private static void OnInitialize(int statusCode)
         {
@@ -210,6 +216,41 @@ namespace UnitonConnect.Core
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnJettonTransactionSend(string parsedHash)
+        {
+            if (string.IsNullOrEmpty(parsedHash))
+            {
+                var message = $"Failed to send jetton transaction, something wrong...";
+
+                UnitonConnectLogger.LogError(message);
+
+                OnJettonTransactionSendFailed?.Invoke(message);
+
+                CloseModal(OnModalWindowClose);
+
+                return;
+            }
+
+            if (parsedHash == EMPTY_BOC_ERROR)
+            {
+                var message = $"Jetton transaction successfully sended, but no returned Boc";
+
+                UnitonConnectLogger.LogError(message);
+
+                OnJettonTransactionSendFailed?.Invoke(message);
+
+                CloseModal(OnModalWindowClose);
+
+                return;
+            }
+
+            UnitonConnectLogger.Log($"Jetton transaction successfully sended," +
+                $"parsed hash: {parsedHash}");
+
+            OnJettonTransactionSended?.Invoke(parsedHash);
+        }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
         private static void OnTransactionSuccessfullySign(string eventData)
         {
             UnitonConnectLogger.Log($"Transaction successfully signed with data: {eventData}");
@@ -244,6 +285,9 @@ namespace UnitonConnect.Core
 
         private static Action<string> OnTonTransactionSended;
         private static Action<string> OnTonTransactionSendFailed;
+
+        private static Action<string> OnJettonTransactionSended;
+        private static Action<string> OnJettonTransactionSendFailed;
 
         private static Action<SuccessTransactionData> OnTonTransctionConfirmed;
 
@@ -304,6 +348,13 @@ namespace UnitonConnect.Core
                 null, transactionSended, transactionSendFailed);
         }
 
+        internal static void SendJetton(string senderJettonWalletContract, string amount, 
+            string payload, Action<string> transactionSended, Action<string> transactionSendFailed)
+        {
+            SendJettonByParams(senderJettonWalletContract, amount, 
+                payload, transactionSended, transactionSendFailed);
+        }
+
         private static void SendTonByParams(string recipientAddress,
             decimal tonAmount, string message, Action<string> transactionSended, 
             Action<string> transactionSendFailed)
@@ -326,6 +377,18 @@ namespace UnitonConnect.Core
 
             SendTransactionWithMessage(tonInNanotons, 
                 targetAddress, message, OnTransactionSend);
+        }
+
+        private static void SendJettonByParams(string senderJettonWalletContract, string amount,
+            string payload, Action<string> transactionSended, Action<string> transactionSendFailed)
+        {
+            OnJettonTransactionSended = transactionSended;
+            OnJettonTransactionSendFailed = transactionSendFailed;
+
+            SubscribeToTransactionEvents(OnTransactionSuccessfullySign,
+                OnTransactionSignFail);
+
+            SendJettonTransaction(senderJettonWalletContract, amount, payload, OnJettonTransactionSend);
         }
 
         private static bool IsSuccess(int statusCode)

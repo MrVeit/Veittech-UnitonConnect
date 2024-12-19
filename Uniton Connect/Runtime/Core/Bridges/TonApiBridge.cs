@@ -8,6 +8,8 @@ using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.Runtime.Data;
+using UnitonConnect.Editor.Common;
+using System.Text;
 
 namespace UnitonConnect.ThirdParty.TonAPI
 {
@@ -51,6 +53,118 @@ namespace UnitonConnect.ThirdParty.TonAPI
                 walletBalanceClaimed?.Invoke(data.Balance);
 
                 UnitonConnectLogger.Log($"Current TON balance in nanotons: {data.Balance}");
+            }
+        }
+
+        internal static IEnumerator GetJettonWalletByOwner(string tonAddress,
+            Action<JettonWalletsListData> jettonWalletsLoaded)
+        {
+            if (string.IsNullOrEmpty(tonAddress))
+            {
+                UnitonConnectLogger.LogWarning("Loading jetton wallets " +
+                    "failed, ton address is required");
+
+                jettonWalletsLoaded?.Invoke(null);
+
+                yield break;
+            }
+
+            var url = $"https://toncenter.com/api/v3/jetton/wallets?owner_address={tonAddress}&exclude_zero_balance=false&limit=50&offset=0";
+
+            using (UnityWebRequest request = UnityWebRequest.Get(url))
+            {
+                yield return request.SendWebRequest();
+
+                var responseResult = request.downloadHandler.text;
+
+                UnitonConnectLogger.Log($"Parsed jetton wallets response: {responseResult}");
+
+                if (request.result == WebRequestUtils.SUCCESS)
+                {
+                    var jettonWalletsData = JsonConvert.DeserializeObject<JettonWalletsListData>(responseResult);
+                
+                    if (jettonWalletsData == null || jettonWalletsData.JettonWallets.Count == 0)
+                    {
+                        UnitonConnectLogger.Log($"Jetton wallets is not exist by address: {tonAddress}");
+
+                        jettonWalletsLoaded?.Invoke(null);
+
+                        yield break;
+                    }
+
+                    jettonWalletsLoaded?.Invoke(jettonWalletsData);
+
+                    yield break;
+                }
+
+                var errorData = JsonConvert.DeserializeObject<TonCenterErrorData>(responseResult);
+
+                UnitonConnectLogger.LogError($"Failed to parsed jetton wallets, reason: {errorData.Message}");
+
+                jettonWalletsLoaded?.Invoke(null);
+            }
+        }
+
+        internal static IEnumerator GetTransactionPayload(decimal amount,
+            decimal forwardFee, string senderTonAddress, 
+            string recipientJettonAddress, Action<string> payloadLoaded)
+        {
+            var apiUrl = ProjectStorageConsts.GetRuntimeAppStorage().Data.ServerApiLink;
+            
+            if (string.IsNullOrEmpty(apiUrl))
+            {
+                UnitonConnectLogger.LogWarning("Server API url is not detected");
+
+                payloadLoaded?.Invoke(null);
+
+                yield break;
+            }
+
+            var responseUrl = $"{apiUrl}/api/uniton-connect/v1/assets/jetton/payload";
+
+            var payloadData = new TransactionPayloadComponentsData()
+            {
+                JettonAmount = amount,
+                GasFeeInTon = forwardFee,
+                RecipientJettonAddress = recipientJettonAddress,
+                SenderTonAddress = senderTonAddress,
+            };
+
+            var jsonData = JsonConvert.SerializeObject(payloadData);
+
+            Debug.Log($"Transaciton data before create payload: {jsonData}");
+
+            using (UnityWebRequest request = new(responseUrl, UnityWebRequest.kHttpVerbPOST))
+            {
+                var bodyRaw = Encoding.UTF8.GetBytes(jsonData);
+
+                request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                request.downloadHandler = new DownloadHandlerBuffer();
+
+                WebRequestUtils.SetRequestHeader(request, WebRequestUtils.HEADER_CONTENT_TYPE,
+                    WebRequestUtils.HEADER_VALUNE_CONTENT_TYPE_JSON);
+
+                yield return request.SendWebRequest();
+
+                var responseData = request.downloadHandler.text;
+
+                if (request.result == WebRequestUtils.SUCCESS)
+                {
+                    var loadedData = JsonConvert.DeserializeObject<LoadedTransactionPayloadData>(responseData);
+
+                    UnitonConnectLogger.Log($"Jetton transaction payload created: {loadedData.Payload}");
+
+                    payloadLoaded?.Invoke(loadedData.Payload);
+
+                    yield break;
+                }
+
+                var errorData = JsonConvert.DeserializeObject<ServerResponseData>(responseData);
+
+                UnitonConnectLogger.LogError($"Failed to create transaction`" +
+                    $" payload, reason: {errorData.Message}");
+
+                payloadLoaded?.Invoke(null);
             }
         }
 
