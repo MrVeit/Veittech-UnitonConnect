@@ -32,47 +32,33 @@ namespace UnitonConnect.Core.Demo
             var senderAddress = UnitonConnectSDK.Instance.Wallet.ToHex();
 #endif
 
-            string recipientJettonAddress = string.Empty;
             string senderJettonAddress = string.Empty;
 
             Debug.Log($"Parsed gas in nano: {gasFeeInNano}, master address: {USDT_MASTER_WALLET_ADDRESS}");
 
-            GetJettonWallet(_walletAddressView.FullAddress, USDT_MASTER_WALLET_ADDRESS, (recipient) =>
+            GetJettonWallet(senderAddress, USDT_MASTER_WALLET_ADDRESS, (sender) =>
             {
-                if (string.IsNullOrEmpty(recipient))
+                if (string.IsNullOrEmpty(sender))
                 {
                     return;
                 }
 
-                recipientJettonAddress = recipient.ToLower();
+                senderJettonAddress = sender;
 
-                Debug.Log($"Parsed recipient jetton address: {recipientJettonAddress}");
+                Debug.Log($"Parsed sender jetton address: {senderJettonAddress}");
 
-                GetJettonWallet(senderAddress, USDT_MASTER_WALLET_ADDRESS, (sender) =>
+                var recipientTonHexAddress = WalletConnectUtils.GetHEXAddress(_walletAddressView.FullAddress);
+
+                StartCoroutine(TonApiBridge.GetTransactionPayload(amount, forwardFee,
+                    senderAddress, recipientTonHexAddress, (parsedPayload) =>
                 {
-                    if (string.IsNullOrEmpty(sender))
+                    if (string.IsNullOrEmpty(parsedPayload))
                     {
                         return;
                     }
 
-                    senderJettonAddress = sender;
-
-                    Debug.Log($"Parsed sender jetton address: {senderJettonAddress}");
-
-                    var recipientTonHexAddress = WalletConnectUtils.GetHEXAddress(_walletAddressView.FullAddress);
-
-                    StartCoroutine(TonApiBridge.GetTransactionPayload(amount, forwardFee,
-                        senderAddress, recipientTonHexAddress, (parsedPayload) =>
-                    {
-                        if (string.IsNullOrEmpty(parsedPayload))
-                        {
-                            return;
-                        }
-
-                        TransactionPayloadParsed(senderJettonAddress, 
-                            $"{gasFeeInNano}", parsedPayload);
-                    }));
-                });
+                    TransactionPayloadParsed(senderJettonAddress, $"{gasFeeInNano}", parsedPayload);
+                }));
             });
         }
 

@@ -20,8 +20,8 @@ namespace UnitonConnect.Core.Demo
             "0:cfc0493e72741711f15a68d557cb0a5b280094330551ba99205a386bfdfe14ae";
 
         private const float START_AMOUNT = 0.005f;
-        private const float START_FEE = 0.02f;
-        private const float START_FORWARD_FEE = 0.05f;
+        private const float START_FEE = 0.018f;
+        private const decimal START_FORWARD_FEE = (decimal)0.000000001f;
 
         public void Init()
         {

@@ -2362,6 +2362,7 @@ MonoBehaviour:
   _connectButton: {fileID: 1029599515}
   _disconnectButton: {fileID: 817907982}
   _sendTransactionButton: {fileID: 2132820827}
+  _sendJettonTransactionButton: {fileID: 1163200552}
   _openNftCollectionButton: {fileID: 1544404037}
   _nftCollectionPanel: {fileID: 1422879015}
 --- !u!1 &517745557
@@ -4662,7 +4663,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 1163200553}
   m_OnClick:
     m_PersistentCalls:
