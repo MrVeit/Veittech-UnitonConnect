@@ -24,10 +24,20 @@ namespace UnitonConnect.Core.Demo
 
             var gasFeeInNano = $"{gasFee.ToNanoton()}";
 
-            var jettonWalletContract = "0:a6fc37ba5d8816e5e87506d97a5df9518b67f9c7271b11cd5b5e5421ce73213e"; // MY USDT JETTON WALLET
-            var payload = "te6cckEBAQEAWAAArA+KfqUABimQigveWCE4iAGYhdKhDwUzNQ5RSpcVtByL7Sa6J5vkTuSQ39mTVQxf6wAwdqdIh2HAyt2KtZHZYorURWjivSyMp1IJPsly2V5nNkgF9eEAWogaLQ==";
+            var jettonWalletContract = "EQCm_De6XYgW5eh1Btl6XflRi2f5xycbEc1bXlQhznMhPvJZ"; // MY USDT JETTON WALLET
+            var payload = "te6cckEBAQEAWAAArA+KfqUABimbCzU1ECA+iAGYhdKhDwUzNQ5RSpcVtByL7S" +
+                "a6J5vkTuSQ39mTVQxf6wAwdqdIh2HAyt2KtZHZYorURWjivSyMp1IJPsly2V5nNkgF9eEAghbKCw==";
 
-            TransactionPayloadParsed(jettonWalletContract, gasFeeInNano, payload);
+
+            TonConnectBridge.SendJetton(jettonWalletContract,
+                gasFeeInNano, payload, (transactionHash) =>
+            {
+                Debug.Log($"[UNITON CONNECT] Jetton transaction successfully sended, hash: {transactionHash}");
+            },
+            (error) =>
+            {
+                Debug.LogError($"[UNITON CONNECT] Failed to send jetton transaction, reason: {error}");
+            });
 
             /*
 var hexMasterAddress = USDT_MASTER_WALLET_ADDRESS;
