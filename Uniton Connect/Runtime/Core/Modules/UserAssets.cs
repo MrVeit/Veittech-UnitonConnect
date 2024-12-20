@@ -313,7 +313,7 @@ namespace UnitonConnect.DeFi
                         return;
                     }
 
-                    var amountInNano = UserAssetsUtils.ToUSDtNanoton((double)amount);
+                    var amountInNano = UserAssetsUtils.ToNanoton(amount);
 
                     TonConnectBridge.SendJetton(LatestJettonWalletAddress,
                         amountInNano.ToString(), payload, (transactionHash) =>
