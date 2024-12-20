@@ -23,7 +23,7 @@ namespace UnitonConnect.ThirdParty
         internal sealed class Jetton
         {
             internal static IEnumerator GetJettonWalletByOwner(string tonAddress,
-                Action<JettonWalletsListData> jettonWalletsLoaded)
+                string jettonMasterAddress, Action<JettonWalletsListData> jettonWalletsLoaded)
             {
                 if (string.IsNullOrEmpty(tonAddress))
                 {
@@ -35,7 +35,9 @@ namespace UnitonConnect.ThirdParty
                     yield break;
                 }
 
-                using (UnityWebRequest request = UnityWebRequest.Get(GetJettonWalletUlr(tonAddress)))
+                var targetUrl = GetJettonWalletUlr(tonAddress, jettonMasterAddress);
+
+                using (UnityWebRequest request = UnityWebRequest.Get(targetUrl))
                 {
                     yield return request.SendWebRequest();
 
@@ -61,7 +63,7 @@ namespace UnitonConnect.ThirdParty
                         yield break;
                     }
 
-                    var errorData = JsonConvert.DeserializeObject<TonCenterErrorData>(responseResult);
+                    var errorData = JsonConvert.DeserializeObject<TonCenterResponseErrorData>(responseResult);
 
                     UnitonConnectLogger.LogError($"Failed to parsed jetton wallets, reason: {errorData.Message}");
 
@@ -69,10 +71,10 @@ namespace UnitonConnect.ThirdParty
                 }
             }
 
-            internal static string GetJettonWalletUlr(string tonAddress)
+            internal static string GetJettonWalletUlr(string tonAddress, string jettonMaster)
             {
-                return $"https://toncenter.com/api/v3/jetton/wallets?owner_address={tonAddress}" +
-                    $"&exclude_zero_balance=false&limit=50&offset=0";
+                return $"https://toncenter.com/api/v3/jetton/wallets?owner_address={tonAddress}&" +
+                    $"jetton_address={jettonMaster}&exclude_zero_balance=false&limit=50&offset=0";
             }
         }
     }

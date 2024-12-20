@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 namespace UnitonConnect.Core.Data
 {
     [Serializable]
-    public sealed class TonCenterErrorData
+    public sealed class TonCenterResponseErrorData
     {
         [JsonProperty("code")]
         public int Code { get; set; }

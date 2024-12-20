@@ -2,7 +2,7 @@ using UnitonConnect.Runtime.Data;
 
 namespace UnitonConnect.Core.Common
 {
-    public interface IUnitonConnectNftTransactionCallbacks
+    public interface IUnitonConnectNftCallbacks
     {
         delegate void OnNftCollectionsClaim(NftCollectionData collections);
         delegate void OnTargetNftCollectionClaim(NftCollectionData collection);

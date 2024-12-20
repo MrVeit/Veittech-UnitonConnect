@@ -1,8 +1,11 @@
 using System;
 using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.Core.Utils.Debugging;
+using UnitonConnect.Core.Data;
+using UnitonConnect.ThirdParty;
 
 namespace UnitonConnect.Core.Utils
 {
@@ -52,6 +55,33 @@ namespace UnitonConnect.Core.Utils
         internal static double FromUSDtNanoton(long nanoAmount)
         {
             return nanoAmount / 1e6;
+        }
+
+        /// <summary>
+        /// Retrieving token wallet data from the master address, if it exists.
+        /// </summary>
+        /// <param name="masterAddress"></param>
+        /// <param name="tonAddress"></param>
+        /// <returns></returns>
+        public static IEnumerator GetJettonWalletByAddress(string masterAddress,
+            string tonAddress, Action<JettonWalletData> jettonWalletParsed)
+        {
+            yield return TonCenterApiBridge.Jetton.GetJettonWalletByOwner(
+                tonAddress, masterAddress, (loadedWallet) =>
+            {
+                if (loadedWallet.JettonWallets == null ||
+                    loadedWallet.JettonWallets.Count == 0)
+                {
+                    UnitonConnectLogger.LogWarning($"Jetton Wallet is not" +
+                        $" deployed by master address: {masterAddress}");
+
+                    jettonWalletParsed?.Invoke(null);
+
+                    return;
+                }
+
+                jettonWalletParsed?.Invoke(loadedWallet.JettonWallets[0]);
+            });
         }
 
         /// <summary>

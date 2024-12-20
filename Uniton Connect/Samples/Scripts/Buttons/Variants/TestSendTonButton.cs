@@ -1,6 +1,5 @@
 using UnityEngine;
 using TMPro;
-using UnitonConnect.Core.Common;
 
 namespace UnitonConnect.Core.Demo
 {
@@ -20,8 +19,7 @@ namespace UnitonConnect.Core.Demo
             Debug.Log($"Start creating transaction with ton amount: " +
                 $"{amount} by recipient: {recipient} with message {message}");
 
-            _userInterfaceAdapter.UnitonSDK.SendTransaction(
-                ClassicTokenTypes.Toncoin, recipient, amount, message);
+            _userInterfaceAdapter.UnitonSDK.SendTransaction(recipient, amount, message);
         }
 
         private decimal ParseAmountFromBar(string amountFromBar)
