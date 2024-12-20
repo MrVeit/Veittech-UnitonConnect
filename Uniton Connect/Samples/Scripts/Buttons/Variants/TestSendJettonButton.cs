@@ -49,9 +49,13 @@ namespace UnitonConnect.Core.Demo
 
         public sealed override void OnClick()
         {
-            _gasFee = GetTransactionAmount(_gasFeeBar.text);
             _amount = GetTransactionAmount(_amountBar.text);
+            _gasFee = GetTransactionAmount(_gasFeeBar.text);
+
             _recipientAddress = _walletAddressView.FullAddress;
+
+            Debug.Log($"Transaction data for send, fee: {_gasFee}, " +
+                $"amount: {_amount}, recipient address: {_recipientAddress}");
 
             _jettonWallet.SendTransaction(JettonTypes.USDT, 
                 _recipientAddress, _amount, _gasFee);
