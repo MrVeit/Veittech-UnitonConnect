@@ -273,7 +273,8 @@ namespace UnitonConnect.DeFi
 
                     LatestJettonWalletAddress = walletConfig.Address;
 
-                    _mono.StartCoroutine(CreateTransaction(amount, ownerAddress, recipientAddress));
+                    _mono.StartCoroutine(CreateTransaction(amount, gasFee, 
+                        ownerAddress, recipientAddress));
                 });
             }
 
@@ -299,7 +300,7 @@ namespace UnitonConnect.DeFi
                 }));
             }
 
-            private IEnumerator CreateTransaction(decimal amount,
+            private IEnumerator CreateTransaction(decimal amount, decimal gasFee,
                 string sender, string recipient)
             {
                 yield return TonApiBridge.GetTransactionPayload(amount,
@@ -313,10 +314,10 @@ namespace UnitonConnect.DeFi
                         return;
                     }
 
-                    var amountInNano = UserAssetsUtils.ToNanoton(amount);
+                    var feeInNano = UserAssetsUtils.ToNanoton(gasFee);
 
                     TonConnectBridge.SendJetton(LatestJettonWalletAddress,
-                        amountInNano.ToString(), payload, (transactionHash) =>
+                        feeInNano.ToString(), payload, (transactionHash) =>
                     {
                         UnitonConnectLogger.Log($"Jetton transaction with " +
                         $"payload successfully sended: {transactionHash}");
