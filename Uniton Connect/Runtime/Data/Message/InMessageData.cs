@@ -23,7 +23,10 @@ namespace UnitonConnect.Core.Data
         public bool IsBounced { get; set; }
 
         [JsonProperty("value")]
-        public decimal Value { get; set; }
+        public long Value { get; set; }
+
+        [JsonProperty("value_extra")]
+        public List<MessageExtraValue> ExtraValues { get; set; }
 
         [JsonProperty("fwd_fee")]
         public decimal ForwardFee { get; set; }
@@ -62,7 +65,6 @@ namespace UnitonConnect.Core.Data
         public TransactionDecodedBodyData DecodedBody { get; set; }
     }
 
-    [Serializable]
     public sealed class TransactionInitData
     {
         [JsonProperty("boc")]
@@ -70,5 +72,30 @@ namespace UnitonConnect.Core.Data
 
         [JsonProperty("interfaces")]
         public List<string> Interfaces { get; set; }
+    }
+
+    public sealed class MessageExtraValue
+    {
+        [JsonProperty("amount")]
+        public string Amount { get; set; }
+
+        [JsonProperty("preview")]
+
+        public string Preview { get; set; }
+    }
+
+    public sealed class ExtraValuePreview
+    {
+        [JsonProperty("id")]
+        public long Id { get; set; }
+
+        [JsonProperty("symbol")]
+        public string Symbol { get; set; }
+
+        [JsonProperty("decimals")]
+        public decimal Decimals { get; set; }
+
+        [JsonProperty("image")]
+        public string ImageUrl { get; set; }
     }
 }

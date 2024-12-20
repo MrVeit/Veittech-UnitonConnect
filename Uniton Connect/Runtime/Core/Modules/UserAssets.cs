@@ -157,8 +157,7 @@ namespace UnitonConnect.DeFi
             /// if it was previously created on the connected wallet
             /// </summary>
             /// <param name="masterAddress">Master address of the target jetton contract</param>
-            public void ParseAddress(string masterAddress, 
-                string tonAddress = null)
+            public void ParseAddress(string masterAddress)
             {
                 if (!IsWalletConnected())
                 {
@@ -167,12 +166,7 @@ namespace UnitonConnect.DeFi
 
                 var currentAddress = _sdk.Wallet.ToHex();
 
-                if (string.IsNullOrEmpty(tonAddress))
-                {
-                    tonAddress = currentAddress;
-                }
-
-                ParseAddress(masterAddress, tonAddress, (walletConfig) =>
+                ParseAddress(masterAddress, currentAddress, (walletConfig) =>
                 {
                     if (walletConfig == null)
                     {
