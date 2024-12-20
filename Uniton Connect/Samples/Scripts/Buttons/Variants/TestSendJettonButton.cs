@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 using TMPro;
 using UnitonConnect.Core.Utils;
-using UnitonConnect.ThirdParty.TonAPI;
+using UnitonConnect.ThirdParty;
 
 namespace UnitonConnect.Core.Demo
 {
@@ -94,7 +94,7 @@ namespace UnitonConnect.Core.Demo
 
         private void GetJettonWallet(string address, string masterAddress, Action<string> addressParsed)
         {
-            StartCoroutine(TonApiBridge.GetJettonWalletByOwner(address, (parsedJettonWallets) =>
+            StartCoroutine(TonCenterApiBridge.Jetton.GetJettonWalletByOwner(address, (parsedJettonWallets) =>
             {
                 Debug.Log($"Master address: {masterAddress}");
 

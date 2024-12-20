@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -9,9 +10,8 @@ using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.Editor.Common;
-using System.Text;
 
-namespace UnitonConnect.ThirdParty.TonAPI
+namespace UnitonConnect.ThirdParty
 {
     internal static class TonApiBridge
     {
@@ -19,6 +19,57 @@ namespace UnitonConnect.ThirdParty.TonAPI
 
         private static UnitonConnectSDK UNITON_CONNECT => UnitonConnectSDK.Instance;
         private static string _walletAddress => UNITON_CONNECT.Wallet.ToString();
+
+        internal static IEnumerator GetAssetIcon(
+            string imageUrl, Action<Texture2D> iconLoaded)
+        {
+            var dAppData = ProjectStorageConsts.GetRuntimeAppStorage();
+
+            if (string.IsNullOrEmpty(dAppData.Data.ServerApiLink))
+            {
+                UnitonConnectLogger.LogError("For loading nft or wallet icon from the cache storage," +
+                    " you need to run the API Server to successfully convert to the desired format");
+
+                iconLoaded?.Invoke(null);
+
+                yield break;
+            }
+
+            string apiUrl = GetIconConvertURL(imageUrl);
+
+            Debug.Log($"APi url response: {apiUrl}");
+
+            using (UnityWebRequest request = UnityWebRequest.Get(apiUrl))
+            {
+                yield return request.SendWebRequest();
+
+                if (request.result != WebRequestUtils.SUCCESS)
+                {
+                    UnitonConnectLogger.LogError($"Failed to load image by api server: {request.error}");
+
+                    iconLoaded?.Invoke(null);
+
+                    yield break;
+                }
+
+                byte[] imageData = request.downloadHandler.data;
+
+                Texture2D texture = new(2, 2);
+
+                if (texture.LoadImage(imageData))
+                {
+                    UnitonConnectLogger.Log($"Loaded image {texture.name} with sise: {texture.width}x{texture.height}");
+
+                    iconLoaded?.Invoke(texture);
+
+                    yield break;
+                }
+
+                iconLoaded?.Invoke(null);
+
+                yield break;
+            }
+        }
 
         internal static IEnumerator GetBalance(Action<long> walletBalanceClaimed)
         {
@@ -53,55 +104,6 @@ namespace UnitonConnect.ThirdParty.TonAPI
                 walletBalanceClaimed?.Invoke(data.Balance);
 
                 UnitonConnectLogger.Log($"Current TON balance in nanotons: {data.Balance}");
-            }
-        }
-
-        internal static IEnumerator GetJettonWalletByOwner(string tonAddress,
-            Action<JettonWalletsListData> jettonWalletsLoaded)
-        {
-            if (string.IsNullOrEmpty(tonAddress))
-            {
-                UnitonConnectLogger.LogWarning("Loading jetton wallets " +
-                    "failed, ton address is required");
-
-                jettonWalletsLoaded?.Invoke(null);
-
-                yield break;
-            }
-
-            var url = $"https://toncenter.com/api/v3/jetton/wallets?owner_address={tonAddress}&exclude_zero_balance=false&limit=50&offset=0";
-
-            using (UnityWebRequest request = UnityWebRequest.Get(url))
-            {
-                yield return request.SendWebRequest();
-
-                var responseResult = request.downloadHandler.text;
-
-                UnitonConnectLogger.Log($"Parsed jetton wallets response: {responseResult}");
-
-                if (request.result == WebRequestUtils.SUCCESS)
-                {
-                    var jettonWalletsData = JsonConvert.DeserializeObject<JettonWalletsListData>(responseResult);
-                
-                    if (jettonWalletsData == null || jettonWalletsData.JettonWallets.Count == 0)
-                    {
-                        UnitonConnectLogger.Log($"Jetton wallets is not exist by address: {tonAddress}");
-
-                        jettonWalletsLoaded?.Invoke(null);
-
-                        yield break;
-                    }
-
-                    jettonWalletsLoaded?.Invoke(jettonWalletsData);
-
-                    yield break;
-                }
-
-                var errorData = JsonConvert.DeserializeObject<TonCenterErrorData>(responseResult);
-
-                UnitonConnectLogger.LogError($"Failed to parsed jetton wallets, reason: {errorData.Message}");
-
-                jettonWalletsLoaded?.Invoke(null);
             }
         }
 
@@ -233,9 +235,19 @@ namespace UnitonConnect.ThirdParty.TonAPI
             return $"{API_URL}/blockchain/transactions/{transactionHash}";
         }
 
+        internal static string GetIconConvertURL(string iconUrl)
+        {
+            var runtimeData = ProjectStorageConsts.GetRuntimeAppStorage().Data;
+
+            string apiUrl = $"{runtimeData.ServerApiLink}" +
+                $"/api/uniton-connect/v1/assets/item-icon?url={UnityWebRequest.EscapeURL(iconUrl)}";
+
+            return apiUrl;
+        }
+
         internal static class NFT
         {
-            internal static IEnumerator GetNftCollections(string apiURL,
+            internal static IEnumerator GetCollections(string apiURL,
                 Action<NftCollectionData> collectionsClaimed)
             {
                 if (!UNITON_CONNECT.IsWalletConnected)
@@ -269,7 +281,7 @@ namespace UnitonConnect.ThirdParty.TonAPI
                 yield break;
             }
 
-            internal static string GetTargetNftCollectionUrl(
+            internal static string GetTargetCollectionUrl(
                 string hexAddress, string collectionAddress, int limit, int offset)
             {
                 return $"{GetUserWalletUrl(hexAddress)}" +
@@ -277,7 +289,7 @@ namespace UnitonConnect.ThirdParty.TonAPI
                     $"&offset={offset}&indirect_ownership=false";
             }
 
-            internal static string GetAllNftCollectionsUrl(
+            internal static string GetAllCollectionsUrl(
                 string hexAddress, int limit, int offset)
             {
                 return $"{GetUserWalletUrl(hexAddress)}" +
@@ -288,7 +300,7 @@ namespace UnitonConnect.ThirdParty.TonAPI
 
         internal sealed class Jetton
         {
-            // SOON :D
+
         }
     }
 }

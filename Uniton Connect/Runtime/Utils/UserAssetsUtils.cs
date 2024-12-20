@@ -15,7 +15,7 @@ namespace UnitonConnect.Core.Utils
         /// </summary>
         /// <param name="tonBalance"></param>
         /// <returns></returns>
-        public static decimal ToNanoton(this decimal tonBalance)
+        internal static decimal ToNanoton(this decimal tonBalance)
         {
             var nanoTons = new TonSdk.Core.Coins(tonBalance).ToNano();
 
@@ -27,11 +27,31 @@ namespace UnitonConnect.Core.Utils
         /// </summary>
         /// <param name="nanotonBalance"></param>
         /// <returns></returns>
-        public static decimal FromNanoton(this decimal nanotonBalance)
+        internal static decimal FromNanoton(this decimal nanotonBalance)
         {
             var tonBalance = nanotonBalance / NANOTON_VALUE;
 
             return tonBalance;
+        }
+
+        /// <summary>
+        /// Conversion of balance in USDT to Nanotons (1 USDT - 1.000.000 Nanoton)
+        /// </summary>
+        /// <param name="amount"></param>
+        /// <returns></returns>
+        internal static long ToUSDtNanoton(double amount)
+        {
+            return (long)Math.Floor(amount * 1e6);
+        }
+
+        /// <summary>
+        /// Converting Nanotons balance to USDT (1 USDT - 1.000.000 Nanoton)
+        /// </summary>
+        /// <param name="nanoAmount"></param>
+        /// <returns></returns>
+        internal static double FromUSDtNanoton(long nanoAmount)
+        {
+            return nanoAmount / 1e6;
         }
 
         /// <summary>

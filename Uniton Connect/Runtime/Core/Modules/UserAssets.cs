@@ -3,7 +3,7 @@ using UnitonConnect.Core;
 using UnitonConnect.Core.Common;
 using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.Runtime.Data;
-using UnitonConnect.ThirdParty.TonAPI;
+using UnitonConnect.ThirdParty;
 
 namespace UnitonConnect.DeFi
 {
@@ -11,10 +11,13 @@ namespace UnitonConnect.DeFi
     {
         public NFT Nft { get; private set; }
 
+        public Jetton Jettons { get; private set; }
+
         public UserAssets(MonoBehaviour mono,
             UnitonConnectSDK sdk)
         {
             Nft = new NFT(mono, sdk);
+            Jettons = new Jetton(mono, sdk);
         }
 
         public sealed class NFT : IUnitonConnectNftTransactionCallbacks
@@ -30,7 +33,6 @@ namespace UnitonConnect.DeFi
             }
 
             private string _walletAddress => _sdk.Wallet.ToString();
-
 
             public NftCollectionData LatestNftCollections { get; private set; }
             public NftCollectionData LatestTargetNftCollection { get; private set; }
@@ -58,9 +60,9 @@ namespace UnitonConnect.DeFi
             public void Load(int limit, int offset = 0)
             {
                 var encodedWalletAddress = ConvertAddressToEncodedURL(_walletAddress);
-                var url = TonApiBridge.NFT.GetAllNftCollectionsUrl(encodedWalletAddress, limit, offset);
+                var url = TonApiBridge.NFT.GetAllCollectionsUrl(encodedWalletAddress, limit, offset);
 
-                _mono.StartCoroutine(TonApiBridge.NFT.GetNftCollections(url, (collections) =>
+                _mono.StartCoroutine(TonApiBridge.NFT.GetCollections(url, (collections) =>
                 {
                     if (collections.Items.Count == 0 || collections.Items == null)
                     {
@@ -86,10 +88,10 @@ namespace UnitonConnect.DeFi
                 var encodedWalletAddress = ConvertAddressToEncodedURL(_walletAddress);
                 var encodedCollectionAddress = ConvertAddressToEncodedURL(collectionAddress);
 
-                var url = TonApiBridge.NFT.GetTargetNftCollectionUrl(encodedWalletAddress,
+                var url = TonApiBridge.NFT.GetTargetCollectionUrl(encodedWalletAddress,
                     encodedCollectionAddress, limit, offset);
 
-                _mono.StartCoroutine(TonApiBridge.NFT.GetNftCollections(url, (collection) =>
+                _mono.StartCoroutine(TonApiBridge.NFT.GetCollections(url, (collection) =>
                 {
                     if (collection.Items.Count == 0 || collection.Items == null)
                     {
@@ -109,6 +111,36 @@ namespace UnitonConnect.DeFi
             private string ConvertAddressToEncodedURL(string address)
             {
                 return TonApiBridge.ConvertAddressToEncodeURL(address);
+            }
+        }
+
+        public sealed class Jetton
+        {
+            private readonly MonoBehaviour _mono;
+            private readonly UnitonConnectSDK _sdk;
+
+            public Jetton(MonoBehaviour mono,
+                UnitonConnectSDK sdk)
+            {
+                _mono = mono;
+                _sdk = sdk;
+            }
+
+            public void LoadBalance()
+            {
+
+            }
+
+            public void Send(JettonTypes type, string recipientAddress,
+                decimal amount, decimal gasFee, string message = null)
+            {
+
+            }
+
+            public void Send(string masterAddress, string recipientAddress,
+                decimal amount, decimal gasFee, string message = null)
+            {
+
             }
         }
     }

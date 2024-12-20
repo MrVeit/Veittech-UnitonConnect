@@ -817,11 +817,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d441cde0782c1694cbf4abab09a0247a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _version: 1
   _testMode: 1
   _debugMode: 1
   _initializeOnAwake: 0
   _confirmTransactionDelay: 0
+  _jettonStorage: {fileID: 11400000, guid: a7b6e10d62286724a802b407a76b868e, type: 2}
 --- !u!1 &147073027
 GameObject:
   m_ObjectHideFlags: 0
@@ -2097,7 +2097,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 361464356}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0

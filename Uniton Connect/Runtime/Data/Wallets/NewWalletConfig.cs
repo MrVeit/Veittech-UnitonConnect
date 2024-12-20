@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 
 namespace UnitonConnect.Core.Data
 {
-    public sealed class NewWalletConfig
+    public class NewWalletConfig
     {
         [JsonProperty("address")]
         public string Address { get; set; }

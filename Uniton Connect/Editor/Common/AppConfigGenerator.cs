@@ -10,7 +10,7 @@ using UnitonConnect.Core.Utils.Debugging;
 
 namespace UnitonConnect.Editor.PostProccess
 {
-    public sealed class UnitonConnectAppConfigGenerator : IPostprocessBuildWithReport
+    public sealed class AppConfigGenerator : IPostprocessBuildWithReport
     {
         private string _iconPath;
 
