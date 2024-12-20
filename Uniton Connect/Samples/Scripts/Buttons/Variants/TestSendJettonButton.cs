@@ -22,16 +22,11 @@ namespace UnitonConnect.Core.Demo
         private string _senderAddress;
         private string _recipientAddress;
 
-        private void Start()
-        {
-            _unitonConnect = UnitonConnectSDK.Instance;
-
-            _jettonWallet = _unitonConnect.Assets.Jettons;
-        }
-
         protected sealed override void OnEnable()
         {
             base.OnEnable();
+
+            Init();
 
             _jettonWallet.OnTransactionSended += JettonTransactionSended;
             _jettonWallet.OnTransactionSendFailed += JettonTransactionSendFailed;
@@ -43,6 +38,13 @@ namespace UnitonConnect.Core.Demo
 
             _jettonWallet.OnTransactionSended -= JettonTransactionSended;
             _jettonWallet.OnTransactionSendFailed -= JettonTransactionSendFailed;
+        }
+
+        private void Init()
+        {
+            _unitonConnect = UnitonConnectSDK.Instance;
+
+            _jettonWallet = _unitonConnect.Assets.Jettons;
         }
 
         public sealed override void OnClick()
