@@ -51,6 +51,7 @@ namespace UnitonConnect.Core.Demo
         {
             _gasFee = GetTransactionAmount(_gasFeeBar.text);
             _amount = GetTransactionAmount(_amountBar.text);
+            _recipientAddress = _walletAddressView.FullAddress;
 
             _jettonWallet.SendTransaction(JettonTypes.USDT, 
                 _recipientAddress, _amount, _gasFee);

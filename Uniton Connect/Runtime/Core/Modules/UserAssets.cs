@@ -126,7 +126,7 @@ namespace UnitonConnect.DeFi
 
             private string _latestMasterAddress;
 
-            public readonly decimal ForwardFee = (decimal)0.000000001f;
+            public readonly decimal ForwardFee = decimal.Parse("0.0000000010");
 
             public string LatestJettonWalletAddress { get; private set; }
 
