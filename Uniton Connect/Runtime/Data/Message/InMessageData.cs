@@ -23,7 +23,7 @@ namespace UnitonConnect.Core.Data
         public bool IsBounced { get; set; }
 
         [JsonProperty("value")]
-        public long Value { get; set; }
+        public decimal Value { get; set; }
 
         [JsonProperty("value_extra")]
         public List<MessageExtraValue> ExtraValues { get; set; }
