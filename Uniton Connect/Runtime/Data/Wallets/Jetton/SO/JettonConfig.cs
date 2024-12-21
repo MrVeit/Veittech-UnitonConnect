@@ -9,6 +9,7 @@ namespace UnitonConnect.Editor.Data
     public sealed class JettonConfig : ScriptableObject
     {
         [field: SerializeField, Space] public JettonTypes Type { get; private set; }
+        [field: SerializeField, Space] public string Name { get; private set; }
         [field: SerializeField, Space] public string MasterAddress { get; private set; }
         [field: SerializeField, Space] public string IconUrl { get; private set; }
 

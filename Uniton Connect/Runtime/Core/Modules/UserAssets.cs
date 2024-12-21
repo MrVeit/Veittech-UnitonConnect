@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnitonConnect.Core;
 using UnitonConnect.Core.Data;
@@ -9,6 +10,7 @@ using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.ThirdParty;
+using UnitonConnect.Editor.Data;
 
 namespace UnitonConnect.DeFi
 {
@@ -138,9 +140,19 @@ namespace UnitonConnect.DeFi
             }
 
             /// <summary>
+            /// Callback to get the jetton balance for a specific master address with its configuration
+            /// </summary>
+            public event IUnitonConnectJettonCallbacks.OnJettonBalanceLoaded OnBalanceLoaded;
+
+            /// <summary>
             /// Callback to get the wallet address of a specific token, if it exists in the connected account
             /// </summary>
             public event IUnitonConnectJettonCallbacks.OnJettonAddressParsed OnAddressParsed;
+
+            /// <summary>
+            /// Callback to retrieve a list of successful owner's Jetton transactions (received or sent)
+            /// </summary>
+            public event IUnitonConnectJettonCallbacks.OnLastJettonTransactionsLoaded OnLastTransactionsLoaded;
 
             /// <summary>
             /// Callback to retrieve transaction information from the blockchain after a successful submission
@@ -157,16 +169,24 @@ namespace UnitonConnect.DeFi
             /// if it was previously created on the connected wallet
             /// </summary>
             /// <param name="masterAddress">Master address of the target jetton contract</param>
-            public void ParseAddress(string masterAddress)
+            public void GetAddress(string masterAddress)
             {
                 if (!IsWalletConnected())
                 {
+                   return;
+                }
+
+                if (string.IsNullOrEmpty(masterAddress))
+                {
+                    UnitonConnectLogger.LogWarning("The master address is " +
+                        "required to load the jetton wallet address!");
+
                     return;
                 }
 
                 var currentAddress = _sdk.Wallet.ToHex();
 
-                ParseAddress(masterAddress, currentAddress, (walletConfig) =>
+                GetAddress(masterAddress, currentAddress, (walletConfig) =>
                 {
                     if (walletConfig == null)
                     {
@@ -187,28 +207,102 @@ namespace UnitonConnect.DeFi
             /// Loading the balance of the classic token on the connected wallet
             /// </summary>
             /// <param name="type"></param>
-            public void LoadBalance(JettonTypes type)
+            public void GetBalance(JettonTypes type)
             {
                 if (!IsWalletConnected())
                 {
                     return;
                 }
 
+                var targetJetton = GetConfigByType(type);
 
+                if (targetJetton == null)
+                {
+                    return;
+                }
+
+                var masterAddress = targetJetton.MasterAddress;
+
+                GetBalance(masterAddress);
             }
 
             /// <summary>
             /// Loading the balance of a custom token on the connected wallet by its master address
             /// </summary>
-            /// <param name="masterAddress"></param>
-            public void LoadBalance(string masterAddress)
+            /// <param name="masterAddress">Jetton master address for loading</param>
+            public void GetBalance(string masterAddress)
             {
                 if (!IsWalletConnected())
                 {
                     return;
                 }
 
+                if (string.IsNullOrEmpty(masterAddress))
+                {
+                    UnitonConnectLogger.LogWarning("The master address is " +
+                        "required to load the jetton balance!");
 
+                    return;
+                }
+
+                var currentAddress = _sdk.Wallet.ToHex();
+
+                _mono.StartCoroutine(TonApiBridge.Jetton.GetBalance(
+                    currentAddress, masterAddress, (loadedJettonConfig) =>
+                {
+                    if (loadedJettonConfig == null)
+                    {
+                        UnitonConnectLogger.LogWarning($"Target jetton " +
+                            $"{masterAddress} not found at connected wallet");
+
+                        OnBalanceLoaded?.Invoke(0, "NOT_FOUND", masterAddress);
+
+                        return;
+                    }
+
+                    var balanceInNano = long.Parse(loadedJettonConfig.BalanceInNano);
+                    decimal balance = UserAssetsUtils.FromNanoton(balanceInNano);
+
+                    var tokenName = loadedJettonConfig.Configuration.Name;
+                    
+                    if (tokenName == ClassicJettonNames.USDT_NAME)
+                    {
+                        balance = (decimal)UserAssetsUtils.FromUSDtNanoton(balanceInNano);
+                    }
+
+                    OnBalanceLoaded?.Invoke(balance, tokenName, masterAddress);
+                }));
+            }
+
+            /// <summary>
+            /// Getting the latest successful transactions by 'sent/received' type
+            /// </summary>
+            /// <param name="type"></param>
+            /// <param name="limit"></param>
+            public void GetLastTransactions(TransactionTypes type, int limit)
+            {
+                if (!IsWalletConnected())
+                {
+                    return;
+                }
+
+                var transactionTag = type == TransactionTypes.Received ? "in" : "out";
+                var connectedAddress = _sdk.Wallet.ToHex();
+
+                _mono.StartCoroutine(TonCenterApiBridge.Jetton.GetLastTransactions(
+                    connectedAddress, transactionTag, limit, (loadedTransactions) =>
+                {
+                    if (loadedTransactions == null)
+                    {
+                        OnLastTransactionsLoaded?.Invoke(type, new List<JettonTransactionData>());
+
+                        return;
+                    }
+
+                    UnitonConnectLogger.Log($"Loaded the last {limit} jetton transactions");
+
+                    OnLastTransactionsLoaded?.Invoke(type, loadedTransactions);
+                }));
             }
 
             /// <summary>
@@ -226,14 +320,18 @@ namespace UnitonConnect.DeFi
                     return;
                 }
 
-                var targetJetton = _sdk.JettonStorage.Jettons
-                    .FirstOrDefault(jetton => jetton.Type == type);
+                if (string.IsNullOrEmpty(recipientAddress))
+                {
+                    UnitonConnectLogger.LogWarning("Recipient address " +
+                        "is required, transaction cancelled");
+
+                    return;
+                }
+
+                var targetJetton = GetConfigByType(type);
 
                 if (targetJetton == null)
                 {
-                    UnitonConnectLogger.LogError($"Jetton {type} not found " +
-                        $"in the storage of available jettons for sending");
-
                     return;
                 }
 
@@ -254,14 +352,25 @@ namespace UnitonConnect.DeFi
             public void SendTransaction(string masterAddress, string recipientAddress,
                 decimal amount, decimal gasFee, string message = null)
             {
+                if (!IsWalletConnected())
+                {
+                    return;
+                }
+
                 if (string.IsNullOrEmpty(LatestJettonWalletAddress))
                 {
                     UnitonConnectLogger.LogWarning("The jetton wallet has not been loaded, start parsing...");
                 }
 
                 var ownerAddress = _sdk.Wallet.ToHex();
+                var recipientToHex = WalletConnectUtils.GetHEXAddress(recipientAddress);
 
-                ParseAddress(masterAddress, ownerAddress, (walletConfig) =>
+                if (WalletConnectUtils.IsAddressesMatch(recipientAddress))
+                {
+                    return;
+                }
+
+                GetAddress(masterAddress, ownerAddress, (walletConfig) =>
                 {
                     if (walletConfig == null)
                     {
@@ -278,7 +387,7 @@ namespace UnitonConnect.DeFi
                 });
             }
 
-            private void ParseAddress(string masterAddress, string tonAddress,
+            private void GetAddress(string masterAddress, string tonAddress,
                 Action<JettonWalletData> walletParsed)
             {
                 _mono.StartCoroutine(UserAssetsUtils.GetJettonWalletByAddress(
@@ -356,11 +465,29 @@ namespace UnitonConnect.DeFi
                     {
                         isFailed = true;
 
+                        _mono.StartCoroutine(LoadTransactionStatus(transactionHash));
+
                         return;
                     }
 
                     OnTransactionSendFailed?.Invoke(_latestMasterAddress, errorMessage);
                 });
+            }
+
+            private JettonConfig GetConfigByType(JettonTypes type)
+            {
+                var targetJetton = _sdk.JettonStorage.Jettons
+                    .FirstOrDefault(jetton => jetton.Type == type);
+
+                if (targetJetton == null)
+                {
+                    UnitonConnectLogger.LogError($"Jetton {type} not found " +
+                        $"in the storage of available jettons for sending");
+
+                    return null;
+                }
+
+                return targetJetton;
             }
 
             private bool IsWalletConnected()

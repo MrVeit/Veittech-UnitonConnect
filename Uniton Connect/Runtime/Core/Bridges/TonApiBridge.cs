@@ -73,16 +73,6 @@ namespace UnitonConnect.ThirdParty
 
         internal static IEnumerator GetBalance(Action<long> walletBalanceClaimed)
         {
-            if (!UNITON_CONNECT.IsWalletConnected)
-            {
-                UnitonConnectLogger.LogWarning("Failed to request the balance," +
-                    " connect the wallet and repeat the operation later");
-
-                walletBalanceClaimed?.Invoke(0);
-
-                yield break;
-            }
-
             var userEncodedAddress = ConvertAddressToEncodeURL(_walletAddress);
             var targetUrl = GetUserWalletUrl(userEncodedAddress);
 
@@ -173,14 +163,6 @@ namespace UnitonConnect.ThirdParty
         internal static IEnumerator GetTransactionData(string transactionHash, float awaitDelay,
             Action<SuccessTransactionData> dataClaimed, Action<string> fetchDataFailed)
         {
-            if (!UNITON_CONNECT.IsWalletConnected)
-            {
-                UnitonConnectLogger.LogWarning("Failed to request the balance," +
-                    " connect the wallet and repeat the operation later");
-
-                yield break;
-            }
-
             yield return new WaitForSeconds(awaitDelay);
 
             var encodedTransactionHash = EscapeQueryParam(transactionHash);
@@ -250,14 +232,6 @@ namespace UnitonConnect.ThirdParty
             internal static IEnumerator GetCollections(string apiURL,
                 Action<NftCollectionData> collectionsClaimed)
             {
-                if (!UNITON_CONNECT.IsWalletConnected)
-                {
-                    UnitonConnectLogger.LogWarning("Failed to load user nft" +
-                        " collections, wallet is not connected.");
-
-                    yield break;
-                }
-
                 using (UnityWebRequest request = UnityWebRequest.Get(apiURL))
                 {
                     yield return request.SendWebRequest();
@@ -300,7 +274,42 @@ namespace UnitonConnect.ThirdParty
 
         internal sealed class Jetton
         {
+            internal static IEnumerator GetBalance(string tonAddress,
+                string masterJettonAddress, Action<JettonBalanceData> jettonBalanceLoaded)
+            {
+                var targetUrl = GetBalanceUrl(tonAddress, masterJettonAddress);
 
+                using (UnityWebRequest request = UnityWebRequest.Get(targetUrl))
+                {
+                    yield return request.SendWebRequest();
+
+                    var responseJson = request.downloadHandler.text;
+
+                    if (request.result != WebRequestUtils.SUCCESS)
+                    {
+                        UnitonConnectLogger.LogError($"Failed to fetch jetton balance, reason: {responseJson}");
+
+                        jettonBalanceLoaded?.Invoke(null);
+
+                        yield break;
+                    }
+
+                    var responseData = JsonConvert.DeserializeObject<JettonBalanceData>(responseJson);
+
+                    jettonBalanceLoaded?.Invoke(responseData);
+
+                    UnitonConnectLogger.Log($"Loaded jetton {responseData.Configuration.Name} " +
+                        $"with balance in nano: {responseData.BalanceInNano}");
+
+                    yield break;
+                }
+            }
+
+            internal static string GetBalanceUrl(string tonAddress,
+                string masterJettonAddress)
+            {
+                return $"https://tonapi.io/v2/accounts/{tonAddress}/jettons/{masterJettonAddress}";
+            }
         }
     }
 }
