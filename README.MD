@@ -98,6 +98,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **NOT**                 | ⚠️         | ⚠️              |
 | **GRAM**                | ⚠️         | ⚠️              |
 | **DOGS**                | ⚠️         | ⚠️              |
+| **USDT**                | ⚠️         | ⚠️              |
 | **NFT**                 | ✔️         | Balance, Filter |
 | **Custom Jetton**       | ⚠️         | ⚠️              |
  
