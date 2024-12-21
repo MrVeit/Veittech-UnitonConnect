@@ -5,6 +5,7 @@ namespace UnitonConnect.Core.Common
         GRAM,
         NOT,
         DOGS,
-        USDT
+        USDT,
+        Custom
     }
 }

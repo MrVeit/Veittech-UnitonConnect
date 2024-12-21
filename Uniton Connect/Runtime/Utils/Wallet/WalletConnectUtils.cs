@@ -9,7 +9,7 @@ namespace UnitonConnect.Core.Utils
 
         internal static bool IsAddressesMatch(string recipientAddress)
         {
-            var authorizedWalletAddress = _unitonConnect.Wallet.ToString();
+            var authorizedWalletAddress = _unitonConnect.Wallet.ToHex();
 
             if (authorizedWalletAddress == recipientAddress)
             {

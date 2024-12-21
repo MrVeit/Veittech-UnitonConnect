@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: Jetton_NOT
   m_EditorClassIdentifier: 
   <Type>k__BackingField: 1
+  <Symbol>k__BackingField: NOT
   <MasterAddress>k__BackingField: 0:2f956143c461769579baef2e32cc2d7bc18283f40d20bb03e432cd603ac33ffc
   <IconUrl>k__BackingField: https://cache.tonapi.io/imgproxy/4KCMNm34jZLXt0rqeFm4rH-BK4FoK76EVX9r0cCIGDg/rs:fill:200:200:1/g:no/aHR0cHM6Ly9jZG4uam9pbmNvbW11bml0eS54eXovY2xpY2tlci9ub3RfbG9nby5wbmc.webp

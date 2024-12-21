@@ -3,7 +3,6 @@ using UnityEngine.UI;
 using TMPro;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
-using UnitonConnect.Core.Utils.View;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.DeFi;
 
@@ -25,9 +24,11 @@ namespace UnitonConnect.Core.Demo
         private UnitonConnectSDK _unitonSDK;
 
         private UserAssets.NFT _nftModule => _unitonSDK.Assets.Nft;
+        private UserAssets.Jetton _jettonModule => _unitonSDK.Assets.Jettons;
 
         public UnitonConnectSDK UnitonSDK => _unitonSDK;
         public UserAssets.NFT NftStorage => _nftModule;
+        public UserAssets.Jetton JettonModule => _jettonModule;
 
         private void Awake()
         {
@@ -104,7 +105,7 @@ namespace UnitonConnect.Core.Demo
                     $"full account address: {userAddress}, \n" +
                     $"Public Key: {wallet.PublicKey}";
 
-                var shortWalletAddress = WalletVisualUtils.ProcessWalletAddress(userAddress, 6);
+                var shortWalletAddress = _unitonSDK.Wallet.ToShort(8);
 
                 _debugMessage.text = successConnectMessage;
                 _shortWalletAddress.text = shortWalletAddress;

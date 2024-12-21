@@ -206,6 +206,10 @@ namespace UnitonConnect.Core
                     OnInitialize, OnConnect, 
                     OnConnectFail, OnConnectRestore);
             }
+            else
+            {
+                OnInitialize(true);
+            }
 
             UnitonConnectLogger.Log("Native SDK successfully initialized");
 
@@ -311,7 +315,9 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            if (WalletConnectUtils.IsAddressesMatch(recipientAddress))
+            var recipientToHex = WalletConnectUtils.GetHEXAddress(recipientAddress);
+
+            if (WalletConnectUtils.IsAddressesMatch(recipientToHex))
             {
                 UnitonConnectLogger.LogWarning("Transaction canceled because the recipient and sender addresses match");
 
@@ -356,7 +362,7 @@ namespace UnitonConnect.Core
                 yield return new WaitForSeconds(5f);
             }
 
-            StartCoroutine(TonApiBridge.GetTransactionData(transactionHash,
+            yield return TonApiBridge.GetTransactionData(transactionHash,
                 _confirmTransactionDelay, (transactionData) =>
             {
                 var fee = UserAssetsUtils.FromNanoton(transactionData.TotalFees).ToString();
@@ -378,11 +384,13 @@ namespace UnitonConnect.Core
                 {
                     isFailed = true;
 
+                    StartCoroutine(ConfirmTonTransaction(transactionHash));
+
                     return;
                 }
 
                 OnSendingTonConfirm(null);
-            }));
+            });
         }
 
         private bool IsSupporedPlatform()
