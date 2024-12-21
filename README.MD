@@ -21,20 +21,21 @@ This reflects the functionality already added to the library as well as that pla
 
 - [x] Connecting TON wallets,
 - [x] Reading Toncoin balance,
-- [ ] Reading Jettons balance,
+- [x] Reading Jettons balance,
 - [x] Reading available NFT collections,
 - [x] Sending Toncoin between wallets,
-- [ ] Sending Jettons between wallets,
+- [x] Sending Jettons between wallets,
 - [ ] Sending NFT collections between wallets,
 - [ ] Swapping Jettons to Toncoin and reverse,
-- [ ] Creating and mint Jettons,
-- [ ] Creating and mint NFT collections,
 - [ ] Burning available NFT collections,
+- [ ] Loading last successful transactions with Toncoin,
+- [x] Loading last successful transactions with Jettons,
+- [ ] Loading last successful transactions with NFT Collections,
 - [x] Additional utilities,
-  - [x] Filter nft collections by various filters: skam, collection address and so on,
-  - [x] Conversion of the number of tokens to nanotons and vice versa,
+  - [x] Filter nft collections by various filters: skam, collection address and more,
+  - [x] Conversion of the number of tokens to nanotons and reverse,
   - [x] Conversion of wallet addresses to different formats and visualize them,
-  - [ ] Getting current price of Toncoin and Jettons.
+  - [ ] Getting current price of crypto assets.
 
 # Technical Demo
 
@@ -95,12 +96,12 @@ You can test the SDK without installation on a demo app [in your browser](https:
 |           Token         |   Status   |       Func       |
 | ----------------------- | :--------: | :--------------: |
 | **TON**                 | ✔️         | Balance, Send    |
-| **NOT**                 | ⚠️         | ⚠️              |
-| **GRAM**                | ⚠️         | ⚠️              |
-| **DOGS**                | ⚠️         | ⚠️              |
-| **USDT**                | ⚠️         | ⚠️              |
-| **NFT**                 | ✔️         | Balance, Filter |
-| **Custom Jetton**       | ⚠️         | ⚠️              |
+| **USDT**                | ✔️         | Balance, Send    |
+| **GRAM**                | ✔️         | Balance          |
+| **NOT**                 | ✔️         | Balance          |
+| **DOGS**                | ✔️         | Balance          |
+| **Custom Jetton**       | ✔️         | Balance          |
+| **NFT**                 | ✔️         | Balance, Filter  |
  
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
