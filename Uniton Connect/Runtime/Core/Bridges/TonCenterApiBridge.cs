@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
-using UnitonConnect.Core;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.Debugging;
@@ -12,9 +11,7 @@ namespace UnitonConnect.ThirdParty
 {
     internal static class TonCenterApiBridge
     {
-        private const string API_URL = "https://tonapi.io/v2";
-
-        private static UnitonConnectSDK UNITON_CONNECT => UnitonConnectSDK.Instance;
+        private const string API_URL = "https://toncenter.com/api";
 
         internal sealed class NFT
         {
@@ -115,14 +112,14 @@ namespace UnitonConnect.ThirdParty
 
             internal static string GetJettonWalletUlr(string tonAddress, string jettonMaster)
             {
-                return $"https://toncenter.com/api/v3/jetton/wallets?owner_address={tonAddress}&" +
+                return $"{API_URL}/v3/jetton/wallets?owner_address={tonAddress}&" +
                     $"jetton_address={jettonMaster}&exclude_zero_balance=false&limit=50&offset=0";
             }
 
             internal static string GetLastJettonTransactionsUrl(string ownerAddress,
                 string directionTag, int limit)
             {
-                return $"https://toncenter.com/api/v3/jetton/transfers?owner_address={ownerAddress}" +
+                return $"{API_URL}/v3/jetton/transfers?owner_address={ownerAddress}" +
                     $"&direction={directionTag}&limit={limit}&offset=0";
             }
         }

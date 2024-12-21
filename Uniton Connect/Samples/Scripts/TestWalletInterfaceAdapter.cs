@@ -34,27 +34,27 @@ namespace UnitonConnect.Core.Demo
         {
             _unitonSDK = UnitonConnectSDK.Instance;
 
-            _unitonSDK.OnNativeInitialized += Initialize;
+            _unitonSDK.OnInitiliazed += Initialize;
 
-            _unitonSDK.OnNativeWalletConnectionFinished += WalletConnectionFinished;
-            _unitonSDK.OnNativeWalletConnectionFailed += WalletConnectionFailed;
-            _unitonSDK.OnNativeWalletConnectionRestored += WalletConnectionRestored;
+            _unitonSDK.OnWalletConnected += WalletConnectionFinished;
+            _unitonSDK.OnWalletConnectFailed += WalletConnectionFailed;
+            _unitonSDK.OnWalletConnectRestored += WalletConnectionRestored;
 
-            _unitonSDK.OnNativeWalletDisconnected += WalletDisconnected;
+            _unitonSDK.OnWalletDisconnected += WalletDisconnected;
 
-            _unitonSDK.OnNativeSendingTonFinished += TonTransactionSended;
-            _unitonSDK.OnNativeTransactionConfirmed += TonTransactionConfirmed;
+            _unitonSDK.OnTonTransactionSended += TonTransactionSended;
+            _unitonSDK.OnTonTransactionSendFailed += TonTransactionSendFailed;
 
-            _unitonSDK.OnNativeTransactionSendingFailed += TonTransactionSendFailed;
+            _unitonSDK.OnTonTransactionConfirmed += TonTransactionConfirmed;
         }
 
         private void OnDestroy()
         {
-            _unitonSDK.OnNativeInitialized -= Initialize;
+            _unitonSDK.OnInitiliazed -= Initialize;
 
-            _unitonSDK.OnNativeWalletConnectionFinished -= WalletConnectionFinished;
-            _unitonSDK.OnNativeWalletConnectionFailed -= WalletConnectionFailed;
-            _unitonSDK.OnNativeWalletConnectionRestored -= WalletConnectionRestored;
+            _unitonSDK.OnWalletConnected -= WalletConnectionFinished;
+            _unitonSDK.OnWalletConnectFailed -= WalletConnectionFailed;
+            _unitonSDK.OnWalletConnectRestored -= WalletConnectionRestored;
 
             _unitonSDK.OnNativeWalletDisconnected -= WalletDisconnected;
 

@@ -18,6 +18,7 @@ namespace UnitonConnect.ThirdParty
         private const string API_URL = "https://tonapi.io/v2";
 
         private static UnitonConnectSDK UNITON_CONNECT => UnitonConnectSDK.Instance;
+
         private static string _walletAddress => UNITON_CONNECT.Wallet.ToString();
 
         internal static IEnumerator GetAssetIcon(
@@ -308,7 +309,7 @@ namespace UnitonConnect.ThirdParty
             internal static string GetBalanceUrl(string tonAddress,
                 string masterJettonAddress)
             {
-                return $"https://tonapi.io/v2/accounts/{tonAddress}/jettons/{masterJettonAddress}";
+                return $"{API_URL}/accounts/{tonAddress}/jettons/{masterJettonAddress}";
             }
         }
     }

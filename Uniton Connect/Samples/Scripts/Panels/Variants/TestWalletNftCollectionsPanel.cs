@@ -4,9 +4,9 @@ using UnityEngine;
 using TMPro;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
+using UnitonConnect.Core.Utils.View;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.DeFi;
-using UnitonConnect.Core.Utils.View;
 
 namespace UnitonConnect.Core.Demo
 {
@@ -27,7 +27,7 @@ namespace UnitonConnect.Core.Demo
 
         private void OnEnable()
         {
-            _unitonConnect.OnNativeWalletDisconnected += RemoveNftCollectionStorage;
+            _unitonConnect.OnWalletDisconnected += RemoveNftCollectionStorage;
 
             _nftModule.OnNftCollectionsClaimed += NftCollectionsClaimed;
             _nftModule.OnTargetNftCollectionClaimed += TargetNftCollectionClaimed;
@@ -37,7 +37,7 @@ namespace UnitonConnect.Core.Demo
 
         private void OnDestroy()
         {
-            _unitonConnect.OnNativeWalletDisconnected -= RemoveNftCollectionStorage;
+            _unitonConnect.OnWalletDisconnected -= RemoveNftCollectionStorage;
 
             _nftModule.OnNftCollectionsClaimed -= NftCollectionsClaimed;
             _nftModule.OnTargetNftCollectionClaimed -= TargetNftCollectionClaimed;

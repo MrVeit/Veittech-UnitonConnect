@@ -88,7 +88,7 @@ namespace UnitonConnect.Core
         /// <summary>
         /// Callback in case of successful native wallet connection
         /// </summary>
-        public event IUnitonConnectWalletCallbacks.OnConnect OnConnected;
+        public event IUnitonConnectWalletCallbacks.OnWalletConnect OnWalletConnected;
 
         /// <summary>
         /// Callback in case of successful native wallet connection
@@ -98,7 +98,7 @@ namespace UnitonConnect.Core
         /// <summary>
         /// Callback for error handling, in case of unsuccessful wallet connection
         /// </summary>
-        public event IUnitonConnectWalletCallbacks.OnConnectFail OnConnectFailed;
+        public event IUnitonConnectWalletCallbacks.OnWalletConnectFail OnWalletConnectFailed;
 
         /// <summary>
         /// Callback for error handling, in case of unsuccessful wallet connection
@@ -108,7 +108,7 @@ namespace UnitonConnect.Core
         /// <summary>
         /// Callback for processing the status of restored native connection to the wallet
         /// </summary>
-        public event IUnitonConnectWalletCallbacks.OnConnectRestore OnConnectRestored;
+        public event IUnitonConnectWalletCallbacks.OnWalletConnectRestore OnWalletConnectRestored;
 
         /// <summary>
         /// Callback for processing the status of restored native connection to the wallet
@@ -118,7 +118,7 @@ namespace UnitonConnect.Core
         /// <summary>
         /// Callback to handle native wallet connection disconnection status
         /// </summary>
-        public event IUnitonConnectWalletCallbacks.OnDisconnect OnDisconnected;
+        public event IUnitonConnectWalletCallbacks.OnWalletDisconnect OnWalletDisconnected;
 
         /// <summary>
         /// Callback to handle native wallet connection disconnection status
@@ -205,10 +205,6 @@ namespace UnitonConnect.Core
                 TonConnectBridge.Init(dAppManifestLink,
                     OnInitialize, OnConnect, 
                     OnConnectFail, OnConnectRestore);
-            }
-            else
-            {
-                OnInitialize(true);
             }
 
             UnitonConnectLogger.Log("Native SDK successfully initialized");
@@ -432,7 +428,7 @@ namespace UnitonConnect.Core
 
             Wallet = new UserWallet(nonBouceableAddress, updatedConfig);
 
-            OnConnected?.Invoke(config);
+            OnWalletConnected?.Invoke(config);
             OnNativeWalletConnectionFinished?.Invoke(updatedConfig);
         }
 
@@ -440,7 +436,7 @@ namespace UnitonConnect.Core
         {
             _isWalletConnected = false;
 
-            OnConnectFailed?.Invoke(errorMessage);
+            OnWalletConnectFailed?.Invoke(errorMessage);
             OnNativeWalletConnectionFailed?.Invoke(errorMessage);
         }
 
@@ -451,7 +447,7 @@ namespace UnitonConnect.Core
                 _isWalletConnected = true;
             }
 
-            OnConnectRestored?.Invoke(isRestored);
+            OnWalletConnectRestored?.Invoke(isRestored);
             OnNativeWalletConnectionRestored?.Invoke(isRestored);
         }
 
@@ -461,7 +457,7 @@ namespace UnitonConnect.Core
 
             Wallet = new UserWallet(null, null);
 
-            OnDisconnected?.Invoke(isSuccess);
+            OnWalletDisconnected?.Invoke(isSuccess);
             OnNativeWalletDisconnected?.Invoke(isSuccess);
         }
 

@@ -7,13 +7,9 @@ namespace UnitonConnect.Core.Demo
     {
         [SerializeField, Space] private TestWalletInterfaceAdapter _interfaceAdapter;
         [SerializeField, Space] private TMP_InputField _gasFeeBar;
-        [SerializeField, Space] private TMP_InputField _amountBar;
+        [SerializeField] private TMP_InputField _amountBar;
         [SerializeField, Space] private TestWalletAddressBarView _targetWalletAddress;
         [SerializeField, Space] private TextMeshProUGUI _balanceBar;
-
-        private UnitonConnectSDK _unitonConnect => _interfaceAdapter.UnitonSDK;
-
-        private string _transactionHash;
 
         private const string CREATOR_TON_WALLET_ADDRESS =
             "0:cfc0493e72741711f15a68d557cb0a5b280094330551ba99205a386bfdfe14ae";

@@ -9,6 +9,7 @@ namespace UnitonConnect.Core.Demo
         public sealed override void OnClick()
         {
             _nftCollectionPanel.Init();
+
             _nftCollectionPanel.Open();
         }
     }
