@@ -107,22 +107,23 @@ namespace UnitonConnect.Core.Demo
 
                 Texture2D nftIcon = null;
 
-                StartCoroutine(WalletVisualUtils.GetWalletIconFromServerAsync(iconUrl, (loadedIcon) =>
+                StartCoroutine(WalletVisualUtils.GetWalletIconFromServerAsync(
+                    iconUrl, (loadedIcon) =>
                 {
                     nftIcon = loadedIcon;
+
+                    var nftName = nft.Metadata.ItemName;
+
+                    var newNftView = new NftViewData()
+                    {
+                        Icon = nftIcon,
+                        Name = nftName
+                    };
+
+                    nftVisual.Add(newNftView);
+
+                    Debug.Log($"Created NFT View with name: {nftName}");
                 }));
-
-                var nftName = nft.Metadata.ItemName;
-
-                var newNftView = new NftViewData()
-                {
-                    Icon = nftIcon,
-                    Name = nftName
-                };
-
-                nftVisual.Add(newNftView);
-
-                Debug.Log($"Created NFT View with name: {nftName}");
             }
 
             visualCreated?.Invoke(nftVisual);

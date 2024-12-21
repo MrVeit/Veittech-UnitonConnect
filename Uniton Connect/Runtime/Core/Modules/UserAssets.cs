@@ -279,7 +279,8 @@ namespace UnitonConnect.DeFi
             /// </summary>
             /// <param name="type"></param>
             /// <param name="limit"></param>
-            public void GetLastTransactions(TransactionTypes type, int limit)
+            public void GetLastTransactions(TransactionTypes type, 
+                int limit, string address = null)
             {
                 if (!IsWalletConnected())
                 {
@@ -287,10 +288,16 @@ namespace UnitonConnect.DeFi
                 }
 
                 var transactionTag = type == TransactionTypes.Received ? "in" : "out";
-                var connectedAddress = _sdk.Wallet.ToHex();
+
+                string connectedAddress = _sdk.Wallet.ToHex();
+
+                if (string.IsNullOrEmpty(address))
+                {
+                    address = connectedAddress;
+                }
 
                 _mono.StartCoroutine(TonCenterApiBridge.Jetton.GetLastTransactions(
-                    connectedAddress, transactionTag, limit, (loadedTransactions) =>
+                    address, transactionTag, limit, (loadedTransactions) =>
                 {
                     if (loadedTransactions == null)
                     {
@@ -440,20 +447,22 @@ namespace UnitonConnect.DeFi
                 });
             }
 
-            private IEnumerator LoadTransactionStatus(string transactionHash)
+            private IEnumerator LoadTransactionStatus(
+                string transactionHash, bool isFailedResponse = false)
             {
-                bool isFailed = false;
+                var delay = _sdk.TransactionFetchDelay;
 
-                if (isFailed)
+                if (isFailedResponse)
                 {
-                    yield return new WaitForSeconds(5f);
+                    UnitonConnectLogger.LogWarning($"Enabled a delay of {delay} seconds " +
+                        "between attempts due to a failed last request");
+
+                    yield return new WaitForSeconds(delay);
                 }
 
-                yield return TonApiBridge.GetTransactionData(transactionHash,
-                    _sdk.TransactionFetchDelay, (transactionData) =>
+                yield return TonApiBridge.GetTransactionData(
+                    transactionHash, (transactionData) =>
                 {
-                    isFailed = false;
-
                     OnTransactionSended?.Invoke(_latestMasterAddress, transactionData);
                 },
                 (errorMessage) =>
@@ -463,9 +472,7 @@ namespace UnitonConnect.DeFi
 
                     if (errorMessage == "entity not found")
                     {
-                        isFailed = true;
-
-                        _mono.StartCoroutine(LoadTransactionStatus(transactionHash));
+                        _mono.StartCoroutine(LoadTransactionStatus(transactionHash, true));
 
                         return;
                     }

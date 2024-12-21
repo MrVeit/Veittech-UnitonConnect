@@ -34,7 +34,7 @@ namespace UnitonConnect.Core.Demo
         {
             _unitonSDK = UnitonConnectSDK.Instance;
 
-            _unitonSDK.OnInitiliazed += Initialize;
+            _unitonSDK.OnInitiliazed += SdkInitialized;
 
             _unitonSDK.OnWalletConnected += WalletConnectionFinished;
             _unitonSDK.OnWalletConnectFailed += WalletConnectionFailed;
@@ -46,11 +46,14 @@ namespace UnitonConnect.Core.Demo
             _unitonSDK.OnTonTransactionSendFailed += TonTransactionSendFailed;
 
             _unitonSDK.OnTonTransactionConfirmed += TonTransactionConfirmed;
+
+            _jettonModule.OnTransactionSended += JettonTransactionSended;
+            _jettonModule.OnTransactionSendFailed += JettonTransactionSendFailed;
         }
 
         private void OnDestroy()
         {
-            _unitonSDK.OnInitiliazed -= Initialize;
+            _unitonSDK.OnInitiliazed -= SdkInitialized;
 
             _unitonSDK.OnWalletConnected -= WalletConnectionFinished;
             _unitonSDK.OnWalletConnectFailed -= WalletConnectionFailed;
@@ -65,6 +68,9 @@ namespace UnitonConnect.Core.Demo
 
             _nftModule.OnNftCollectionsClaimed -= NftCollectionsLoaded;
             _nftModule.OnTargetNftCollectionClaimed -= TargetNftCollectionLoaded;
+
+            _jettonModule.OnTransactionSended -= JettonTransactionSended;
+            _jettonModule.OnTransactionSendFailed -= JettonTransactionSendFailed;
         }
 
         private void Start()
@@ -83,7 +89,46 @@ namespace UnitonConnect.Core.Demo
             _nftModule.OnTargetNftCollectionClaimed += TargetNftCollectionLoaded;
         }
 
-        private void Initialize(bool isSuccess)
+        private void PrintSuccessTransactionData(string transactionName,
+            SuccessTransactionData transaction)
+        {
+            var status = transaction.IsSuccess;
+            var newBalance = transaction.EndBalance.FromNanoton();
+            var fee = transaction.TotalFees.FromNanoton();
+
+            decimal sendedAmount = 0;
+
+            if (transactionName == "TON")
+            {
+                sendedAmount = transaction.OutMessages[0].Value.FromNanoton();
+            }
+            else
+            {
+                var amount = long.Parse(transaction.InMessage.DecodedBody.SendedAmount);
+
+                sendedAmount = UserAssetsUtils.FromNanoton(amount);
+            }
+
+            var recipientAddress = transaction.OutMessages[0].Recipient.Address;
+            var convertedAddress = WalletConnectUtils.GetNonBounceableAddress(recipientAddress);
+            var message = transaction.OutMessages[0].DecodedBody.MessageText;
+
+            if (transactionName == "JETTON")
+            {
+                message = string.Empty;
+            }
+
+            _debugMessage.text = $"Loaded {transactionName} transaction data: \n" +
+                $"STATUS: {transaction.IsSuccess},\n" +
+                $"HASH: {_latestTransactionHash},\n" +
+                $"NEW BALANCE: {newBalance} TON,\n" +
+                $"FEE: {fee} TON,\n" +
+                $"SENDED AMOUNT: {sendedAmount} {transactionName},\n" +
+                $"RECIPIENT ADDRESS: {convertedAddress},\n" +
+                $"MESSAGE: {message}";
+        }
+
+        private void SdkInitialized(bool isSuccess)
         {
             if (!isSuccess)
             {
@@ -105,7 +150,7 @@ namespace UnitonConnect.Core.Demo
                     $"full account address: {userAddress}, \n" +
                     $"Public Key: {wallet.PublicKey}";
 
-                var shortWalletAddress = _unitonSDK.Wallet.ToShort(8);
+                var shortWalletAddress = _unitonSDK.Wallet.ToShort(6);
 
                 _debugMessage.text = successConnectMessage;
                 _shortWalletAddress.text = shortWalletAddress;
@@ -194,22 +239,7 @@ namespace UnitonConnect.Core.Demo
 
         private void TonTransactionConfirmed(SuccessTransactionData transactionData)
         {
-            var status = transactionData.IsSuccess;
-            var newBalance = transactionData.EndBalance.FromNanoton();
-            var fee = transactionData.TotalFees.FromNanoton();
-            var sendedAmount = transactionData.OutMessages[0].Value.FromNanoton();
-            var recipientAddress = transactionData.OutMessages[0].Recipient.Address;
-            var convertedAddress = WalletConnectUtils.GetNonBounceableAddress(recipientAddress);
-            var message = transactionData.OutMessages[0].DecodedBody.MessageText;
-
-            _debugMessage.text = $"Loaded transaction data: \n" +
-                $"STATUS: {transactionData.IsSuccess},\n" +
-                $"HASH: {_latestTransactionHash},\n" +
-                $"NEW BALANCE: {newBalance} TON,\n" +
-                $"FEE: {fee} TON,\n" +
-                $"SENDED AMOUNT: {sendedAmount} TON,\n" +
-                $"RECIPIENT ADDRESS: {convertedAddress},\n" +
-                $"MESSAGE: {message}";
+            PrintSuccessTransactionData("TON", transactionData);
         }
 
         private void TonTransactionSendFailed(string errorMessage)
@@ -219,6 +249,19 @@ namespace UnitonConnect.Core.Demo
             Debug.LogError(message);
 
             _debugMessage.text = errorMessage;
+        }
+
+        private void JettonTransactionSended(string masterAddress, 
+            SuccessTransactionData transactionData)
+        {
+            PrintSuccessTransactionData("JETTON", transactionData);
+        }
+
+        private void JettonTransactionSendFailed(
+            string masterAddress, string errorMessage)
+        {
+            _debugMessage.text = $"Failed to send jetton transaction" +
+                $" with token: {masterAddress}, reason: {errorMessage}";
         }
     }
 }

@@ -349,23 +349,19 @@ namespace UnitonConnect.Core
             }
         }
 
-        private IEnumerator ConfirmTonTransaction(string transactionHash)
+        private IEnumerator ConfirmTonTransaction(
+            string transactionHash, bool isFailed = false)
         {
-            bool isFailed = false;
-
             if (isFailed)
             {
-                yield return new WaitForSeconds(5f);
+                yield return new WaitForSeconds(_confirmTransactionDelay);
             }
 
-            yield return TonApiBridge.GetTransactionData(transactionHash,
-                _confirmTransactionDelay, (transactionData) =>
+            yield return TonApiBridge.GetTransactionData(transactionHash, (transactionData) =>
             {
                 var fee = UserAssetsUtils.FromNanoton(transactionData.TotalFees).ToString();
                 var updatedBalance = UserAssetsUtils.FromNanoton(transactionData.EndBalance).ToString();
                 var sendedAmount = UserAssetsUtils.FromNanoton(transactionData.OutMessages[0].Value).ToString();
-
-                isFailed = false;
 
                 OnSendingTonConfirm(transactionData);
 
@@ -378,9 +374,7 @@ namespace UnitonConnect.Core
 
                 if (errorMessage == "entity not found")
                 {
-                    isFailed = true;
-
-                    StartCoroutine(ConfirmTonTransaction(transactionHash));
+                    StartCoroutine(ConfirmTonTransaction(transactionHash, true));
 
                     return;
                 }

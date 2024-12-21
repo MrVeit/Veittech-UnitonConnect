@@ -27,20 +27,20 @@ namespace UnitonConnect.Core.Demo
 
         private void OnEnable()
         {
-            _unitonConnect.LoadBalance();
+            _unitonConnect.OnTonBalanceClaimed += TonBalanceClaimed;
 
             _unitonConnect.OnTonTransactionSended += TransactionSendingFinished;
             _unitonConnect.OnTonTransactionConfirmed += TonTransactionConfirmed;
 
-            _unitonConnect.OnTonBalanceClaimed += TonBalanceClaimed;
+            _unitonConnect.LoadBalance();
         }
 
         private void OnDisable()
         {
+            _unitonConnect.OnTonBalanceClaimed -= TonBalanceClaimed;
+
             _unitonConnect.OnTonTransactionSended -= TransactionSendingFinished;
             _unitonConnect.OnTonTransactionConfirmed -= TonTransactionConfirmed;
-
-            _unitonConnect.OnTonBalanceClaimed -= TonBalanceClaimed;
         }
 
         public void Init()

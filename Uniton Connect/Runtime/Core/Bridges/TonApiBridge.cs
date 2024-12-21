@@ -161,11 +161,9 @@ namespace UnitonConnect.ThirdParty
             }
         }
 
-        internal static IEnumerator GetTransactionData(string transactionHash, float awaitDelay,
+        internal static IEnumerator GetTransactionData(string transactionHash,
             Action<SuccessTransactionData> dataClaimed, Action<string> fetchDataFailed)
         {
-            yield return new WaitForSeconds(awaitDelay);
-
             var encodedTransactionHash = EscapeQueryParam(transactionHash);
             var targetUrl = GetTransactionDataUrl(encodedTransactionHash);
 
