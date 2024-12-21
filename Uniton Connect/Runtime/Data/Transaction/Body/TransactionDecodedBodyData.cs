@@ -38,11 +38,11 @@ namespace UnitonConnect.Core.Data
         [JsonProperty("amount")]
         public string SendedAmount { get; set; }
 
-        [JsonProperty("from")]
-        public string SenderAddress { get; set; }
-
-        [JsonProperty("response_address")]
+        [JsonProperty("destination")]
         public string RecipientAddress { get; set; }
+
+        [JsonProperty("response_destination")]
+        public string SenderAddress { get; set; }
 
         [JsonProperty("forward_ton_amount")]
         public string ForwardTonAmount { get; set; }

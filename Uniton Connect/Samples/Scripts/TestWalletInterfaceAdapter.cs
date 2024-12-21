@@ -90,13 +90,9 @@ namespace UnitonConnect.Core.Demo
             var newBalance = transaction.EndBalance.FromNanoton();
             var fee = transaction.TotalFees.FromNanoton();
 
-            decimal sendedAmount = 0;
+            decimal sendedAmount = transaction.OutMessages[0].Value.FromNanoton();
 
-            if (transactionName == "TON")
-            {
-                sendedAmount = transaction.OutMessages[0].Value.FromNanoton();
-            }
-            else
+            if (transactionName == "JETTON")
             {
                 var amount = transaction.OutMessages[0].DecodedBody.SendedAmount;
 
@@ -105,8 +101,15 @@ namespace UnitonConnect.Core.Demo
                 sendedAmount = UserAssetsUtils.FromNanoton(decimal.Parse(amount));
             }
 
-            var recipientAddress = transaction.OutMessages[0].Recipient.Address;
+            string recipientAddress = transaction.OutMessages[0].Recipient.Address;
+
+            if (transactionName == "JETTON")
+            {
+                recipientAddress = transaction.OutMessages[0].DecodedBody.RecipientAddress;
+            }
+
             var convertedAddress = WalletConnectUtils.GetNonBounceableAddress(recipientAddress);
+
             string message = string.Empty;
 
             if (transactionName == "TON")
@@ -116,7 +119,7 @@ namespace UnitonConnect.Core.Demo
 
             _debugMessage.text = $"Loaded {transactionName} transaction data: \n" +
                 $"STATUS: {transaction.IsSuccess},\n" +
-                $"HASH: {_latestTransactionHash},\n" +
+                $"HASH: {transaction.Hash},\n" +
                 $"NEW BALANCE: {newBalance} TON,\n" +
                 $"FEE: {fee} TON,\n" +
                 $"SENDED AMOUNT: {sendedAmount} {transactionName},\n" +
