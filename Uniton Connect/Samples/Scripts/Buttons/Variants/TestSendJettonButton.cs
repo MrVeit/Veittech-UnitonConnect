@@ -78,11 +78,11 @@ namespace UnitonConnect.Core.Demo
         private void JettonTransactionSended(string masterAddress,
             SuccessTransactionData transactionData)
         {
-            _lastTransactionQuery = transactionData.InMessage.DecodedBody.QueryId;
+            _lastTransactionQuery = transactionData.OutMessages[0].DecodedBody.QueryId;
 
             Debug.Log($"Jetton transaction successfully founded, query id: {_lastTransactionQuery}");
 
-            var recipientAddress = transactionData.InMessage.Recipient.Address;
+            var recipientAddress = transactionData.OutMessages[0].Recipient.Address;
             var recipientBouceable = WalletConnectUtils.GetBounceableAddress(recipientAddress);
 
             _jettonWallet.GetLastTransactions(TransactionTypes.Received, 10, recipientBouceable);

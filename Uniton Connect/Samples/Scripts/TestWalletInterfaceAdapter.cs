@@ -98,7 +98,7 @@ namespace UnitonConnect.Core.Demo
             }
             else
             {
-                var amount = transaction.InMessage.DecodedBody.SendedAmount;
+                var amount = transaction.OutMessages[0].DecodedBody.SendedAmount;
 
                 Debug.Log($"Parsed sended jetton amount: {amount}");
 
@@ -107,11 +107,11 @@ namespace UnitonConnect.Core.Demo
 
             var recipientAddress = transaction.OutMessages[0].Recipient.Address;
             var convertedAddress = WalletConnectUtils.GetNonBounceableAddress(recipientAddress);
-            var message = transaction.OutMessages[0].DecodedBody.MessageText;
+            string message = string.Empty;
 
-            if (transactionName == "JETTON")
+            if (transactionName == "TON")
             {
-                message = string.Empty;
+                message = transaction.OutMessages[0].DecodedBody.MessageText;
             }
 
             _debugMessage.text = $"Loaded {transactionName} transaction data: \n" +

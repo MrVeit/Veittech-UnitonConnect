@@ -89,7 +89,7 @@ namespace UnitonConnect.Core.Demo
             _isInitialized = false;
         }
 
-        private void CreateNftViewContainer(NftCollectionData collections, 
+        private async void CreateNftViewContainer(NftCollectionData collections, 
             Action<List<NftViewData>> visualCreated)
         {
             List<NftViewData> nftVisual = new();
@@ -107,7 +107,8 @@ namespace UnitonConnect.Core.Demo
 
                 Debug.Log($"Claimed icon by urL: {iconUrl}");
 
-                Texture2D nftIcon = null;
+                Texture2D nftIcon = await WalletVisualUtils.
+                    GetWalletIconFromServerAsync(iconUrl);
 
                 var nftName = nft.Metadata.ItemName;
 
@@ -139,15 +140,6 @@ namespace UnitonConnect.Core.Demo
                 newNftView.SetView(nftItem);
 
                 _createdNfts.Add(newNftView);
-            }
-
-            for (int i = 0; i < _loadedCollections.Count; i++)
-            {
-                StartCoroutine(WalletVisualUtils.GetWalletIconFromServerAsync(
-                    _loadedCollections[i].Get500x500ResolutionWebp(), (loadedIcon) =>
-                {
-                    _createdNfts[i].SetIcon(loadedIcon);
-                }));
             }
 
             _loadAnimation.SetActive(false);

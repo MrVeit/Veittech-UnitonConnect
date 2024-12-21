@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Threading.Tasks;
 using UnitonConnect.ThirdParty;
 using UnityEngine;
 
@@ -29,10 +30,9 @@ namespace UnitonConnect.Core.Utils.View
             return firstFourChars + "..." + lastFourChars;
         }
 
-        internal static IEnumerator GetWalletIconFromServerAsync(
-            string imageUrl, Action<Texture2D> iconLoaded)
+        internal static async Task<Texture2D> GetWalletIconFromServerAsync(string imageUrl)
         {
-            yield return TonApiBridge.GetAssetIcon(imageUrl, iconLoaded);
+            return await TonApiBridge.GetAssetIcon(imageUrl);
         }
 
         /// <summary>
