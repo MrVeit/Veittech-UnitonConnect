@@ -1,12 +1,12 @@
-using System.Threading.Tasks;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
-using UnitonConnect.Core.Utils.View;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.DeFi;
+using UnitonConnect.Core.Utils.View;
 
 namespace UnitonConnect.Core.Demo
 {
@@ -24,7 +24,6 @@ namespace UnitonConnect.Core.Demo
         private UserAssets.NFT _nftModule => _interfaceAdapter.NftStorage;
 
         private bool _isInitialized;
-
 
         private void OnEnable()
         {
@@ -88,7 +87,8 @@ namespace UnitonConnect.Core.Demo
             _isInitialized = false;
         }
 
-        private async Task<List<NftViewData>> CreateNftViewContainer(NftCollectionData collections)
+        private void CreateNftViewContainer(NftCollectionData collections, 
+            Action<List<NftViewData>> visualCreated)
         {
             List<NftViewData> nftVisual = new();
 
@@ -96,7 +96,7 @@ namespace UnitonConnect.Core.Demo
 
             if (notScamNfts == null)
             {
-                return null;
+                return;
             }
 
             foreach (var nft in notScamNfts)
@@ -105,7 +105,13 @@ namespace UnitonConnect.Core.Demo
 
                 Debug.Log($"Claimed icon by urL: {iconUrl}");
 
-                var nftIcon = await WalletVisualUtils.GetIconFromProxyServerAsync(iconUrl);
+                Texture2D nftIcon = null;
+
+                StartCoroutine(WalletVisualUtils.GetWalletIconFromServerAsync(iconUrl, (loadedIcon) =>
+                {
+                    nftIcon = loadedIcon;
+                }));
+
                 var nftName = nft.Metadata.ItemName;
 
                 var newNftView = new NftViewData()
@@ -119,7 +125,7 @@ namespace UnitonConnect.Core.Demo
                 Debug.Log($"Created NFT View with name: {nftName}");
             }
 
-            return nftVisual;
+            visualCreated?.Invoke(nftVisual);
         }
 
         private void CreateNftItem(List<NftViewData> viewContainer)
@@ -162,16 +168,21 @@ namespace UnitonConnect.Core.Demo
                 return;
             }
 
-            var viewNftCollections = await CreateNftViewContainer(nftCollections);
+            List<NftViewData> nftsContainers = null;
 
-            if (viewNftCollections == null)
+            CreateNftViewContainer(nftCollections, (createdViews) =>
+            {
+                nftsContainers = createdViews;
+            });
+
+            if (nftsContainers == null)
             {
                 NftCollectionsNotFounded();
 
                 return;
             }
 
-            CreateNftItem(viewNftCollections);
+            CreateNftItem(nftsContainers);
         }
 
         private void TargetNftCollectionClaimed(NftCollectionData collection)

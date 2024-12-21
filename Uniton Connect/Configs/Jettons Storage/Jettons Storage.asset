@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c90b2f36ef1853e43821a800282f459a, type: 3}
+  m_Name: Jettons Storage
+  m_EditorClassIdentifier: 
+  <Jettons>k__BackingField:
+  - {fileID: 11400000, guid: eaef9ec7af2ded549a655cf66e24b3e4, type: 2}
+  - {fileID: 11400000, guid: 3f5db39c6f0e7b64491ac3a186555a81, type: 2}
+  - {fileID: 11400000, guid: 5f9b18a616f29504480216978d8d0159, type: 2}
+  - {fileID: 11400000, guid: dd7a3b8e46e652849b51755af4791d98, type: 2}

@@ -27,7 +27,7 @@ namespace UnitonConnect.Core.Demo
 
         private void OnEnable()
         {
-            _unitonConnect.LoadBalance(ClassicTokenTypes.Toncoin);
+            _unitonConnect.LoadBalance();
 
             _unitonConnect.OnNativeSendingTonFinished += TransactionSendingFinished;
             _unitonConnect.OnNativeTransactionConfirmed += TonTransactionConfirmed;
