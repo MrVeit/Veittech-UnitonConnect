@@ -23,8 +23,8 @@ namespace UnitonConnect.Core.Demo
 
         private UnitonConnectSDK _unitonSDK;
 
-        private UserAssets.NFT _nftModule => _unitonSDK.Assets.Nft;
-        private UserAssets.Jetton _jettonModule => _unitonSDK.Assets.Jettons;
+        private UserAssets.NFT _nftModule;
+        private UserAssets.Jetton _jettonModule;
 
         public UnitonConnectSDK UnitonSDK => _unitonSDK;
         public UserAssets.NFT NftStorage => _nftModule;
@@ -46,9 +46,6 @@ namespace UnitonConnect.Core.Demo
             _unitonSDK.OnTonTransactionSendFailed += TonTransactionSendFailed;
 
             _unitonSDK.OnTonTransactionConfirmed += TonTransactionConfirmed;
-
-            _jettonModule.OnTransactionSended += JettonTransactionSended;
-            _jettonModule.OnTransactionSendFailed += JettonTransactionSendFailed;
         }
 
         private void OnDestroy()
@@ -84,9 +81,6 @@ namespace UnitonConnect.Core.Demo
                 _sendJettonTransactionButton.interactable = false;
                 _openNftCollectionButton.interactable = false;
             }
-
-            _nftModule.OnNftCollectionsClaimed += NftCollectionsLoaded;
-            _nftModule.OnTargetNftCollectionClaimed += TargetNftCollectionLoaded;
         }
 
         private void PrintSuccessTransactionData(string transactionName,
@@ -138,6 +132,15 @@ namespace UnitonConnect.Core.Demo
             }
 
             _connectButton.interactable = true;
+
+            _nftModule = _unitonSDK.Assets.Nft;
+            _jettonModule = _unitonSDK.Assets.Jettons;
+
+            _nftModule.OnNftCollectionsClaimed += NftCollectionsLoaded;
+            _nftModule.OnTargetNftCollectionClaimed += TargetNftCollectionLoaded;
+
+            _jettonModule.OnTransactionSended += JettonTransactionSended;
+            _jettonModule.OnTransactionSendFailed += JettonTransactionSendFailed;
         }
 
         private void WalletConnectionFinished(NewWalletConfig wallet)

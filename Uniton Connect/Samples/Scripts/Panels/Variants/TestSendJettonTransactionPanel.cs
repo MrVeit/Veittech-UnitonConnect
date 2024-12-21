@@ -13,7 +13,7 @@ namespace UnitonConnect.Core.Demo
         [SerializeField, Space] private TestWalletAddressBarView _targetWalletAddress;
         [SerializeField, Space] private TextMeshProUGUI _balanceBar;
 
-        private UserAssets.Jetton _jettonModule => _interfaceAdapter.JettonModule;
+        private UserAssets.Jetton _jettonModule;
 
         private const string CREATOR_TON_WALLET_ADDRESS =
             "0:cfc0493e72741711f15a68d557cb0a5b280094330551ba99205a386bfdfe14ae";
@@ -23,6 +23,8 @@ namespace UnitonConnect.Core.Demo
 
         private void OnEnable()
         {
+            _jettonModule = _interfaceAdapter.JettonModule;
+
             _jettonModule.OnBalanceLoaded += JettonBalanceClaimed;
 
             _jettonModule.GetBalance(JettonTypes.USDT);
