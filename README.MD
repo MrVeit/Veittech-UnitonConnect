@@ -93,15 +93,15 @@ You can test the SDK without installation on a demo app [in your browser](https:
 
 # Supported Tokens & Available Func
 
-|           Token         |   Status   |       Func       |
-| ----------------------- | :--------: | :--------------: |
-| **TON**                 | ✔️         | Balance, Send    |
-| **USDT**                | ✔️         | Balance, Send    |
-| **GRAM**                | ✔️         | Balance          |
-| **NOT**                 | ✔️         | Balance          |
-| **DOGS**                | ✔️         | Balance          |
-| **Custom Jetton**       | ✔️         | Balance          |
-| **NFT**                 | ✔️         | Balance, Filter  |
+|           Token         |   Status   |            Func            |
+| ----------------------- | :--------: | :------------------------: |
+| **TON**                 | ✔️         | Balance, Send             |
+| **USDT**                | ✔️         | Balance, Send, History    |
+| **GRAM**                | ✔️         | Balance, History          |
+| **NOT**                 | ✔️         | Balance, History          |
+| **DOGS**                | ✔️         | Balance, History          |
+| **Custom Jetton**       | ✔️         | Balance, History          |
+| **NFT**                 | ✔️         | Balance, Filter           |
  
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
