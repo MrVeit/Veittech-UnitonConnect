@@ -23,6 +23,8 @@ namespace UnitonConnect.Core.Demo
         private UnitonConnectSDK _unitonConnect => _interfaceAdapter.UnitonSDK;
         private UserAssets.NFT _nftModule => _interfaceAdapter.NftStorage;
 
+        private List<NftItemData> _loadedCollections;
+
         private bool _isInitialized;
 
         private void OnEnable()
@@ -92,14 +94,14 @@ namespace UnitonConnect.Core.Demo
         {
             List<NftViewData> nftVisual = new();
 
-            var notScamNfts = UserAssetsUtils.GetCachedNftsByScamStatus(true);
+            _loadedCollections = UserAssetsUtils.GetCachedNftsByScamStatus(true);
 
-            if (notScamNfts == null)
+            if (_loadedCollections == null)
             {
                 return;
             }
 
-            foreach (var nft in notScamNfts)
+            foreach (var nft in _loadedCollections)
             {
                 var iconUrl = nft.Get500x500ResolutionWebp();
 
@@ -107,23 +109,17 @@ namespace UnitonConnect.Core.Demo
 
                 Texture2D nftIcon = null;
 
-                StartCoroutine(WalletVisualUtils.GetWalletIconFromServerAsync(
-                    iconUrl, (loadedIcon) =>
+                var nftName = nft.Metadata.ItemName;
+
+                var newNftView = new NftViewData()
                 {
-                    nftIcon = loadedIcon;
+                    Icon = nftIcon,
+                    Name = nftName
+                };
 
-                    var nftName = nft.Metadata.ItemName;
+                nftVisual.Add(newNftView);
 
-                    var newNftView = new NftViewData()
-                    {
-                        Icon = nftIcon,
-                        Name = nftName
-                    };
-
-                    nftVisual.Add(newNftView);
-
-                    Debug.Log($"Created NFT View with name: {nftName}");
-                }));
+                Debug.Log($"Created NFT View with name: {nftName}");
             }
 
             visualCreated?.Invoke(nftVisual);
@@ -145,6 +141,15 @@ namespace UnitonConnect.Core.Demo
                 _createdNfts.Add(newNftView);
             }
 
+            for (int i = 0; i < _loadedCollections.Count; i++)
+            {
+                StartCoroutine(WalletVisualUtils.GetWalletIconFromServerAsync(
+                    _loadedCollections[i].Get500x500ResolutionWebp(), (loadedIcon) =>
+                {
+                    _createdNfts[i].SetIcon(loadedIcon);
+                }));
+            }
+
             _loadAnimation.SetActive(false);
 
             _isInitialized = true;
@@ -160,7 +165,7 @@ namespace UnitonConnect.Core.Demo
             return false;
         }
 
-        private async void NftCollectionsClaimed(NftCollectionData nftCollections)
+        private void NftCollectionsClaimed(NftCollectionData nftCollections)
         {
             if (IsExistNFTs())
             {
@@ -174,16 +179,16 @@ namespace UnitonConnect.Core.Demo
             CreateNftViewContainer(nftCollections, (createdViews) =>
             {
                 nftsContainers = createdViews;
+
+                if (nftsContainers == null)
+                {
+                    NftCollectionsNotFounded();
+
+                    return;
+                }
+
+                CreateNftItem(nftsContainers);
             });
-
-            if (nftsContainers == null)
-            {
-                NftCollectionsNotFounded();
-
-                return;
-            }
-
-            CreateNftItem(nftsContainers);
         }
 
         private void TargetNftCollectionClaimed(NftCollectionData collection)

@@ -25,7 +25,7 @@ namespace UnitonConnect.Core.Demo
 
         private string _recipientAddress;
 
-        private string _lastTransactionQuery;
+        private long _lastTransactionQuery;
 
         protected sealed override void OnEnable()
         {
@@ -100,7 +100,7 @@ namespace UnitonConnect.Core.Demo
             Debug.Log($"Loaded transactions with type: {type}");
 
             var lastSendedTransaction = transactions.FirstOrDefault(
-                transaction => transaction.QueryId == _lastTransactionQuery);
+                transaction => transaction.QueryId == _lastTransactionQuery.ToString());
 
             if (lastSendedTransaction != null)
             {

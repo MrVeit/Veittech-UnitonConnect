@@ -33,7 +33,7 @@ namespace UnitonConnect.Core.Data
         // JETTON TRANSACTION BODY
 
         [JsonProperty("query_id")]
-        public string QueryId { get; set; }
+        public long QueryId { get; set; }
 
         [JsonProperty("amount")]
         public string SendedAmount { get; set; }

@@ -98,9 +98,11 @@ namespace UnitonConnect.Core.Demo
             }
             else
             {
-                var amount = long.Parse(transaction.InMessage.DecodedBody.SendedAmount);
+                var amount = transaction.InMessage.DecodedBody.SendedAmount;
 
-                sendedAmount = UserAssetsUtils.FromNanoton(amount);
+                Debug.Log($"Parsed sended jetton amount: {amount}");
+
+                sendedAmount = UserAssetsUtils.FromNanoton(decimal.Parse(amount));
             }
 
             var recipientAddress = transaction.OutMessages[0].Recipient.Address;

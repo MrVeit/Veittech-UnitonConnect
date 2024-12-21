@@ -48,7 +48,7 @@ namespace UnitonConnect.Core.Demo
         {
             Debug.Log($"Loaded {jettonName} balance, available: {balance}");
 
-            _balanceBar.text = $"{balance} USDT";
+            _balanceBar.text = $"Balance: {balance} USDT";
         }
     }
 }
