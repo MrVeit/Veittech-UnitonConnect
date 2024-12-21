@@ -1,7 +1,11 @@
+using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using Newtonsoft.Json;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Common;
+using UnitonConnect.Core.Utils;
 using UnitonConnect.DeFi;
 
 namespace UnitonConnect.Core.Demo
@@ -19,8 +23,9 @@ namespace UnitonConnect.Core.Demo
         private decimal _amount;
         private decimal _gasFee;
 
-        private string _senderAddress;
         private string _recipientAddress;
+
+        private long _lastTransactionQuery;
 
         protected sealed override void OnEnable()
         {
@@ -30,6 +35,8 @@ namespace UnitonConnect.Core.Demo
 
             _jettonWallet.OnTransactionSended += JettonTransactionSended;
             _jettonWallet.OnTransactionSendFailed += JettonTransactionSendFailed;
+
+            _jettonWallet.OnLastTransactionsLoaded += LatestTransactionLoaded;
         }
 
         protected sealed override void OnDisable()
@@ -38,6 +45,8 @@ namespace UnitonConnect.Core.Demo
 
             _jettonWallet.OnTransactionSended -= JettonTransactionSended;
             _jettonWallet.OnTransactionSendFailed -= JettonTransactionSendFailed;
+
+            _jettonWallet.OnLastTransactionsLoaded -= LatestTransactionLoaded;
         }
 
         private void Init()
@@ -69,14 +78,36 @@ namespace UnitonConnect.Core.Demo
         private void JettonTransactionSended(string masterAddress,
             SuccessTransactionData transactionData)
         {
-            Debug.Log("Jetton transaction successfully founded and signed from blockchain!");
+            _lastTransactionQuery = transactionData.OutMessages[0].DecodedBody.QueryId;
 
+            Debug.Log($"Jetton transaction successfully founded, query id: {_lastTransactionQuery}");
+
+            var recipientAddress = transactionData.OutMessages[0].DecodedBody.RecipientAddress;
+            var recipientBouceable = WalletConnectUtils.GetBounceableAddress(recipientAddress);
+
+            _jettonWallet.GetLastTransactions(TransactionTypes.Received, 10, recipientBouceable);
         }
 
         private void JettonTransactionSendFailed(
             string masterAddress, string errorMessage)
         {
-            Debug.LogError($"Failed to send jetton transaction, reason: {errorMessage}");
+            Debug.LogError($"Failed to send jetton transaction {masterAddress}, reason: {errorMessage}");
+        }
+
+        private void LatestTransactionLoaded(TransactionTypes type, 
+            List<JettonTransactionData> transactions)
+        {
+            Debug.Log($"Loaded transactions with type: {type}");
+
+            var lastSendedTransaction = transactions.FirstOrDefault(
+                transaction => transaction.QueryId == _lastTransactionQuery.ToString());
+
+            if (lastSendedTransaction != null)
+            {
+                Debug.Log($"Target transaction loaded: {JsonConvert.SerializeObject(lastSendedTransaction)}");
+
+                Debug.Log("Sent transaction successfully confirmed, recipient received the sent jettons!");
+            }
         }
     }
 }

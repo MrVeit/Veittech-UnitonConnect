@@ -17,7 +17,18 @@ namespace UnitonConnect.Core.Demo
         public void SetView(NftViewData viewData)
         {
             _headerName.text = viewData.Name;
-            _icon.sprite = WalletVisualUtils.GetSpriteFromTexture(viewData.Icon);
+
+            SetIcon(viewData.Icon);
+        }
+
+        public void SetIcon(Texture2D icon)
+        {
+            if (icon == null)
+            {
+                return;
+            }
+
+            _icon.sprite = WalletVisualUtils.GetSpriteFromTexture(icon);
         }
     }
 }

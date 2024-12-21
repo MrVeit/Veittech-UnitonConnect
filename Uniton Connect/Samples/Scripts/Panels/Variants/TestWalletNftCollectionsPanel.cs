@@ -4,9 +4,9 @@ using UnityEngine;
 using TMPro;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
+using UnitonConnect.Core.Utils.View;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.DeFi;
-using UnitonConnect.Core.Utils.View;
 
 namespace UnitonConnect.Core.Demo
 {
@@ -23,11 +23,13 @@ namespace UnitonConnect.Core.Demo
         private UnitonConnectSDK _unitonConnect => _interfaceAdapter.UnitonSDK;
         private UserAssets.NFT _nftModule => _interfaceAdapter.NftStorage;
 
+        private List<NftItemData> _loadedCollections;
+
         private bool _isInitialized;
 
         private void OnEnable()
         {
-            _unitonConnect.OnNativeWalletDisconnected += RemoveNftCollectionStorage;
+            _unitonConnect.OnWalletDisconnected += RemoveNftCollectionStorage;
 
             _nftModule.OnNftCollectionsClaimed += NftCollectionsClaimed;
             _nftModule.OnTargetNftCollectionClaimed += TargetNftCollectionClaimed;
@@ -37,7 +39,7 @@ namespace UnitonConnect.Core.Demo
 
         private void OnDestroy()
         {
-            _unitonConnect.OnNativeWalletDisconnected -= RemoveNftCollectionStorage;
+            _unitonConnect.OnWalletDisconnected -= RemoveNftCollectionStorage;
 
             _nftModule.OnNftCollectionsClaimed -= NftCollectionsClaimed;
             _nftModule.OnTargetNftCollectionClaimed -= TargetNftCollectionClaimed;
@@ -87,30 +89,26 @@ namespace UnitonConnect.Core.Demo
             _isInitialized = false;
         }
 
-        private void CreateNftViewContainer(NftCollectionData collections, 
+        private async void CreateNftViewContainer(NftCollectionData collections, 
             Action<List<NftViewData>> visualCreated)
         {
             List<NftViewData> nftVisual = new();
 
-            var notScamNfts = UserAssetsUtils.GetCachedNftsByScamStatus(true);
+            _loadedCollections = UserAssetsUtils.GetCachedNftsByScamStatus(true);
 
-            if (notScamNfts == null)
+            if (_loadedCollections == null)
             {
                 return;
             }
 
-            foreach (var nft in notScamNfts)
+            foreach (var nft in _loadedCollections)
             {
                 var iconUrl = nft.Get500x500ResolutionWebp();
 
                 Debug.Log($"Claimed icon by urL: {iconUrl}");
 
-                Texture2D nftIcon = null;
-
-                StartCoroutine(WalletVisualUtils.GetWalletIconFromServerAsync(iconUrl, (loadedIcon) =>
-                {
-                    nftIcon = loadedIcon;
-                }));
+                Texture2D nftIcon = await WalletVisualUtils.
+                    GetWalletIconFromServerAsync(iconUrl);
 
                 var nftName = nft.Metadata.ItemName;
 
@@ -159,7 +157,7 @@ namespace UnitonConnect.Core.Demo
             return false;
         }
 
-        private async void NftCollectionsClaimed(NftCollectionData nftCollections)
+        private void NftCollectionsClaimed(NftCollectionData nftCollections)
         {
             if (IsExistNFTs())
             {
@@ -173,16 +171,16 @@ namespace UnitonConnect.Core.Demo
             CreateNftViewContainer(nftCollections, (createdViews) =>
             {
                 nftsContainers = createdViews;
+
+                if (nftsContainers == null)
+                {
+                    NftCollectionsNotFounded();
+
+                    return;
+                }
+
+                CreateNftItem(nftsContainers);
             });
-
-            if (nftsContainers == null)
-            {
-                NftCollectionsNotFounded();
-
-                return;
-            }
-
-            CreateNftItem(nftsContainers);
         }
 
         private void TargetNftCollectionClaimed(NftCollectionData collection)

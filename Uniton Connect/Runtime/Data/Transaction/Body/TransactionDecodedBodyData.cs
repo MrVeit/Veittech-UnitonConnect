@@ -7,6 +7,8 @@ namespace UnitonConnect.Core.Data
     [Serializable]
     public sealed class TransactionDecodedBodyData
     {
+        // TON TRANSACTION BODY
+
         [JsonProperty("signature")]
         public string Signature { get; set; }
 
@@ -27,5 +29,25 @@ namespace UnitonConnect.Core.Data
 
         [JsonProperty("text")]
         public string MessageText { get; set; }
+
+        // JETTON TRANSACTION BODY
+
+        [JsonProperty("query_id")]
+        public long QueryId { get; set; }
+
+        [JsonProperty("amount")]
+        public string SendedAmount { get; set; }
+
+        [JsonProperty("destination")]
+        public string RecipientAddress { get; set; }
+
+        [JsonProperty("response_destination")]
+        public string SenderAddress { get; set; }
+
+        [JsonProperty("forward_ton_amount")]
+        public string ForwardTonAmount { get; set; }
+
+        [JsonProperty("forward_payload")]
+        public object ForwardPayload { get; set; }
     }
 }

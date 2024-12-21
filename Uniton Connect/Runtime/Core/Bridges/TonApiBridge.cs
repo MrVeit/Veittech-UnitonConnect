@@ -10,6 +10,7 @@ using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.Editor.Common;
+using System.Threading.Tasks;
 
 namespace UnitonConnect.ThirdParty
 {
@@ -18,10 +19,10 @@ namespace UnitonConnect.ThirdParty
         private const string API_URL = "https://tonapi.io/v2";
 
         private static UnitonConnectSDK UNITON_CONNECT => UnitonConnectSDK.Instance;
+
         private static string _walletAddress => UNITON_CONNECT.Wallet.ToString();
 
-        internal static IEnumerator GetAssetIcon(
-            string imageUrl, Action<Texture2D> iconLoaded)
+        internal async static Task<Texture2D> GetAssetIcon(string imageUrl)
         {
             var dAppData = ProjectStorageConsts.GetRuntimeAppStorage();
 
@@ -30,9 +31,7 @@ namespace UnitonConnect.ThirdParty
                 UnitonConnectLogger.LogError("For loading nft or wallet icon from the cache storage," +
                     " you need to run the API Server to successfully convert to the desired format");
 
-                iconLoaded?.Invoke(null);
-
-                yield break;
+                return null;
             }
 
             string apiUrl = GetIconConvertURL(imageUrl);
@@ -41,15 +40,18 @@ namespace UnitonConnect.ThirdParty
 
             using (UnityWebRequest request = UnityWebRequest.Get(apiUrl))
             {
-                yield return request.SendWebRequest();
+                var operation = request.SendWebRequest();
+
+                while (!operation.isDone)
+                {
+                    await Task.Yield();
+                }
 
                 if (request.result != WebRequestUtils.SUCCESS)
                 {
                     UnitonConnectLogger.LogError($"Failed to load image by api server: {request.error}");
 
-                    iconLoaded?.Invoke(null);
-
-                    yield break;
+                    return null;
                 }
 
                 byte[] imageData = request.downloadHandler.data;
@@ -60,14 +62,10 @@ namespace UnitonConnect.ThirdParty
                 {
                     UnitonConnectLogger.Log($"Loaded image {texture.name} with sise: {texture.width}x{texture.height}");
 
-                    iconLoaded?.Invoke(texture);
-
-                    yield break;
+                    return texture;
                 }
 
-                iconLoaded?.Invoke(null);
-
-                yield break;
+                return null;
             }
         }
 
@@ -160,11 +158,9 @@ namespace UnitonConnect.ThirdParty
             }
         }
 
-        internal static IEnumerator GetTransactionData(string transactionHash, float awaitDelay,
+        internal static IEnumerator GetTransactionData(string transactionHash,
             Action<SuccessTransactionData> dataClaimed, Action<string> fetchDataFailed)
         {
-            yield return new WaitForSeconds(awaitDelay);
-
             var encodedTransactionHash = EscapeQueryParam(transactionHash);
             var targetUrl = GetTransactionDataUrl(encodedTransactionHash);
 
@@ -308,7 +304,7 @@ namespace UnitonConnect.ThirdParty
             internal static string GetBalanceUrl(string tonAddress,
                 string masterJettonAddress)
             {
-                return $"https://tonapi.io/v2/accounts/{tonAddress}/jettons/{masterJettonAddress}";
+                return $"{API_URL}/accounts/{tonAddress}/jettons/{masterJettonAddress}";
             }
         }
     }

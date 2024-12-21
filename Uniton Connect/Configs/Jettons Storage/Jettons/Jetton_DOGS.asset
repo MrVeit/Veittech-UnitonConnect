@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Jetton_DOGS
   m_EditorClassIdentifier: 
   <Type>k__BackingField: 2
-  <Symbol>k__BackingField: DOGS
+  <Name>k__BackingField: Dogs
   <MasterAddress>k__BackingField: 0:afc49cb8786f21c87045b19ede78fc6b46c51048513f8e9a6d44060199c1bf0c
   <IconUrl>k__BackingField: https://cache.tonapi.io/imgproxy/6Pb0sBFy_AzW6l39EIHGs-Iz4eLbbZUh8AYY_Xq-rcg/rs:fill:200:200:1/g:no/aHR0cHM6Ly9jZG4uZG9ncy5kZXYvZG9ncy5wbmc.webp

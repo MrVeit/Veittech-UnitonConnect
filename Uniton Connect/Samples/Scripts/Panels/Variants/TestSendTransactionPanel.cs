@@ -27,20 +27,20 @@ namespace UnitonConnect.Core.Demo
 
         private void OnEnable()
         {
-            _unitonConnect.LoadBalance();
-
-            _unitonConnect.OnNativeSendingTonFinished += TransactionSendingFinished;
-            _unitonConnect.OnNativeTransactionConfirmed += TonTransactionConfirmed;
-
             _unitonConnect.OnTonBalanceClaimed += TonBalanceClaimed;
+
+            _unitonConnect.OnTonTransactionSended += TransactionSendingFinished;
+            _unitonConnect.OnTonTransactionConfirmed += TonTransactionConfirmed;
+
+            _unitonConnect.LoadBalance();
         }
 
         private void OnDisable()
         {
-            _unitonConnect.OnNativeSendingTonFinished -= TransactionSendingFinished;
-            _unitonConnect.OnNativeTransactionConfirmed -= TonTransactionConfirmed;
-
             _unitonConnect.OnTonBalanceClaimed -= TonBalanceClaimed;
+
+            _unitonConnect.OnTonTransactionSended -= TransactionSendingFinished;
+            _unitonConnect.OnTonTransactionConfirmed -= TonTransactionConfirmed;
         }
 
         public void Init()
@@ -48,6 +48,7 @@ namespace UnitonConnect.Core.Demo
             SetAmountBar(START_TON_AMOUNT);
             SetTargetAddress(CREATOR_WALLET_ADDRESS);
             SetMessageBar(START_MESSAGE);
+
             SetTonBalance(_unitonConnect.TonBalance);
         }
 
