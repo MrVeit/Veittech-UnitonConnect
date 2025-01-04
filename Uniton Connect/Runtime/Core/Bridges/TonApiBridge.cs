@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using System.Collections;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
@@ -10,7 +11,6 @@ using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.Editor.Common;
-using System.Threading.Tasks;
 
 namespace UnitonConnect.ThirdParty
 {

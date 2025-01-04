@@ -54,11 +54,11 @@ namespace UnitonConnect.Core
 
         [DllImport("__Internal")]
         private static extern decimal ToNano(
-            decimal value, Action<decimal> valueClaimed);
+            string value, Action<decimal> valueClaimed);
 
         [DllImport("__Internal")]
         private static extern decimal FromNano(
-            decimal value, Action<decimal> valueClaimed);
+            string value, Action<decimal> valueClaimed);
 
         [DllImport("__Internal")]
         private static extern string ToBounceableAddress(
@@ -435,7 +435,7 @@ namespace UnitonConnect.Core
 
                 OnValueConverted = valueConverted;
 
-                ToNano(value, OnValueConvert);
+                ToNano(value.ToString(), OnValueConvert);
             }
 
             internal static void FromNanoton(decimal value,
@@ -451,7 +451,7 @@ namespace UnitonConnect.Core
 
                 OnValueConverted = valueConverted;
 
-                FromNano(value, OnValueConvert);
+                FromNano(value.ToString(), OnValueConvert);
             }
 
             internal sealed class Address
