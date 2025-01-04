@@ -1,21 +1,19 @@
 using System;
-using System.Collections;
 using System.Threading.Tasks;
-using UnitonConnect.ThirdParty;
 using UnityEngine;
+using UnitonConnect.ThirdParty;
 
 namespace UnitonConnect.Core.Utils.View
 {
     public static class WalletVisualUtils
     {
-        private static readonly UnitonConnectSDK _unitonConnect = UnitonConnectSDK.Instance;
-
         /// <summary>
         /// Return the first and last characters of the wallet address
         /// </summary>
         /// <param name="address">Address of the connected wallet account</param>
         /// <param name="charAmount">Number of characters to display among the first and last</param>
-        [Obsolete("Starting from 0.3.0 version this method is not relevant. Use `UnitonConnectSDK.Instance.Wallet.ToShort()` to get a short address after connection")]
+        [Obsolete("Starting from 0.3.0 version this method is not relevant. " +
+            "Use `UnitonConnectSDK.Instance.Wallet.ToShort()` to get a short address after connection")]
         internal static string ProcessWalletAddress(
             string address, int charAmount)
         {

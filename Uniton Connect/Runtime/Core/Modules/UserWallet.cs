@@ -9,6 +9,15 @@ namespace UnitonConnect.Core.Common
     {
         private readonly string _address;
 
+        public bool IsUserFriendly => 
+            TonConnectBridge.Utils.Address.IsUserFriendly(this.ToString());
+
+        public bool IsBounceable =>
+            TonConnectBridge.Utils.Address.IsBounceable(this.ToString());
+
+        public bool IsTestOnly =>
+            TonConnectBridge.Utils.Address.IsTestOnly(this.ToString());
+
         public string PublicKey { get; private set; }
         public string Chain { get; private set; }
         public string StateInit { get; private set; }
@@ -57,7 +66,7 @@ namespace UnitonConnect.Core.Common
         /// Convert wallet address to Bounceable format (base64), example:
         /// EQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk+yXLZXmc2QON
         /// </summary>
-        public string ToBouceable()
+        public string ToBounceable()
         {
             if (!IsAvaibleAddress())
             {

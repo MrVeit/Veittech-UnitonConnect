@@ -83,7 +83,7 @@ namespace UnitonConnect.Core.Demo
             Debug.Log($"Jetton transaction successfully founded, query id: {_lastTransactionQuery}");
 
             var recipientAddress = transactionData.OutMessages[0].DecodedBody.RecipientAddress;
-            var recipientBouceable = WalletConnectUtils.GetBounceableAddress(recipientAddress);
+            var recipientBouceable = WalletConnectUtils.GetHEXAddress(recipientAddress);
 
             _jettonWallet.GetLastTransactions(TransactionTypes.Received, 10, recipientBouceable);
         }

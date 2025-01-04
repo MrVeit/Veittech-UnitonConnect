@@ -28,14 +28,6 @@ namespace UnitonConnect.Core
         private static extern void Disconnect(Action<string> onWalletDisconnected);
 
         [DllImport("__Internal")]
-        private static extern void SendTransaction(string nanoTons,
-            string recipientAddress, Action<string> onTransactionSended);
-
-        [DllImport("__Internal")]
-        private static extern void SendTransactionWithMessage(string nanoTons,
-            string recipientAddress, string message, Action<string> onTransactionSended);
-
-        [DllImport("__Internal")]
         private static extern void SubscribeToStatusChange(Action<string> onWalletConnected);
 
         [DllImport("__Internal")]
@@ -50,6 +42,35 @@ namespace UnitonConnect.Core
 
         [DllImport("__Internal")]
         private static extern void UnSubscribeToTransactionEvents();
+
+        [DllImport("__Internal")]
+        private static extern bool IsUserFriendlyAddress(string address);
+
+        [DllImport("__Internal")]
+        private static extern bool IsBounceableAddress(string address);
+
+        [DllImport("__Internal")]
+        private static extern bool IsTestnetAddress(string address);
+
+        [DllImport("__Internal")]
+        private static extern string ToBounceableAddress(
+            string address, Action<string> addressClaimed);
+
+        [DllImport("__Internal")]
+        private static extern string ToNonBounceableAddress(
+            string address, Action<string> addressClaimed);
+
+        [DllImport("__Internal")]
+        private static extern string ToHexAddress(
+            string address, Action<string> addressClaimed);
+
+        [DllImport("__Internal")]
+        private static extern void SendTransaction(string nanoTons,
+            string recipientAddress, Action<string> onTransactionSended);
+
+        [DllImport("__Internal")]
+        private static extern void SendTransactionWithMessage(string nanoTons,
+            string recipientAddress, string message, Action<string> onTransactionSended);
 
         [DllImport("__Internal")]
         private static extern void SendJettonTransaction(string jettonMaster, string amount,
@@ -136,6 +157,8 @@ namespace UnitonConnect.Core
 
                 OnWalletConnectFailed?.Invoke(message);
 
+                OnWalletConnectFailed = null;
+
                 return;
             }
 
@@ -150,13 +173,17 @@ namespace UnitonConnect.Core
 
                 OnWalletConnectFailed?.Invoke(message);
 
+                OnWalletConnectFailed = null;
+
                 return;
             }
 
-            UnitonConnectLogger.Log($"Wallet successfully connected, " +
-                $"address: {WalletConnectUtils.GetNonBounceableAddress(walletConfig.Address)}");
+            UnitonConnectLogger.Log($"Wallet successfully " +
+                $"connected, address: {walletConfig.Address}");
 
             OnWalletSuccessfullyConnected?.Invoke(walletConfig);
+
+            OnWalletSuccessfullyConnected = null;
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
@@ -265,7 +292,25 @@ namespace UnitonConnect.Core
 
             CloseModal(OnModalWindowClose);
         }
-#endregion
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnAddressParse(string address)
+        {
+            OnAddressParsed?.Invoke(address);
+
+            OnAddressParsed = null;
+
+            if (!string.IsNullOrEmpty(address))
+            {
+                UnitonConnectLogger.Log($"Address converted to value: {address}");
+
+                return;
+            }
+
+            UnitonConnectLogger.LogError("Failed to convert address " +
+                "to target format, something wrong...");
+        }
+        #endregion
 
         private static readonly string SUCCESSFUL_DISCONNECT = "200";
 
@@ -289,7 +334,7 @@ namespace UnitonConnect.Core
         private static Action<string> OnJettonTransactionSended;
         private static Action<string> OnJettonTransactionSendFailed;
 
-        private static Action<SuccessTransactionData> OnTonTransctionConfirmed;
+        private static Action<string> OnAddressParsed;
 
         internal static void UnSubscribe()
         {
@@ -353,6 +398,98 @@ namespace UnitonConnect.Core
         {
             SendJettonByParams(senderJettonWalletContract, amount, 
                 payload, transactionSended, transactionSendFailed);
+        }
+
+
+        internal sealed class Utils
+        {
+            internal sealed class Address
+            {
+                internal static bool IsUserFriendly(string address)
+                {
+                    if (string.IsNullOrEmpty(address))
+                    {
+                        var message = "Address to check the format against " +
+                            "the 'User Friendly' type must not be empty or equal to null";
+
+                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                    }
+
+                    return IsUserFriendlyAddress(address);
+                }
+
+                internal static bool IsBounceable(string address)
+                {
+                    if (string.IsNullOrEmpty(address))
+                    {
+                        var message = "Address to check the format against " +
+                            "the 'Bounceable' type must not be empty or equal to null";
+
+                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                    }
+
+                    return IsBounceableAddress(address);
+                }
+
+                internal static bool IsTestOnly(string address)
+                {
+                    if (string.IsNullOrEmpty(address))
+                    {
+                        var message = "Address to check the format against " +
+                            "the 'Test Only' type must not be empty or equal to null";
+
+                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                    }
+
+                    return IsTestnetAddress(address);
+                }
+
+                internal static void ToBounceable(string address, 
+                    Action<string> addressConverted)
+                {
+                    if (string.IsNullOrEmpty(address))
+                    {
+                        var message = "Address to convert to 'Bounceable' " +
+                            "format must not be empty or equal to null";
+
+                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                    }
+
+                    ToBounceableAddress(address, OnAddressParse);
+                }
+
+                internal static void ToNonBounceable(string address,
+                    Action<string> addressConverted)
+                {
+                    if (string.IsNullOrEmpty(address))
+                    {
+                        var message = "Address to convert to 'Non Bounceable' " +
+                            "format must not be empty or equal to null";
+
+                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                    }
+
+                    OnAddressParsed = addressConverted;
+
+                    ToNonBounceableAddress(address, OnAddressParse);
+                }
+
+                internal static void ToHex(string address,
+                    Action<string> addressConverted)
+                {
+                    if (string.IsNullOrEmpty(address))
+                    {
+                        var message = "Address to convert to 'Hex/Raw' " +
+                            "format must not be empty or equal to null";
+
+                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                    }
+
+                    OnAddressParsed = addressConverted;
+
+                    ToHexAddress(address, OnAddressParse);
+                }
+            }
         }
 
         private static void SendTonByParams(string recipientAddress,

@@ -32,6 +32,18 @@ const tonConnectBridge = {
             return true;
         },
 
+        isAvailableTonWeb: function()
+        {
+            if (!window.tonWeb)
+            {
+                console.error(`Library 'Ton Web' is not exist`);
+
+                return false;
+            }
+
+            return true;
+        },
+
         init: function(manifestUrl, callback)
         {
                 const url = UTF8ToString(manifestUrl);
@@ -415,6 +427,138 @@ const tonConnectBridge = {
 
                 _free(errorPtr);
             }
+        },
+
+        toBounceable: function(address, valueClaimed)
+        {
+            if (!tonConnect.isAvailableSDK())
+            {
+                return;
+            }
+
+            if (!tonConnect.isAvailableTonWeb())
+            {
+                return;
+            }
+
+            const correctAddress = UTF8ToString(address);
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
+
+            const bouceableAddress = parsedAddress.toString(true, true, true, false);
+
+            console.log(`Address ${correctAddress} converted to bouceable format: ${bouceableAddress}`);
+
+            const addressPtr = tonConnect.allocString(bouceableAddress);
+
+            dynCall('vi', valueClaimed, [addressPtr]);
+
+            _free(addressPtr);
+        },
+
+        toNonBounceable: function(address, valueClaimed)
+        {
+            if (!tonConnect.isAvailableSDK())
+            {
+                return;
+            }
+
+            if (!tonConnect.isAvailableTonWeb())
+            {
+                return;
+            }
+
+            const correctAddress = UTF8ToString(address);
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
+
+            const nonBouceableAddress = parsedAddress.toString(true, true, false, false);
+
+            console.log(`Address ${correctAddress} converted to non bouceable format: ${nonBouceableAddress}`);
+
+            const addressPtr = tonConnect.allocString(nonBouceableAddress);
+
+            dynCall('vi', valueClaimed, [addressPtr]);
+
+            _free(addressPtr);
+        },
+
+        toHex: function(address, valueClaimed)
+        {
+            if (!tonConnect.isAvailableSDK())
+            {
+                return;
+            }
+
+            if (!tonConnect.isAvailableTonWeb())
+            {
+                return;
+            }
+
+            const correctAddress = UTF8ToString(address);
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
+
+            const hexAddress = parsedAddress.toString(false);
+
+            console.log(`Address ${correctAddress} converted to hex/raw format: ${hexAddress}`);
+
+            const addressPtr = tonConnect.allocString(hexAddress);
+
+            dynCall('vi', valueClaimed, [addressPtr]);
+
+            _free(addressPtr);
+        },
+
+        isUserFriendly: function(address)
+        {
+            if (!tonConnect.isAvailableSDK())
+            {
+                return;
+            }
+
+            if (!tonConnect.isAvailableTonWeb())
+            {
+                return;
+            }
+
+            const correctAddress = UTF8ToString(address);
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
+
+            return parsedAddress.isUserFriendly;
+        },
+
+        isBounceable: function(address)
+        {
+            if (!tonConnect.isAvailableSDK())
+            {
+                return;
+            }
+
+            if (!tonConnect.isAvailableTonWeb())
+            {
+                return;
+            }
+
+            const correctAddress = UTF8ToString(address);
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
+
+            return parsedAddress.isBounceable;
+        },
+
+        isTestOnly: function(address)
+        {
+            if (!tonConnect.isAvailableSDK())
+            {
+                return;
+            }
+
+            if (!tonConnect.isAvailableTonWeb())
+            {
+                return;
+            }
+
+            const correctAddress = UTF8ToString(address);
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
+
+            return parsedAddress.isTestOnly;
         }
     },
 
@@ -466,6 +610,36 @@ const tonConnectBridge = {
     UnSubscribeToTransactionEvents: function()
     {
         tonConnect.unsubscribeToTransactionEvents();
+    },
+
+    ToBounceableAddress: function(address, valueClaimed)
+    {
+        return tonConnect.toBounceable(address, valueClaimed);
+    },
+
+    ToNonBounceableAddress: function(address, valueClaimed)
+    {
+        return tonConnect.toNonBounceable(address, valueClaimed);
+    },
+
+    ToHexAddress: function(address, valueClaimed)
+    {
+        return tonConnect.toHex(address, valueClaimed);
+    },
+
+    IsUserFriendlyAddress: function(address)
+    {
+        return tonConnect.isUserFriendly(address);
+    },
+
+    IsBounceableAddress: function(address)
+    {
+        return tonConnect.isBounceable(address);
+    },
+
+    IsTestnetAddress: function(address)
+    {
+        return tonConnect.isTestOnly(address);
     },
 
     SendTransaction: function(nanoInTon, recipientAddress, callback)

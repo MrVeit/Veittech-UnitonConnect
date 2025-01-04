@@ -1,0 +1,12 @@
+<linker>
+  <assembly fullname="Assembly-CSharp" preserve="all" />
+  <assembly fullname="UnityEngine.UI" preserve="all" />
+  <assembly fullname="Unity.Collections" preserve="all" />
+  <assembly fullname="Unity.Mathematics" preserve="all" />
+  <assembly fullname="Unity.ResourceManager" preserve="all" />
+  <assembly fullname="Unity.2D.Common.Runtime" preserve="all" />
+  <assembly fullname="Unity.2D.Animation.Runtime" preserve="all" />
+  <assembly fullname="Unity.TextMeshPro" preserve="all" />
+  <assembly fullname="Unity.InternalAPIEngineBridge.013" preserve="all" />
+  <assembly fullname="Unity.InternalAPIEngineBridge.001" preserve="all" />
+</linker>

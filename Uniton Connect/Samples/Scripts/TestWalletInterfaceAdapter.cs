@@ -63,8 +63,18 @@ namespace UnitonConnect.Core.Demo
 
             _unitonSDK.OnNativeTransactionSendingFailed -= TonTransactionSendFailed;
 
+            if (_nftModule == null)
+            {
+                return;
+            }
+
             _nftModule.OnNftCollectionsClaimed -= NftCollectionsLoaded;
             _nftModule.OnTargetNftCollectionClaimed -= TargetNftCollectionLoaded;
+
+            if (_jettonModule == null)
+            {
+                return;
+            }
 
             _jettonModule.OnTransactionSended -= JettonTransactionSended;
             _jettonModule.OnTransactionSendFailed -= JettonTransactionSendFailed;
@@ -164,6 +174,10 @@ namespace UnitonConnect.Core.Demo
                 _shortWalletAddress.text = shortWalletAddress;
 
                 Debug.Log($"Connected wallet short address: {shortWalletAddress}");
+
+                Debug.Log($"Connected address is user friendly: {_unitonSDK.Wallet.IsUserFriendly}");
+                Debug.Log($"Connected address is bounceable: {_unitonSDK.Wallet.IsBounceable}");
+                Debug.Log($"Connected address from testnet: {_unitonSDK.Wallet.IsTestOnly}");
 
                 _connectButton.interactable = false;
                 _disconnectButton.interactable = true;
