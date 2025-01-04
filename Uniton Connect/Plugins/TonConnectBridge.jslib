@@ -466,11 +466,11 @@ const tonConnectBridge = {
                 return;
             }
 
-            const tonWeb = window.tonWeb;
-
             const correctAddress = UTF8ToString(address);
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
 
-            const parsedAddress = new tonWeb.utils.Address(correctAddress);
+            console.log(`Parsed address in entity: ${parsedAddress}`);
+
             const bouceableAddress = parsedAddress.toString(true);
 
             console.log(`Address ${correctAddress} converted to bouceable format: ${bouceableAddress}`);
@@ -485,11 +485,11 @@ const tonConnectBridge = {
                 return;
             }
 
-            const tonWeb = window.tonWeb;
-
             const correctAddress = UTF8ToString(address);
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
 
-            const parsedAddress = new tonWeb.utils.Address(correctAddress);
+            console.log(`Parsed address in entity: ${parsedAddress}`);
+
             const nonBouceableAddress = parsedAddress.toString(false);
 
             console.log(`Address ${correctAddress} converted to non bouceable format: ${nonBouceableAddress}`);
@@ -504,11 +504,11 @@ const tonConnectBridge = {
                 return;
             }
 
-            const tonWeb = window.tonWeb;
-
             const correctAddress = UTF8ToString(address);
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
 
-            const parsedAddress = new tonWeb.utils.Address(correctAddress);
+            console.log(`Parsed address in entity: ${parsedAddress}`);
+
             const hexAddress = parsedAddress.toString(0);
 
             console.log(`Address ${correctAddress} converted to hex/raw format: ${hexAddress}`);
