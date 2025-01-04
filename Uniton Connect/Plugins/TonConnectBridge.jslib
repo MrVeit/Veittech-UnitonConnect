@@ -431,6 +431,11 @@ const tonConnectBridge = {
 
         toNanoton: function(value)
         {
+            if (!tonConnect.isAvailableSDK())
+            {
+                return;
+            }
+
             if (!tonConnect.isAvailableTonWeb())
             {
                 return;
@@ -446,6 +451,11 @@ const tonConnectBridge = {
 
         fromNanoton: function(value)
         {
+            if (!tonConnect.isAvailableSDK())
+            {
+                return;
+            }
+
             if (!tonConnect.isAvailableTonWeb())
             {
                 return;
@@ -466,12 +476,15 @@ const tonConnectBridge = {
                 return;
             }
 
+            if (!tonConnect.isAvailableTonWeb())
+            {
+                return;
+            }
+
             const correctAddress = UTF8ToString(address);
-            const parsedAddress = new TonWeb.utils.Address(correctAddress);
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
 
-            console.log(`Parsed address in entity: ${parsedAddress}`);
-
-            const bouceableAddress = parsedAddress.toString(true);
+            const bouceableAddress = parsedAddress.toString(true, true, true, false);
 
             console.log(`Address ${correctAddress} converted to bouceable format: ${bouceableAddress}`);
 
@@ -485,12 +498,15 @@ const tonConnectBridge = {
                 return;
             }
 
+            if (!tonConnect.isAvailableTonWeb())
+            {
+                return;
+            }
+
             const correctAddress = UTF8ToString(address);
-            const parsedAddress = new TonWeb.utils.Address(correctAddress);
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
 
-            console.log(`Parsed address in entity: ${parsedAddress}`);
-
-            const nonBouceableAddress = parsedAddress.toString(false);
+            const nonBouceableAddress = parsedAddress.toString(true, true, false, false);
 
             console.log(`Address ${correctAddress} converted to non bouceable format: ${nonBouceableAddress}`);
 
@@ -504,16 +520,94 @@ const tonConnectBridge = {
                 return;
             }
 
+            if (!tonConnect.isAvailableTonWeb())
+            {
+                return;
+            }
+
             const correctAddress = UTF8ToString(address);
-            const parsedAddress = new TonWeb.utils.Address(correctAddress);
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
 
-            console.log(`Parsed address in entity: ${parsedAddress}`);
-
-            const hexAddress = parsedAddress.toString(0);
+            const hexAddress = parsedAddress.toString(false);
 
             console.log(`Address ${correctAddress} converted to hex/raw format: ${hexAddress}`);
 
             return hexAddress;
+        },
+
+        isUserFriendly: function(address)
+        {
+            if (!tonConnect.isAvailableSDK())
+            {
+                return;
+            }
+
+            if (!tonConnect.isAvailableTonWeb())
+            {
+                return;
+            }
+
+            const correctAddress = UTF8ToString(address);
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
+
+            return parsedAddress.isUserFriendly;
+        },
+
+        isBounceable: function(address)
+        {
+            if (!tonConnect.isAvailableSDK())
+            {
+                return;
+            }
+
+            if (!tonConnect.isAvailableTonWeb())
+            {
+                return;
+            }
+
+            const correctAddress = UTF8ToString(address);
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
+
+            return parsedAddress.isBounceable;
+        },
+
+        isHex: function(address)
+        {
+            if (!tonConnect.isAvailableSDK())
+            {
+                return;
+            }
+
+            if (!tonConnect.isAvailableTonWeb())
+            {
+                return;
+            }
+
+            const correctAddress = UTF8ToString(address);
+            const hexAddress = tonConnect.toHex(address);
+
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
+            const hashPart = Buffer.from(parsedAddress.hashPart).toString('hex');
+
+            return hexAddress.includes(hashPart);
+        },
+
+        isTestOnly: function(address)
+        {
+            if (!tonConnect.isAvailableSDK())
+            {
+                return;
+            }
+
+            if (!tonConnect.isAvailableTonWeb())
+            {
+                return;
+            }
+
+            const correctAddress = UTF8ToString(address);
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
+
+            return parsedAddress.isTestOnly;
         }
     },
 
@@ -590,6 +684,26 @@ const tonConnectBridge = {
     ToHexAddress: function(address)
     {
         return tonConnect.toHex(address);
+    },
+
+    IsUserFriendlyAddress: function(address)
+    {
+        return tonConnect.isUserFriendly(address);
+    },
+
+    IsBounceableAddress: function(address)
+    {
+        return tonConnect.isBounceable(address);
+    },
+
+    IsHexAddress: function(address)
+    {
+        return tonConnect.isHex(address);
+    },
+
+    IsTestnetAddress: function(address)
+    {
+        return tonConnect.isTestOnly(address);
     },
 
     SendTransaction: function(nanoInTon, recipientAddress, callback)

@@ -175,6 +175,11 @@ namespace UnitonConnect.Core.Demo
 
                 Debug.Log($"Connected wallet short address: {shortWalletAddress}");
 
+                Debug.Log($"Connected address is user friendly: {_unitonSDK.Wallet.IsUserFriendly}");
+                Debug.Log($"Connected address is bounceable: {_unitonSDK.Wallet.IsBounceable}");
+                Debug.Log($"Connected address is hex: {_unitonSDK.Wallet.IsHex}");
+                Debug.Log($"Connected address from testnet: {_unitonSDK.Wallet.IsTestOnly}");
+
                 _connectButton.interactable = false;
                 _disconnectButton.interactable = true;
                 _sendTransactionButton.interactable = true;

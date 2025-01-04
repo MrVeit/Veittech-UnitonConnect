@@ -44,6 +44,18 @@ namespace UnitonConnect.Core
         private static extern void UnSubscribeToTransactionEvents();
 
         [DllImport("__Internal")]
+        private static extern bool IsUserFriendlyAddress(string address);
+
+        [DllImport("__Internal")]
+        private static extern bool IsBounceableAddress(string address);
+
+        [DllImport("__Internal")]
+        private static extern bool IsHexAddress(string address);
+
+        [DllImport("__Internal")]
+        private static extern bool IsTestnetAddress(string address);
+
+        [DllImport("__Internal")]
         private static extern decimal ToNano(decimal value);
 
         [DllImport("__Internal")]
@@ -401,6 +413,58 @@ namespace UnitonConnect.Core
 
             internal sealed class Address
             {
+                internal static bool IsUserFriendly(string address)
+                {
+                    if (string.IsNullOrEmpty(address))
+                    {
+                        var message = "Address to check the format against " +
+                            "the 'User Friendly' type must not be empty or equal to null";
+
+                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                    }
+
+                    return IsUserFriendlyAddress(address);
+                }
+
+                internal static bool IsBounceable(string address)
+                {
+                    if (string.IsNullOrEmpty(address))
+                    {
+                        var message = "Address to check the format against " +
+                            "the 'Bounceable' type must not be empty or equal to null";
+
+                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                    }
+
+                    return IsBounceableAddress(address);
+                }
+
+                internal static bool IsHex(string address)
+                {
+                    if (string.IsNullOrEmpty(address))
+                    {
+                        var message = "Address to check the format against " +
+                            "the 'HEX' type must not be empty or equal to null";
+
+                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                    }
+
+                    return IsHexAddress(address);
+                }
+
+                internal static bool IsTestOnly(string address)
+                {
+                    if (string.IsNullOrEmpty(address))
+                    {
+                        var message = "Address to check the format against " +
+                            "the 'Test Only' type must not be empty or equal to null";
+
+                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                    }
+
+                    return IsTestnetAddress(address);
+                }
+
                 internal static string ToBounceable(string address)
                 {
                     if (string.IsNullOrEmpty(address))

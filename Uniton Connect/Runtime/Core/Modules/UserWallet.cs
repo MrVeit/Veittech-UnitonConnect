@@ -9,6 +9,18 @@ namespace UnitonConnect.Core.Common
     {
         private readonly string _address;
 
+        public bool IsUserFriendly => 
+            TonConnectBridge.Utils.Address.IsUserFriendly(this.ToString());
+
+        public bool IsBounceable =>
+            TonConnectBridge.Utils.Address.IsBounceable(this.ToString());
+
+        public bool IsHex =>
+            TonConnectBridge.Utils.Address.IsHex(this.ToString());
+
+        public bool IsTestOnly =>
+            TonConnectBridge.Utils.Address.IsTestOnly(this.ToString());
+
         public string PublicKey { get; private set; }
         public string Chain { get; private set; }
         public string StateInit { get; private set; }
