@@ -437,7 +437,7 @@ namespace UnitonConnect.Core
 
                 OnValueConverted = valueConverted;
 
-                ToNano(value.ToString(), OnValueConvert);
+                ToNano(value.ToString("G"), OnValueConvert);
             }
 
             internal static void FromNanoton(decimal value,
@@ -453,7 +453,7 @@ namespace UnitonConnect.Core
 
                 OnValueConverted = valueConverted;
 
-                FromNano(value.ToString(), OnValueConvert);
+                FromNano(value.ToString("G"), OnValueConvert);
             }
 
             internal sealed class Address
