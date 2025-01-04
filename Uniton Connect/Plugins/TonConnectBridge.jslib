@@ -445,9 +445,9 @@ const tonConnectBridge = {
 
             console.log(`Value before convert: ${correctValue}`);
 
-            const convertedValue = window.tonWeb.utils.toNano(correctValue);
+            const convertedValue = window.tonWeb.utils.toNano(correctValue).toString();
 
-            console.log(`Converted value: ${correctValue} to nanoton: ${convertedValue.toString()}`);
+            console.log(`Converted value: ${correctValue} to nanoton: ${convertedValue}`);
 
             const nanoPtr = tonConnect.allocString(convertedValue);
 
@@ -474,7 +474,7 @@ const tonConnectBridge = {
 
             console.log(`Value before convert: ${correctValue}`);
 
-            const convertedValue = window.tonWeb.utils.fromNano(correctValue);
+            const convertedValue = window.tonWeb.utils.fromNano((BigInt(correctValue)));
 
             console.log(`Converted value: ${correctValue} from nanoton: ${convertedValue}`);
 

@@ -54,11 +54,11 @@ namespace UnitonConnect.Core
 
         [DllImport("__Internal")]
         private static extern decimal ToNano(
-            string value, Action<decimal> valueClaimed);
+            string value, Action<string> valueClaimed);
 
         [DllImport("__Internal")]
         private static extern decimal FromNano(
-            string value, Action<decimal> valueClaimed);
+            string value, Action<string> valueClaimed);
 
         [DllImport("__Internal")]
         private static extern string ToBounceableAddress(
@@ -301,12 +301,14 @@ namespace UnitonConnect.Core
             CloseModal(OnModalWindowClose);
         }
 
-        [MonoPInvokeCallback(typeof(Action<decimal>))]
-        private static void OnValueConvert(decimal value)
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnValueConvert(string value)
         {
             UnitonConnectLogger.Log($"Converted value parsed successfully: {value}");
 
-            OnValueConverted?.Invoke(value);
+            var parsedDecimal = decimal.Parse(value);
+
+            OnValueConverted?.Invoke(parsedDecimal);
 
             OnValueConverted = null;
         }
