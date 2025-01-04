@@ -53,14 +53,6 @@ namespace UnitonConnect.Core
         private static extern bool IsTestnetAddress(string address);
 
         [DllImport("__Internal")]
-        private static extern decimal ToNano(
-            string value, Action<string> valueClaimed);
-
-        [DllImport("__Internal")]
-        private static extern decimal FromNano(
-            string value, Action<string> valueClaimed);
-
-        [DllImport("__Internal")]
         private static extern string ToBounceableAddress(
             string address, Action<string> addressClaimed);
 
@@ -302,18 +294,6 @@ namespace UnitonConnect.Core
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
-        private static void OnValueConvert(string value)
-        {
-            UnitonConnectLogger.Log($"Converted value parsed successfully: {value}");
-
-            var parsedDecimal = decimal.Parse(value);
-
-            OnValueConverted?.Invoke(parsedDecimal);
-
-            OnValueConverted = null;
-        }
-
-        [MonoPInvokeCallback(typeof(Action<string>))]
         private static void OnAddressParse(string address)
         {
             OnAddressParsed?.Invoke(address);
@@ -354,7 +334,6 @@ namespace UnitonConnect.Core
         private static Action<string> OnJettonTransactionSended;
         private static Action<string> OnJettonTransactionSendFailed;
 
-        private static Action<decimal> OnValueConverted;
         private static Action<string> OnAddressParsed;
 
         internal static void UnSubscribe()
@@ -424,38 +403,6 @@ namespace UnitonConnect.Core
 
         internal sealed class Utils
         {
-            internal static void ToNanoton(decimal value, 
-                Action<decimal> valueConverted)
-            {
-                if (value <= 0)
-                {
-                    UnitonConnectLogger.LogWarning("The value for conversion" +
-                        " to nanotones must be greater than 0");
-
-                    valueConverted?.Invoke(0);
-                }
-
-                OnValueConverted = valueConverted;
-
-                ToNano(value.ToString("G"), OnValueConvert);
-            }
-
-            internal static void FromNanoton(decimal value,
-                 Action<decimal> valueConverted)
-            {
-                if (value <= 0)
-                {
-                    UnitonConnectLogger.LogWarning("The value for conversion" +
-                        " from nanotones must be greater than 0");
-
-                    valueConverted?.Invoke(0);
-                }
-
-                OnValueConverted = valueConverted;
-
-                FromNano(value.ToString("G"), OnValueConvert);
-            }
-
             internal sealed class Address
             {
                 internal static bool IsUserFriendly(string address)

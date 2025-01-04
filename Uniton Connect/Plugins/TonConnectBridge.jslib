@@ -429,62 +429,6 @@ const tonConnectBridge = {
             }
         },
 
-        toNanoton: function(value, valueClaimed)
-        {
-            if (!tonConnect.isAvailableSDK())
-            {
-                return;
-            }
-
-            if (!tonConnect.isAvailableTonWeb())
-            {
-                return;
-            }
-
-            const correctValue = UTF8ToString(value);
-
-            console.log(`Value before convert: ${correctValue}`);
-
-            const convertedValue = window.tonWeb.utils.toNano(correctValue.toString());
-
-            console.log(`Converted value: ${correctValue} to nanoton: ${convertedValue}`);
-
-            const nanoPtr = tonConnect.allocString(convertedValue.toString());
-
-            dynCall('vi', valueClaimed, [nanoPtr]);
-
-            _free(nanoPtr);
-
-            return convertedValue;
-        },
-
-        fromNanoton: function(value, valueClaimed)
-        {
-            if (!tonConnect.isAvailableSDK())
-            {
-                return;
-            }
-
-            if (!tonConnect.isAvailableTonWeb())
-            {
-                return;
-            }
-
-            const correctValue = UTF8ToString(value);
-
-            console.log(`Value before convert: ${correctValue}`);
-
-            const convertedValue = window.tonWeb.utils.fromNano(correctValue.toString());
-
-            console.log(`Converted value: ${correctValue} from nanoton: ${convertedValue}`);
-
-            const valuePtr = tonConnect.allocString(convertedValue.toString());
-
-            dynCall('vi', valueClaimed, [valuePtr]);
-
-            _free(valuePtr);
-        },
-
         toBounceable: function(address, valueClaimed)
         {
             if (!tonConnect.isAvailableSDK())
@@ -666,16 +610,6 @@ const tonConnectBridge = {
     UnSubscribeToTransactionEvents: function()
     {
         tonConnect.unsubscribeToTransactionEvents();
-    },
-
-    ToNano: function(value, valueClaimed)
-    {
-        return tonConnect.toNanoton(value, valueClaimed);
-    },
-
-    FromNano: function(value, valueClaimed)
-    {
-        return tonConnect.fromNanoton(value, valueClaimed);
     },
 
     ToBounceableAddress: function(address, valueClaimed)

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Numerics;
 using System.Collections;
 using System.Collections.Generic;
 using UnitonConnect.Runtime.Data;
@@ -11,6 +12,8 @@ namespace UnitonConnect.Core.Utils
 {
     public static class UserAssetsUtils
     {
+        private const decimal nanoDivider = 1_000_000_000m;
+
         /// <summary>
         /// Conversion of balance in TON to Nanotons (1 TON - 1.000.000.000 Nanoton)
         /// </summary>
@@ -18,14 +21,12 @@ namespace UnitonConnect.Core.Utils
         /// <returns></returns>
         internal static decimal ToNanoton(this decimal tonBalance)
         {
-            decimal nanoTons = 0;
-            
-            TonConnectBridge.Utils.ToNanoton(tonBalance, (value) =>
+            if (tonBalance <= 0)
             {
-                nanoTons = value;
-            });
+                throw new ArgumentException("Value must be a positive number!");
+            }
 
-            return nanoTons;
+            return (decimal)new BigInteger(tonBalance * nanoDivider);
         }
 
         /// <summary>
@@ -35,14 +36,12 @@ namespace UnitonConnect.Core.Utils
         /// <returns></returns>
         internal static decimal FromNanoton(this decimal nanotonBalance)
         {
-            decimal targetValue = 0;
-
-            TonConnectBridge.Utils.FromNanoton(nanotonBalance, (value) =>
+            if (nanotonBalance < 0)
             {
-                targetValue = value;
-            });
+                throw new ArgumentException("Value must be a non-negative number");
+            }
 
-            return targetValue;
+            return nanotonBalance / nanoDivider;
         }
 
         /// <summary>
