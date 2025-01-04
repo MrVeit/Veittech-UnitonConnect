@@ -74,6 +74,9 @@ namespace UnitonConnect.Core.Utils
                     .Address.ToNonBounceable(walletAddress);
             }
 
+            UnitonConnectLogger.Log($"Address: {walletAddress} converted " +
+                $"to {type} format, value: {targetAddress}");
+
             return targetAddress;
         }
     }

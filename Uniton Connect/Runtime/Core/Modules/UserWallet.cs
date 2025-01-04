@@ -69,7 +69,7 @@ namespace UnitonConnect.Core.Common
         /// Convert wallet address to Bounceable format (base64), example:
         /// EQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk+yXLZXmc2QON
         /// </summary>
-        public string ToBouceable()
+        public string ToBounceable()
         {
             if (!IsAvaibleAddress())
             {

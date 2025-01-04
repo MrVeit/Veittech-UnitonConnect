@@ -163,6 +163,8 @@ namespace UnitonConnect.Core
 
                 OnWalletConnectFailed?.Invoke(message);
 
+                OnWalletConnectFailed = null;
+
                 return;
             }
 
@@ -177,13 +179,17 @@ namespace UnitonConnect.Core
 
                 OnWalletConnectFailed?.Invoke(message);
 
+                OnWalletConnectFailed = null;
+
                 return;
             }
 
-            UnitonConnectLogger.Log($"Wallet successfully connected, " +
-                $"address: {WalletConnectUtils.GetNonBounceableAddress(walletConfig.Address)}");
+            UnitonConnectLogger.Log($"Wallet successfully " +
+                $"connected, address: {walletConfig.Address}");
 
             OnWalletSuccessfullyConnected?.Invoke(walletConfig);
+
+            OnWalletSuccessfullyConnected = null;
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
@@ -315,8 +321,6 @@ namespace UnitonConnect.Core
 
         private static Action<string> OnJettonTransactionSended;
         private static Action<string> OnJettonTransactionSendFailed;
-
-        private static Action<SuccessTransactionData> OnTonTransctionConfirmed;
 
         internal static void UnSubscribe()
         {
