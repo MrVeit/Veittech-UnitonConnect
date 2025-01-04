@@ -28,14 +28,6 @@ namespace UnitonConnect.Core
         private static extern void Disconnect(Action<string> onWalletDisconnected);
 
         [DllImport("__Internal")]
-        private static extern void SendTransaction(string nanoTons,
-            string recipientAddress, Action<string> onTransactionSended);
-
-        [DllImport("__Internal")]
-        private static extern void SendTransactionWithMessage(string nanoTons,
-            string recipientAddress, string message, Action<string> onTransactionSended);
-
-        [DllImport("__Internal")]
         private static extern void SubscribeToStatusChange(Action<string> onWalletConnected);
 
         [DllImport("__Internal")]
@@ -50,6 +42,29 @@ namespace UnitonConnect.Core
 
         [DllImport("__Internal")]
         private static extern void UnSubscribeToTransactionEvents();
+
+        [DllImport("__Internal")]
+        private static extern decimal ToNano(decimal value);
+
+        [DllImport("__Internal")]
+        private static extern decimal FromNano(decimal value);
+
+        [DllImport("__Internal")]
+        private static extern string ToBounceableAddress(string address);
+
+        [DllImport("__Internal")]
+        private static extern string ToNonBounceableAddress(string address);
+
+        [DllImport("__Internal")]
+        private static extern string ToHexAddress(string address);
+
+        [DllImport("__Internal")]
+        private static extern void SendTransaction(string nanoTons,
+            string recipientAddress, Action<string> onTransactionSended);
+
+        [DllImport("__Internal")]
+        private static extern void SendTransactionWithMessage(string nanoTons,
+            string recipientAddress, string message, Action<string> onTransactionSended);
 
         [DllImport("__Internal")]
         private static extern void SendJettonTransaction(string jettonMaster, string amount,
@@ -353,6 +368,78 @@ namespace UnitonConnect.Core
         {
             SendJettonByParams(senderJettonWalletContract, amount, 
                 payload, transactionSended, transactionSendFailed);
+        }
+
+
+        internal sealed class Utils
+        {
+            internal static decimal ToNanoton(decimal value)
+            {
+                if (value <= 0)
+                {
+                    UnitonConnectLogger.LogWarning("The value for conversion" +
+                        " to nanotones must be greater than 0");
+
+                    return 0;
+                }
+
+                return ToNano(value);
+            }
+
+            internal static decimal FromNanoton(decimal value)
+            {
+                if (value <= 0)
+                {
+                    UnitonConnectLogger.LogWarning("The value for conversion" +
+                        " from nanotones must be greater than 0");
+
+                    return 0;
+                }
+
+                return FromNano(value);
+            }
+
+            internal sealed class Address
+            {
+                internal static string ToBounceable(string address)
+                {
+                    if (string.IsNullOrEmpty(address))
+                    {
+                        var message = "Address to convert to 'Bounceable' " +
+                            "format must not be empty or equal to null";
+
+                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                    }
+
+                    return ToBounceableAddress(address);
+                }
+
+                internal static string ToNonBounceable(string address)
+                {
+                    if (string.IsNullOrEmpty(address))
+                    {
+                        var message = "Address to convert to 'Non Bounceable' " +
+                            "format must not be empty or equal to null";
+
+                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                    }
+
+                    return ToNonBounceableAddress(address);
+                }
+
+                internal static string ToHex(string address)
+                {
+                    if (string.IsNullOrEmpty(address))
+                    {
+                        var message = "Address to convert to 'Hex/Raw' " +
+                            "format must not be empty or equal to null";
+
+                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                    }
+
+                    return ToHexAddress(address);
+                }
+            }
         }
 
         private static void SendTonByParams(string recipientAddress,

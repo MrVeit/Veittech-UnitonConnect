@@ -63,8 +63,18 @@ namespace UnitonConnect.Core.Demo
 
             _unitonSDK.OnNativeTransactionSendingFailed -= TonTransactionSendFailed;
 
+            if (_nftModule == null)
+            {
+                return;
+            }
+
             _nftModule.OnNftCollectionsClaimed -= NftCollectionsLoaded;
             _nftModule.OnTargetNftCollectionClaimed -= TargetNftCollectionLoaded;
+
+            if (_jettonModule == null)
+            {
+                return;
+            }
 
             _jettonModule.OnTransactionSended -= JettonTransactionSended;
             _jettonModule.OnTransactionSendFailed -= JettonTransactionSendFailed;

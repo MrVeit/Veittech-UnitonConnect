@@ -3,16 +3,14 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using UnitonConnect.Runtime.Data;
-using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.Core.Data;
+using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.ThirdParty;
 
 namespace UnitonConnect.Core.Utils
 {
     public static class UserAssetsUtils
     {
-        private readonly static decimal NANOTON_VALUE = 1000000000m;
-
         /// <summary>
         /// Conversion of balance in TON to Nanotons (1 TON - 1.000.000.000 Nanoton)
         /// </summary>
@@ -20,7 +18,7 @@ namespace UnitonConnect.Core.Utils
         /// <returns></returns>
         internal static decimal ToNanoton(this decimal tonBalance)
         {
-            var nanoTons = new TonSdk.Core.Coins(tonBalance).ToNano();
+            var nanoTons = TonConnectBridge.Utils.ToNanoton(tonBalance);
 
             return decimal.Parse(nanoTons.ToString());
         }
@@ -32,7 +30,7 @@ namespace UnitonConnect.Core.Utils
         /// <returns></returns>
         internal static decimal FromNanoton(this decimal nanotonBalance)
         {
-            var tonBalance = nanotonBalance / NANOTON_VALUE;
+            var tonBalance = TonConnectBridge.Utils.FromNanoton(nanotonBalance);
 
             return tonBalance;
         }
