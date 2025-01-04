@@ -58,20 +58,29 @@ namespace UnitonConnect.Core.Utils
 
             if (type == AddressType.Raw)
             {
-                targetAddress = TonConnectBridge.Utils
-                    .Address.ToHex(walletAddress);
+                TonConnectBridge.Utils.Address.ToHex(
+                    walletAddress, (address) =>
+                {
+                    targetAddress = address;
+                });
             }
 
             if (type == AddressType.Bounceable)
             {
-                targetAddress = TonConnectBridge.Utils
-                    .Address.ToBounceable(walletAddress);
+                TonConnectBridge.Utils.Address.ToBounceable(
+                    walletAddress, (address) =>
+                {
+                    targetAddress = address;
+                });
             }
 
             if (type == AddressType.NonBounceable)
             {
-                targetAddress = TonConnectBridge.Utils
-                    .Address.ToNonBounceable(walletAddress);
+                TonConnectBridge.Utils.Address.ToNonBounceable(
+                    walletAddress, (address) =>
+                {
+                    targetAddress = address;
+                });
             }
 
             UnitonConnectLogger.Log($"Address: {walletAddress} converted " +

@@ -18,9 +18,14 @@ namespace UnitonConnect.Core.Utils
         /// <returns></returns>
         internal static decimal ToNanoton(this decimal tonBalance)
         {
-            var nanoTons = TonConnectBridge.Utils.ToNanoton(tonBalance);
+            decimal nanoTons = 0;
+            
+            TonConnectBridge.Utils.ToNanoton(tonBalance, (value) =>
+            {
+                nanoTons = value;
+            });
 
-            return decimal.Parse(nanoTons.ToString());
+            return nanoTons;
         }
 
         /// <summary>
@@ -30,9 +35,14 @@ namespace UnitonConnect.Core.Utils
         /// <returns></returns>
         internal static decimal FromNanoton(this decimal nanotonBalance)
         {
-            var tonBalance = TonConnectBridge.Utils.FromNanoton(nanotonBalance);
+            decimal targetValue = 0;
 
-            return tonBalance;
+            TonConnectBridge.Utils.FromNanoton(nanotonBalance, (value) =>
+            {
+                targetValue = value;
+            });
+
+            return targetValue;
         }
 
         /// <summary>

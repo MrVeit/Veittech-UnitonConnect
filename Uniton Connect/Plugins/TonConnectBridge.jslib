@@ -429,7 +429,7 @@ const tonConnectBridge = {
             }
         },
 
-        toNanoton: function(value)
+        toNanoton: function(value, valueClaimed)
         {
             if (!tonConnect.isAvailableSDK())
             {
@@ -446,10 +446,16 @@ const tonConnectBridge = {
 
             console.log(`Converted value: ${correctValue} to nanoton: ${convertedValue.toString()}`);
 
+            const nanoPtr = tonConnect.allocString(convertedValue);
+
+            dynCall('vi', valueClaimed, [nanoPtr]);
+
+            _free(nanoPtr);
+
             return convertedValue;
         },
 
-        fromNanoton: function(value)
+        fromNanoton: function(value, valueClaimed)
         {
             if (!tonConnect.isAvailableSDK())
             {
@@ -466,10 +472,14 @@ const tonConnectBridge = {
 
             console.log(`Converted value: ${correctValue} from nanoton: ${convertedValue}`);
 
-            return convertedValue;
+            const valuePtr = tonConnect.allocString(convertedValue);
+
+            dynCall('vi', valueClaimed, [valuePtr]);
+
+            _free(valuePtr);
         },
 
-        toBounceable: function(address)
+        toBounceable: function(address, valueClaimed)
         {
             if (!tonConnect.isAvailableSDK())
             {
@@ -488,10 +498,14 @@ const tonConnectBridge = {
 
             console.log(`Address ${correctAddress} converted to bouceable format: ${bouceableAddress}`);
 
-            return bouceableAddress;
+            const addressPtr = tonConnect.allocString(bouceableAddress);
+
+            dynCall('vi', valueClaimed, [addressPtr]);
+
+            _free(addressPtr);
         },
 
-        toNonBounceable: function(address)
+        toNonBounceable: function(address, valueClaimed)
         {
             if (!tonConnect.isAvailableSDK())
             {
@@ -510,10 +524,14 @@ const tonConnectBridge = {
 
             console.log(`Address ${correctAddress} converted to non bouceable format: ${nonBouceableAddress}`);
 
-            return nonBouceableAddress;
+            const addressPtr = tonConnect.allocString(nonBouceableAddress);
+
+            dynCall('vi', valueClaimed, [addressPtr]);
+
+            _free(addressPtr);
         },
 
-        toHex: function(address)
+        toHex: function(address, valueClaimed)
         {
             if (!tonConnect.isAvailableSDK())
             {
@@ -532,7 +550,11 @@ const tonConnectBridge = {
 
             console.log(`Address ${correctAddress} converted to hex/raw format: ${hexAddress}`);
 
-            return hexAddress;
+            const addressPtr = tonConnect.allocString(hexAddress);
+
+            dynCall('vi', valueClaimed, [addressPtr]);
+
+            _free(addressPtr);
         },
 
         isUserFriendly: function(address)
@@ -661,29 +683,29 @@ const tonConnectBridge = {
         tonConnect.unsubscribeToTransactionEvents();
     },
 
-    ToNano: function(value)
+    ToNano: function(value, valueClaimed)
     {
-        return tonConnect.toNanoton(value);
+        return tonConnect.toNanoton(value, valueClaimed);
     },
 
-    FromNano: function(value)
+    FromNano: function(value, valueClaimed)
     {
-        return tonConnect.fromNanoton(value);
+        return tonConnect.fromNanoton(value, valueClaimed);
     },
 
-    ToBounceableAddress: function(address)
+    ToBounceableAddress: function(address, valueClaimed)
     {
-        return tonConnect.toBounceable(address);
+        return tonConnect.toBounceable(address, valueClaimed);
     },
 
-    ToNonBounceableAddress: function(address)
+    ToNonBounceableAddress: function(address, valueClaimed)
     {
-        return tonConnect.toNonBounceable(address);
+        return tonConnect.toNonBounceable(address, valueClaimed);
     },
 
-    ToHexAddress: function(address)
+    ToHexAddress: function(address, valueClaimed)
     {
-        return tonConnect.toHex(address);
+        return tonConnect.toHex(address, valueClaimed);
     },
 
     IsUserFriendlyAddress: function(address)

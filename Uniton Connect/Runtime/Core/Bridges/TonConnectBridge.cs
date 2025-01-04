@@ -56,19 +56,24 @@ namespace UnitonConnect.Core
         private static extern bool IsTestnetAddress(string address);
 
         [DllImport("__Internal")]
-        private static extern decimal ToNano(decimal value);
+        private static extern decimal ToNano(
+            decimal value, Action<decimal> valueClaimed);
 
         [DllImport("__Internal")]
-        private static extern decimal FromNano(decimal value);
+        private static extern decimal FromNano(
+            decimal value, Action<decimal> valueClaimed);
 
         [DllImport("__Internal")]
-        private static extern string ToBounceableAddress(string address);
+        private static extern string ToBounceableAddress(
+            string address, Action<string> addressClaimed);
 
         [DllImport("__Internal")]
-        private static extern string ToNonBounceableAddress(string address);
+        private static extern string ToNonBounceableAddress(
+            string address, Action<string> addressClaimed);
 
         [DllImport("__Internal")]
-        private static extern string ToHexAddress(string address);
+        private static extern string ToHexAddress(
+            string address, Action<string> addressClaimed);
 
         [DllImport("__Internal")]
         private static extern void SendTransaction(string nanoTons,
@@ -298,7 +303,35 @@ namespace UnitonConnect.Core
 
             CloseModal(OnModalWindowClose);
         }
-#endregion
+
+        [MonoPInvokeCallback(typeof(Action<decimal>))]
+        private static void OnValueConvert(decimal value)
+        {
+            UnitonConnectLogger.Log($"Converted value parsed successfully: {value}");
+
+            OnValueConverted?.Invoke(value);
+
+            OnValueConverted = null;
+        }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnAddressParse(string address)
+        {
+            OnAddressParsed?.Invoke(address);
+
+            OnAddressParsed = null;
+
+            if (!string.IsNullOrEmpty(address))
+            {
+                UnitonConnectLogger.Log($"Address converted to value: {address}");
+
+                return;
+            }
+
+            UnitonConnectLogger.LogError("Failed to convert address " +
+                "to target format, something wrong...");
+        }
+        #endregion
 
         private static readonly string SUCCESSFUL_DISCONNECT = "200";
 
@@ -321,6 +354,9 @@ namespace UnitonConnect.Core
 
         private static Action<string> OnJettonTransactionSended;
         private static Action<string> OnJettonTransactionSendFailed;
+
+        private static Action<decimal> OnValueConverted;
+        private static Action<string> OnAddressParsed;
 
         internal static void UnSubscribe()
         {
@@ -389,30 +425,36 @@ namespace UnitonConnect.Core
 
         internal sealed class Utils
         {
-            internal static decimal ToNanoton(decimal value)
+            internal static void ToNanoton(decimal value, 
+                Action<decimal> valueConverted)
             {
                 if (value <= 0)
                 {
                     UnitonConnectLogger.LogWarning("The value for conversion" +
                         " to nanotones must be greater than 0");
 
-                    return 0;
+                    valueConverted?.Invoke(0);
                 }
 
-                return ToNano(value);
+                OnValueConverted = valueConverted;
+
+                ToNano(value, OnValueConvert);
             }
 
-            internal static decimal FromNanoton(decimal value)
+            internal static void FromNanoton(decimal value,
+                 Action<decimal> valueConverted)
             {
                 if (value <= 0)
                 {
                     UnitonConnectLogger.LogWarning("The value for conversion" +
                         " from nanotones must be greater than 0");
 
-                    return 0;
+                    valueConverted?.Invoke(0);
                 }
 
-                return FromNano(value);
+                OnValueConverted = valueConverted;
+
+                FromNano(value, OnValueConvert);
             }
 
             internal sealed class Address
@@ -469,7 +511,8 @@ namespace UnitonConnect.Core
                     return IsTestnetAddress(address);
                 }
 
-                internal static string ToBounceable(string address)
+                internal static void ToBounceable(string address, 
+                    Action<string> addressConverted)
                 {
                     if (string.IsNullOrEmpty(address))
                     {
@@ -479,10 +522,11 @@ namespace UnitonConnect.Core
                         throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
                     }
 
-                    return ToBounceableAddress(address);
+                    ToBounceableAddress(address, OnAddressParse);
                 }
 
-                internal static string ToNonBounceable(string address)
+                internal static void ToNonBounceable(string address,
+                    Action<string> addressConverted)
                 {
                     if (string.IsNullOrEmpty(address))
                     {
@@ -492,10 +536,13 @@ namespace UnitonConnect.Core
                         throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
                     }
 
-                    return ToNonBounceableAddress(address);
+                    OnAddressParsed = addressConverted;
+
+                    ToNonBounceableAddress(address, OnAddressParse);
                 }
 
-                internal static string ToHex(string address)
+                internal static void ToHex(string address,
+                    Action<string> addressConverted)
                 {
                     if (string.IsNullOrEmpty(address))
                     {
@@ -505,7 +552,9 @@ namespace UnitonConnect.Core
                         throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
                     }
 
-                    return ToHexAddress(address);
+                    OnAddressParsed = addressConverted;
+
+                    ToHexAddress(address, OnAddressParse);
                 }
             }
         }
