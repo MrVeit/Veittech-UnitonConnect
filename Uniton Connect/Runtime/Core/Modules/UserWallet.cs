@@ -15,9 +15,6 @@ namespace UnitonConnect.Core.Common
         public bool IsBounceable =>
             TonConnectBridge.Utils.Address.IsBounceable(this.ToString());
 
-        public bool IsHex =>
-            TonConnectBridge.Utils.Address.IsHex(this.ToString());
-
         public bool IsTestOnly =>
             TonConnectBridge.Utils.Address.IsTestOnly(this.ToString());
 

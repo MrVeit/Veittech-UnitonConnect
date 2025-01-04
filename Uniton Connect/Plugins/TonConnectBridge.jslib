@@ -593,27 +593,6 @@ const tonConnectBridge = {
             return parsedAddress.isBounceable;
         },
 
-        isHex: function(address)
-        {
-            if (!tonConnect.isAvailableSDK())
-            {
-                return;
-            }
-
-            if (!tonConnect.isAvailableTonWeb())
-            {
-                return;
-            }
-
-            const correctAddress = UTF8ToString(address);
-            const hexAddress = tonConnect.toHex(address);
-
-            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
-            const hashPart = Buffer.from(parsedAddress.hashPart).toString('hex');
-
-            return hexAddress.includes(hashPart);
-        },
-
         isTestOnly: function(address)
         {
             if (!tonConnect.isAvailableSDK())
@@ -716,11 +695,6 @@ const tonConnectBridge = {
     IsBounceableAddress: function(address)
     {
         return tonConnect.isBounceable(address);
-    },
-
-    IsHexAddress: function(address)
-    {
-        return tonConnect.isHex(address);
     },
 
     IsTestnetAddress: function(address)
