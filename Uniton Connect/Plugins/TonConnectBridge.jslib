@@ -467,7 +467,7 @@ const tonConnectBridge = {
             }
 
             const correctAddress = UTF8ToString(address);
-            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
+            const parsedAddress = new TonWeb.utils.Address(correctAddress);
 
             console.log(`Parsed address in entity: ${parsedAddress}`);
 
@@ -486,7 +486,7 @@ const tonConnectBridge = {
             }
 
             const correctAddress = UTF8ToString(address);
-            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
+            const parsedAddress = new TonWeb.utils.Address(correctAddress);
 
             console.log(`Parsed address in entity: ${parsedAddress}`);
 
@@ -505,7 +505,7 @@ const tonConnectBridge = {
             }
 
             const correctAddress = UTF8ToString(address);
-            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
+            const parsedAddress = new TonWeb.utils.Address(correctAddress);
 
             console.log(`Parsed address in entity: ${parsedAddress}`);
 
