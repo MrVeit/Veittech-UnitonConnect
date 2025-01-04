@@ -8,7 +8,7 @@
 ![Downloads](https://img.shields.io/github/downloads/MrVeit/Veittech-UnitonConnect/total?color=318CE7&style=flat-square&logo=codeigniter&logoColor=E0FFFF)
 
 <p align="left">
- <img width="600px" src="Assets/sdkBackgroundLogo.jpg" alt="qr"/>
+ <img width="600px" src="Assets/sdkBackgroundLogo.png" alt="qr"/>
 </p>
 
 **UNITON CONNECT** is a user-friendly solution for working with the TON ecosystem inside web applications on Unity. 
