@@ -125,7 +125,7 @@ This section is for smooth migration between sdk versions, in case of a global A
 
 # Installation
 
-[Download the latest version of the SDK via the .unityPackage file here](https://github.com/MrVeit/unity-ton-connect/releases).
+[Download the latest version of the SDK via the .unityPackage file here](https://github.com/MrVeit/Veittech-UnitonConnect/releases).
 
 # Initialization
 
