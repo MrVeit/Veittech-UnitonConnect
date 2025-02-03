@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -10,6 +11,7 @@ namespace UnitonConnect.Core.Demo
 {
     public sealed class TestWalletInterfaceAdapter : MonoBehaviour
     {
+        [SerializeField, Space] private JettonConfigsStorage _baseJettonsStorage;
         [SerializeField, Space] private TextMeshProUGUI _debugMessage;
         [SerializeField] private TextMeshProUGUI _shortWalletAddress;
         [SerializeField, Space] private Button _connectButton;
@@ -18,6 +20,7 @@ namespace UnitonConnect.Core.Demo
         [SerializeField] private Button _sendJettonTransactionButton;
         [SerializeField] private Button _openNftCollectionButton;
         [SerializeField, Space] private TestWalletNftCollectionsPanel _nftCollectionPanel;
+        [SerializeField, Space] private List<TestBalanceWidget> _jettonBalancesWidgets;
 
         private string _latestTransactionHash;
 
@@ -184,6 +187,13 @@ namespace UnitonConnect.Core.Demo
                 _sendTransactionButton.interactable = true;
                 _sendJettonTransactionButton.interactable = true;
                 _openNftCollectionButton.interactable = true;
+
+                for (var i = 0; i < _jettonBalancesWidgets.Count; i++)
+                {
+                    _jettonBalancesWidgets[i].Init(_jettonModule, 
+                        _baseJettonsStorage.Jettons[i].MasterAddress);
+                    _jettonBalancesWidgets[i].LoadBalance();
+                }
             }
         }
 

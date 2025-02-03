@@ -234,7 +234,7 @@ namespace UnitonConnect.DeFi
             {
                 if (!IsWalletConnected())
                 {
-                    return;
+                   // return;
                 }
 
                 if (string.IsNullOrEmpty(masterAddress))
@@ -245,7 +245,7 @@ namespace UnitonConnect.DeFi
                     return;
                 }
 
-                var currentAddress = _sdk.Wallet.ToHex();
+                var currentAddress = "UQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk-yXLZXmc2V5I"; //_sdk.Wallet.ToHex();
 
                 _mono.StartCoroutine(TonApiBridge.Jetton.GetBalance(
                     currentAddress, masterAddress, (loadedJettonConfig) =>
