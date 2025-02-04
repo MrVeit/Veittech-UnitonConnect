@@ -102,6 +102,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **USDT**                | ✔️         | Balance, Send, History    |
 | **jUSDT**               | ✔️         | Balance, Send, History    |
 | **jUSDC**               | ✔️         | Balance, Send, History    |
+| **AquaUSD**             | ✔️         | Balance, Send, History    |
 | **GRAM**                | ✔️         | Balance, Send, History    |
 | **NOT**                 | ✔️         | Balance, Send, History    |
 | **DOGS**                | ✔️         | Balance, Send, History    |
