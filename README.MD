@@ -100,10 +100,12 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | ----------------------- | :--------: | :------------------------: |
 | **TON**                 | ✔️         | Balance, Send             |
 | **USDT**                | ✔️         | Balance, Send, History    |
-| **GRAM**                | ✔️         | Balance, History          |
-| **NOT**                 | ✔️         | Balance, History          |
-| **DOGS**                | ✔️         | Balance, History          |
-| **Custom Jetton**       | ✔️         | Balance, History          |
+| **jUSDT**               | ✔️         | Balance, Send, History    |
+| **jUSDC**               | ✔️         | Balance, Send, History    |
+| **GRAM**                | ✔️         | Balance, Send, History    |
+| **NOT**                 | ✔️         | Balance, Send, History    |
+| **DOGS**                | ✔️         | Balance, Send, History    |
+| **Custom Jetton**       | ✔️         | Balance, Send, History    |
 | **NFT**                 | ✔️         | Balance, Filter           |
  
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
