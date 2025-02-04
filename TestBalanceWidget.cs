@@ -38,7 +38,8 @@ namespace UnitonConnect.Core.Demo
         {
             if (masterAddress != _contractAddress)
             {
-                Debug.LogWarning($"Received balance of non-target name jetton: {jettonName}");
+                Debug.LogWarning($"Received balance of " +
+                    $"non-target name jetton: {jettonName}");
 
                 return;
             }
@@ -47,7 +48,8 @@ namespace UnitonConnect.Core.Demo
 
             _balanceBar.text = $"{shortedBalance}";
 
-            Debug.Log($"Loaded jetton balance by name: {jettonName}, value: {shortedBalance}");
+            Debug.Log($"Loaded jetton balance by name: " +
+                $"{jettonName}, value: {shortedBalance}");
         }
     }
 }

@@ -234,7 +234,7 @@ namespace UnitonConnect.DeFi
             {
                 if (!IsWalletConnected())
                 {
-                   // return;
+                    return;
                 }
 
                 if (string.IsNullOrEmpty(masterAddress))
@@ -245,7 +245,7 @@ namespace UnitonConnect.DeFi
                     return;
                 }
 
-                var currentAddress = "UQDB2p0iHYcDK3Yq1kdliitRFaOK9LIynUgk-yXLZXmc2V5I"; //_sdk.Wallet.ToHex();
+                var currentAddress = _sdk.Wallet.ToHex();
 
                 _mono.StartCoroutine(TonApiBridge.Jetton.GetBalance(
                     currentAddress, masterAddress, (loadedJettonConfig) =>
@@ -301,7 +301,8 @@ namespace UnitonConnect.DeFi
                 {
                     if (loadedTransactions == null)
                     {
-                        OnLastTransactionsLoaded?.Invoke(type, new List<JettonTransactionData>());
+                        OnLastTransactionsLoaded?.Invoke(type, 
+                            new List<JettonTransactionData>());
 
                         return;
                     }
@@ -322,19 +323,6 @@ namespace UnitonConnect.DeFi
             public void SendTransaction(JettonTypes type, string recipientAddress,
                 decimal amount, decimal gasFee, string message = null)
             {
-                if (!IsWalletConnected())
-                {
-                    return;
-                }
-
-                if (string.IsNullOrEmpty(recipientAddress))
-                {
-                    UnitonConnectLogger.LogWarning("Recipient address " +
-                        "is required, transaction cancelled");
-
-                    return;
-                }
-
                 var targetJetton = GetConfigByType(type);
 
                 if (targetJetton == null)
@@ -344,7 +332,8 @@ namespace UnitonConnect.DeFi
 
                 _latestMasterAddress = targetJetton.MasterAddress;
 
-                SendTransaction(_latestMasterAddress, recipientAddress, amount, gasFee, message);
+                CreateTransactionPayload(type, _latestMasterAddress, 
+                    recipientAddress, amount, gasFee, message);
             }
 
             /// <summary>
@@ -359,6 +348,13 @@ namespace UnitonConnect.DeFi
             public void SendTransaction(string masterAddress, string recipientAddress,
                 decimal amount, decimal gasFee, string message = null)
             {
+                CreateTransactionPayload(JettonTypes.Custom, masterAddress, 
+                    recipientAddress, amount, gasFee, message);
+            }
+
+            private void CreateTransactionPayload(JettonTypes type, string masterAddress, 
+                string recipient, decimal amount, decimal gasFee, string message = null)
+            {
                 if (!IsWalletConnected())
                 {
                     return;
@@ -366,13 +362,14 @@ namespace UnitonConnect.DeFi
 
                 if (string.IsNullOrEmpty(LatestJettonWalletAddress))
                 {
-                    UnitonConnectLogger.LogWarning("The jetton wallet has not been loaded, start parsing...");
+                    UnitonConnectLogger.LogWarning("The jetton wallet " +
+                        "has not been loaded, start parsing...");
                 }
 
                 var ownerAddress = _sdk.Wallet.ToHex();
-                var recipientToHex = WalletConnectUtils.GetHEXAddress(recipientAddress);
+                var recipientToHex = WalletConnectUtils.GetHEXAddress(recipient);
 
-                if (WalletConnectUtils.IsAddressesMatch(recipientAddress))
+                if (WalletConnectUtils.IsAddressesMatch(recipient))
                 {
                     return;
                 }
@@ -389,8 +386,8 @@ namespace UnitonConnect.DeFi
 
                     LatestJettonWalletAddress = walletConfig.Address;
 
-                    _mono.StartCoroutine(CreateTransaction(amount, gasFee, 
-                        ownerAddress, recipientAddress));
+                    _mono.StartCoroutine(CreateTransaction(type,
+                        amount, gasFee, ownerAddress, recipient));
                 });
             }
 
@@ -416,10 +413,10 @@ namespace UnitonConnect.DeFi
                 }));
             }
 
-            private IEnumerator CreateTransaction(decimal amount, decimal gasFee,
-                string sender, string recipient)
+            private IEnumerator CreateTransaction(JettonTypes jettonType, 
+                decimal amount, decimal gasFee, string sender, string recipient)
             {
-                yield return TonApiBridge.GetTransactionPayload(amount,
+                yield return TonApiBridge.GetTransactionPayload(jettonType, amount,
                     ForwardFee, sender, recipient, (payload) =>
                 {
                     if (string.IsNullOrEmpty(payload))

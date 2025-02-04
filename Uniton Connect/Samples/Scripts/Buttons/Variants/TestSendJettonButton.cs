@@ -15,6 +15,8 @@ namespace UnitonConnect.Core.Demo
         [SerializeField, Space] private TMP_InputField _gasFeeBar;
         [SerializeField, Space] private TMP_InputField _amountBar;
         [SerializeField, Space] private TestWalletAddressBarView _walletAddressView;
+        [SerializeField] private TestWalletAddressBarView _masterAddressView;
+        [SerializeField, Space] private TestSelectedJettonBar _selectedJettonBar;
 
         private UnitonConnectSDK _unitonConnect;
 
@@ -24,6 +26,7 @@ namespace UnitonConnect.Core.Demo
         private decimal _gasFee;
 
         private string _recipientAddress;
+        private string _masterAddress;
 
         private long _lastTransactionQuery;
 
@@ -36,7 +39,7 @@ namespace UnitonConnect.Core.Demo
             _jettonWallet.OnTransactionSended += JettonTransactionSended;
             _jettonWallet.OnTransactionSendFailed += JettonTransactionSendFailed;
 
-            _jettonWallet.OnLastTransactionsLoaded += LatestTransactionLoaded;
+            _jettonWallet.OnLastTransactionsLoaded += LatestTransactionsLoaded;
         }
 
         protected sealed override void OnDisable()
@@ -46,7 +49,7 @@ namespace UnitonConnect.Core.Demo
             _jettonWallet.OnTransactionSended -= JettonTransactionSended;
             _jettonWallet.OnTransactionSendFailed -= JettonTransactionSendFailed;
 
-            _jettonWallet.OnLastTransactionsLoaded -= LatestTransactionLoaded;
+            _jettonWallet.OnLastTransactionsLoaded -= LatestTransactionsLoaded;
         }
 
         private void Init()
@@ -62,11 +65,22 @@ namespace UnitonConnect.Core.Demo
             _gasFee = GetTransactionAmount(_gasFeeBar.text);
 
             _recipientAddress = _walletAddressView.FullAddress;
+            _masterAddress = _masterAddressView.FullAddress;
 
             Debug.Log($"Transaction data for send, fee: {_gasFee}, " +
                 $"amount: {_amount}, recipient address: {_recipientAddress}");
 
-            _jettonWallet.SendTransaction(JettonTypes.USDT, 
+            var selectedJetton = _selectedJettonBar.CurrentJetton;
+
+            if (selectedJetton == JettonTypes.Custom)
+            {
+                _jettonWallet.SendTransaction(_masterAddress,
+                    _recipientAddress, _amount, _gasFee);
+
+                return;
+            }
+
+            _jettonWallet.SendTransaction(selectedJetton, 
                 _recipientAddress, _amount, _gasFee);
         }
 
@@ -80,33 +94,38 @@ namespace UnitonConnect.Core.Demo
         {
             _lastTransactionQuery = transactionData.OutMessages[0].DecodedBody.QueryId;
 
-            Debug.Log($"Jetton transaction successfully founded, query id: {_lastTransactionQuery}");
+            Debug.Log($"Jetton transaction successfully " +
+                $"founded, query id: {_lastTransactionQuery}");
 
             var recipientAddress = transactionData.OutMessages[0].DecodedBody.RecipientAddress;
             var recipientBouceable = WalletConnectUtils.GetHEXAddress(recipientAddress);
 
-            _jettonWallet.GetLastTransactions(TransactionTypes.Received, 10, recipientBouceable);
+            _jettonWallet.GetLastTransactions(
+                TransactionTypes.Received, 10, recipientBouceable);
         }
 
         private void JettonTransactionSendFailed(
             string masterAddress, string errorMessage)
         {
-            Debug.LogError($"Failed to send jetton transaction {masterAddress}, reason: {errorMessage}");
+            Debug.LogError($"Failed to send jetton " +
+                $"transaction {masterAddress}, reason: {errorMessage}");
         }
 
-        private void LatestTransactionLoaded(TransactionTypes type, 
+        private void LatestTransactionsLoaded(TransactionTypes type, 
             List<JettonTransactionData> transactions)
         {
             Debug.Log($"Loaded transactions with type: {type}");
 
-            var lastSendedTransaction = transactions.FirstOrDefault(
-                transaction => transaction.QueryId == _lastTransactionQuery.ToString());
+            var lastSendedTransaction = transactions.FirstOrDefault(transaction => 
+                transaction.QueryId == _lastTransactionQuery.ToString());
 
             if (lastSendedTransaction != null)
             {
-                Debug.Log($"Target transaction loaded: {JsonConvert.SerializeObject(lastSendedTransaction)}");
+                Debug.Log($"Target transaction loaded: " +
+                    $"{JsonConvert.SerializeObject(lastSendedTransaction)}");
 
-                Debug.Log("Sent transaction successfully confirmed, recipient received the sent jettons!");
+                Debug.Log("Sent transaction successfully " +
+                    "confirmed, recipient received the sent jettons!");
             }
         }
     }

@@ -11,6 +11,7 @@ using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.Editor.Common;
+using UnitonConnect.Core.Common;
 
 namespace UnitonConnect.ThirdParty
 {
@@ -95,8 +96,8 @@ namespace UnitonConnect.ThirdParty
             }
         }
 
-        internal static IEnumerator GetTransactionPayload(decimal amount,
-            decimal forwardFee, string senderTonAddress, 
+        internal static IEnumerator GetTransactionPayload(JettonTypes jettonType, 
+            decimal amount, decimal forwardFee, string senderTonAddress, 
             string recipientTonAddress, Action<string> payloadLoaded)
         {
             var apiUrl = ProjectStorageConsts.GetRuntimeAppStorage().Data.ServerApiLink;
@@ -118,6 +119,7 @@ namespace UnitonConnect.ThirdParty
                 GasFeeInTon = forwardFee,
                 RecipientJettonAddress = recipientTonAddress,
                 SenderTonAddress = senderTonAddress,
+                JettonName = jettonType.ToString()
             };
 
             var jsonData = JsonConvert.SerializeObject(payloadData);
@@ -140,16 +142,19 @@ namespace UnitonConnect.ThirdParty
 
                 if (request.result == WebRequestUtils.SUCCESS)
                 {
-                    var loadedData = JsonConvert.DeserializeObject<LoadedTransactionPayloadData>(responseData);
+                    var loadedData = JsonConvert.DeserializeObject<
+                        LoadedTransactionPayloadData>(responseData);
 
-                    UnitonConnectLogger.Log($"Jetton transaction payload created: {loadedData.Payload}");
+                    UnitonConnectLogger.Log($"Jetton transaction " +
+                        $"payload created: {loadedData.Payload}");
 
                     payloadLoaded?.Invoke(loadedData.Payload);
 
                     yield break;
                 }
 
-                var errorData = JsonConvert.DeserializeObject<ServerResponseData>(responseData);
+                var errorData = JsonConvert.DeserializeObject<
+                    ServerResponseData>(responseData);
 
                 UnitonConnectLogger.LogError($"Failed to create transaction`" +
                     $" payload, reason: {errorData.Message}");

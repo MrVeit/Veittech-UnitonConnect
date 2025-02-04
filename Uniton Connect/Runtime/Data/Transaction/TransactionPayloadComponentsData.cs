@@ -17,5 +17,8 @@ namespace UnitonConnect.Core.Data
 
         [JsonProperty("recipientAddress")]
         public string RecipientJettonAddress { get; set; }
+
+        [JsonProperty("jettonType")]
+        public string JettonName { get; set; }
     }
 }
