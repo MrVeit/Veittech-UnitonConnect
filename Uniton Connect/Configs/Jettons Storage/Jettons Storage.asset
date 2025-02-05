@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Jettons Storage
   m_EditorClassIdentifier: 
   <Jettons>k__BackingField:
-  - {fileID: 11400000, guid: d1629a3c4f8a5e64c8e8e991647aa67c, type: 2}
+  - {fileID: 11400000, guid: dd7a3b8e46e652849b51755af4791d98, type: 2}
   - {fileID: 11400000, guid: eaef9ec7af2ded549a655cf66e24b3e4, type: 2}
   - {fileID: 11400000, guid: 3f5db39c6f0e7b64491ac3a186555a81, type: 2}
   - {fileID: 11400000, guid: 5f9b18a616f29504480216978d8d0159, type: 2}
-  - {fileID: 11400000, guid: dd7a3b8e46e652849b51755af4791d98, type: 2}
+  - {fileID: 11400000, guid: d1629a3c4f8a5e64c8e8e991647aa67c, type: 2}
   - {fileID: 11400000, guid: 9e4c8d46098173247b8293e1a8bba9dc, type: 2}
   - {fileID: 11400000, guid: a55f0997918d6a7429cb4ab0497cb510, type: 2}

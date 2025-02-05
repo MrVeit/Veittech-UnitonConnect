@@ -387,7 +387,7 @@ namespace UnitonConnect.DeFi
                     LatestJettonWalletAddress = walletConfig.Address;
 
                     _mono.StartCoroutine(CreateTransaction(type,
-                        amount, gasFee, ownerAddress, recipient));
+                        amount, gasFee, ownerAddress, recipient, message));
                 });
             }
 

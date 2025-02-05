@@ -71,7 +71,7 @@ namespace UnitonConnect.Core.Demo
             _transactionComment = _commentBar.text;
 
             Debug.Log($"Transaction data for send, fee: {_gasFee}, " +
-                $"amount: {_amount}, recipient address: {_recipient}");
+                $"amount: {_amount}, recipient address: {_recipient}, comment: {_transactionComment}");
 
             var selectedJetton = _selectedJettonBar.CurrentJetton;
 
