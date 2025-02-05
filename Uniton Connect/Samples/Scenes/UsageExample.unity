@@ -1273,7 +1273,7 @@ MonoBehaviour:
   _interfaceAdapter: {fileID: 515026109}
   _gasFeeBar: {fileID: 1687684746}
   _amountBar: {fileID: 1668083709}
-  _commentBar: {fileID: 0}
+  _commentBar: {fileID: 774189502}
   _targetWalletAddress: {fileID: 1905833313}
   _widgetsPanel: {fileID: 230079495}
 --- !u!114 &147414670
@@ -6631,7 +6631,7 @@ MonoBehaviour:
   _target: {fileID: 1164028645}
   _gasFeeBar: {fileID: 1687684746}
   _amountBar: {fileID: 1668083709}
-  _commentBar: {fileID: 0}
+  _commentBar: {fileID: 774189502}
   _walletAddressView: {fileID: 1905833313}
   _masterAddressView: {fileID: 626571550}
   _selectedJettonBar: {fileID: 679251262}
