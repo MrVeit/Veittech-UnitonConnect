@@ -20,5 +20,8 @@ namespace UnitonConnect.Core.Data
 
         [JsonProperty("jettonType")]
         public string JettonName { get; set; }
+
+        [JsonProperty("message")]
+        public string? Comment { get; set; }
     }
 }

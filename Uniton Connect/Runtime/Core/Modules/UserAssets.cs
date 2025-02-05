@@ -413,11 +413,11 @@ namespace UnitonConnect.DeFi
                 }));
             }
 
-            private IEnumerator CreateTransaction(JettonTypes jettonType, 
-                decimal amount, decimal gasFee, string sender, string recipient)
+            private IEnumerator CreateTransaction(JettonTypes jettonType, decimal amount,
+                decimal gasFee, string sender, string recipient, string message = null)
             {
                 yield return TonApiBridge.GetTransactionPayload(jettonType, amount,
-                    ForwardFee, sender, recipient, (payload) =>
+                    ForwardFee, sender, recipient, message, (payload) =>
                 {
                     if (string.IsNullOrEmpty(payload))
                     {

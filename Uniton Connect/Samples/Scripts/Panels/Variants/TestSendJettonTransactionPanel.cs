@@ -8,9 +8,11 @@ namespace UnitonConnect.Core.Demo
         [SerializeField, Space] private TestWalletInterfaceAdapter _interfaceAdapter;
         [SerializeField, Space] private TMP_InputField _gasFeeBar;
         [SerializeField] private TMP_InputField _amountBar;
+        [SerializeField] private TMP_InputField _commentBar;
         [SerializeField, Space] private TestWalletAddressBarView _targetWalletAddress;
         [SerializeField, Space] private TestBalanceWidgetsPanel _widgetsPanel;
 
+        private const string START_MESSAGE = "Made by Uniton Connect";
         private const string CREATOR_ADDRESS =
             "0:cfc0493e72741711f15a68d557cb0a5b280094330551ba99205a386bfdfe14ae";
 
@@ -19,6 +21,7 @@ namespace UnitonConnect.Core.Demo
 
         public void Init()
         {
+            _commentBar.text = START_MESSAGE;
             _amountBar.text = START_AMOUNT.ToString();
             _gasFeeBar.text = START_FEE.ToString();
 

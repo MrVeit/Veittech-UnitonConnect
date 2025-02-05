@@ -1,6 +1,6 @@
+using System;
 using UnityEngine;
 using TMPro;
-using UnitonConnect.Core.Common;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
 
@@ -19,7 +19,6 @@ namespace UnitonConnect.Core.Demo
         private string _latestTransactionHash;
 
         private const string START_MESSAGE = "Made by Uniton Connect";
-
         private const string CREATOR_WALLET_ADDRESS = 
             "EQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4UrpH_";
 
@@ -69,7 +68,7 @@ namespace UnitonConnect.Core.Demo
 
         private void SetTonBalance(decimal balance)
         {
-            _balanceBar.text = $"Balance: {balance} TON";
+            _balanceBar.text = $"Balance: {Math.Round(balance, 4)} TON";
         }
 
         private void TonBalanceClaimed(decimal tonBalance)
@@ -79,16 +78,17 @@ namespace UnitonConnect.Core.Demo
 
         private void TransactionSendingFinished(string transactionHash)
         {
-            Debug.Log($"Claimed transaction hash: {transactionHash}");
-
             _latestTransactionHash = transactionHash;
+
+            Debug.Log($"Claimed transaction hash: {transactionHash}");
         }
 
         private void TonTransactionConfirmed(SuccessTransactionData transactionData)
         {
-            Debug.Log($"Ton transaction {_latestTransactionHash} confirmed with status: {transactionData.IsSuccess}");
-
             SetTonBalance(transactionData.EndBalance.FromNanoton());
+
+            Debug.Log($"Ton transaction {_latestTransactionHash} " +
+                $"confirmed with status: {transactionData.IsSuccess}");
         }
     }
 }

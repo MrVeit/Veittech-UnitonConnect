@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 389a63dfb53dc8a4783bb7b37b8fd51f, type: 3}
+  m_Name: Jetton_jUSDT
+  m_EditorClassIdentifier: 
+  <Type>k__BackingField: 3
+  <Name>k__BackingField: jUSDT
+  <MasterAddress>k__BackingField: 0:729c13b6df2c07cbf0a06ab63d34af454f3d320ec1bcd8fb5c6d24d0806a17c2
+  <IconUrl>k__BackingField: https://cache.tonapi.io/imgproxy/CwB_AmfxXaRx6D2SB22UgGJJu-P49hbxhjTnxv5Ruek/rs:fill:200:200:1/g:no/aHR0cHM6Ly9icmlkZ2UudG9uLm9yZy90b2tlbi8xLzB4ZGFjMTdmOTU4ZDJlZTUyM2EyMjA2MjA2OTk0NTk3YzEzZDgzMWVjNy5wbmc.webp

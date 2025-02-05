@@ -98,7 +98,7 @@ namespace UnitonConnect.ThirdParty
 
         internal static IEnumerator GetTransactionPayload(JettonTypes jettonType, 
             decimal amount, decimal forwardFee, string senderTonAddress, 
-            string recipientTonAddress, Action<string> payloadLoaded)
+            string recipientTonAddress, string message, Action<string> payloadLoaded)
         {
             var apiUrl = ProjectStorageConsts.GetRuntimeAppStorage().Data.ServerApiLink;
             
@@ -119,7 +119,8 @@ namespace UnitonConnect.ThirdParty
                 GasFeeInTon = forwardFee,
                 RecipientJettonAddress = recipientTonAddress,
                 SenderTonAddress = senderTonAddress,
-                JettonName = jettonType.ToString()
+                JettonName = jettonType.ToString(),
+                Comment = message
             };
 
             var jsonData = JsonConvert.SerializeObject(payloadData);

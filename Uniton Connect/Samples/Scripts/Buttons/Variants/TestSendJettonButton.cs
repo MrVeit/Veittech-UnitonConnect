@@ -13,7 +13,8 @@ namespace UnitonConnect.Core.Demo
     public sealed class TestSendJettonButton : TestBaseButton
     {
         [SerializeField, Space] private TMP_InputField _gasFeeBar;
-        [SerializeField, Space] private TMP_InputField _amountBar;
+        [SerializeField] private TMP_InputField _amountBar;
+        [SerializeField] private TMP_InputField _commentBar;
         [SerializeField, Space] private TestWalletAddressBarView _walletAddressView;
         [SerializeField] private TestWalletAddressBarView _masterAddressView;
         [SerializeField, Space] private TestSelectedJettonBar _selectedJettonBar;
@@ -25,8 +26,9 @@ namespace UnitonConnect.Core.Demo
         private decimal _amount;
         private decimal _gasFee;
 
-        private string _recipientAddress;
+        private string _recipient;
         private string _masterAddress;
+        private string _transactionComment;
 
         private long _lastTransactionQuery;
 
@@ -64,24 +66,25 @@ namespace UnitonConnect.Core.Demo
             _amount = GetTransactionAmount(_amountBar.text);
             _gasFee = GetTransactionAmount(_gasFeeBar.text);
 
-            _recipientAddress = _walletAddressView.FullAddress;
+            _recipient = _walletAddressView.FullAddress;
             _masterAddress = _masterAddressView.FullAddress;
+            _transactionComment = _commentBar.text;
 
             Debug.Log($"Transaction data for send, fee: {_gasFee}, " +
-                $"amount: {_amount}, recipient address: {_recipientAddress}");
+                $"amount: {_amount}, recipient address: {_recipient}");
 
             var selectedJetton = _selectedJettonBar.CurrentJetton;
 
             if (selectedJetton == JettonTypes.Custom)
             {
-                _jettonWallet.SendTransaction(_masterAddress,
-                    _recipientAddress, _amount, _gasFee);
+                _jettonWallet.SendTransaction(_masterAddress, _recipient,
+                    _amount, _gasFee, _transactionComment);
 
                 return;
             }
 
-            _jettonWallet.SendTransaction(selectedJetton, 
-                _recipientAddress, _amount, _gasFee);
+            _jettonWallet.SendTransaction(selectedJetton, _recipient,
+                _amount, _gasFee, _transactionComment);
         }
 
         private decimal GetTransactionAmount(string textBar)
