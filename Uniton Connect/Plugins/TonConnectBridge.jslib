@@ -367,7 +367,8 @@ const tonConnectBridge = {
                 let claimedBoc = result.boc;
                 const hashBase64 = tonConnect.convertBocToHashBase64(claimedBoc);
 
-                console.log(`[UNITON CONNECT] Parsed assets transaction hash: ${hashBase64}`);
+                console.log(`[UNITON CONNECT] Parsed assets transaction `+
+                    `hash: ${JSON.stringify(hashBase64)}`);
 
                 const hashPtr = tonConnect.allocString(hashBase64);
 
@@ -432,7 +433,8 @@ const tonConnectBridge = {
                 let claimedBoc = result.boc;
                 const hashBase64 = tonConnect.convertBocToHashBase64(claimedBoc);
 
-                console.log(`[UNITON CONNECT] Parsed toncoin transaction hash: ${hashBase64}`);
+                console.log(`[UNITON CONNECT] Parsed toncoin transaction `+
+                    `hash: ${JSON.stringify(hashBase64)}`);
 
                 const hashPtr = tonConnect.allocString(hashBase64);
 
@@ -491,7 +493,7 @@ const tonConnectBridge = {
             const nonBouceableAddress = parsedAddress.toString(true, true, false, false);
 
             console.log(`[UNITON CONNECT] Address ${parsedAddress} converted to `+
-                `non bouceable format: ${nonBouceableAddress}`);
+                `non bounceable format: ${nonBouceableAddress}`);
 
             const addressPtr = tonConnect.allocString(nonBouceableAddress);
 

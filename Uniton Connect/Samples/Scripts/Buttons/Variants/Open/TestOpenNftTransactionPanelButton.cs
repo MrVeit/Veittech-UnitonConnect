@@ -15,7 +15,7 @@ namespace UnitonConnect.Core.Demo
         public void Init(UserAssets.NFT nftStorage,
             string nftName, string nftAddress)
         {
-            _nftAddress = nftAddress;
+            _nftStorage = nftStorage;
 
             _nftItemName = nftName;
             _nftAddress = nftAddress;
