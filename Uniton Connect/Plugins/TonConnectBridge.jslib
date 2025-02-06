@@ -365,12 +365,12 @@ const tonConnectBridge = {
                 }
                 
                 let claimedBoc = result.boc;
-                const hashBase64 = tonConnect.convertBocToHashBase64(claimedBoc);
+
+                const hashBase64 = await tonConnect.convertBocToHashBase64(claimedBoc);
+                const hashPtr = tonConnect.allocString(hashBase64);
 
                 console.log(`[UNITON CONNECT] Parsed assets transaction `+
                     `hash: ${JSON.stringify(hashBase64)}`);
-
-                const hashPtr = tonConnect.allocString(hashBase64);
 
                 dynCall('vi', callback, [hashPtr]);
 
@@ -431,12 +431,12 @@ const tonConnectBridge = {
                 }
                 
                 let claimedBoc = result.boc;
-                const hashBase64 = tonConnect.convertBocToHashBase64(claimedBoc);
+
+                const hashBase64 = await tonConnect.convertBocToHashBase64(claimedBoc);
+                const hashPtr = tonConnect.allocString(hashBase64);
 
                 console.log(`[UNITON CONNECT] Parsed toncoin transaction `+
                     `hash: ${JSON.stringify(hashBase64)}`);
-
-                const hashPtr = tonConnect.allocString(hashBase64);
 
                 dynCall('vi', callback, [hashPtr]);
 
