@@ -14,18 +14,18 @@ namespace UnitonConnect.Core.Demo
         [SerializeField] private Image _selectIcon;
         [SerializeField, Space] private Button _selectButton;
 
-        private NftItemData _nftItem;
+        private NftViewData _nftItem;
 
         public string Address
         {
             get
             {
-                if (string.IsNullOrEmpty(_nftItem.Address))
+                if (string.IsNullOrEmpty(_nftItem.NFTAddress))
                 {
                     return null;
                 }
 
-                return _nftItem.Address;
+                return _nftItem.NFTAddress;
             }
         }
 
@@ -33,7 +33,7 @@ namespace UnitonConnect.Core.Demo
         {
             get
             {
-                var name = _nftItem.Metadata.ItemName;
+                var name = _nftItem.Name;
 
                 if (string.IsNullOrEmpty(name))
                 {
@@ -46,11 +46,13 @@ namespace UnitonConnect.Core.Demo
 
         public void SetView(NftViewData viewData)
         {
-            _headerName.text = viewData.Name;
+            _nftItem = viewData;
+
+            _headerName.text = _nftItem.Name;
 
             _selectButton.onClick.AddListener(SelectForTransfer);
 
-            SetIcon(viewData.Icon);
+            SetIcon(_nftItem.Icon);
         }
 
         public void SetIcon(Texture2D icon)
@@ -76,6 +78,8 @@ namespace UnitonConnect.Core.Demo
         private void SelectForTransfer()
         {
             Select();
+
+            Debug.Log($"Start selecting NFT with address: {Address}");
 
             TestInputViewEvents.NftItemSelected(Address);
         }

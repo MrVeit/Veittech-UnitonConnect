@@ -128,7 +128,8 @@ namespace UnitonConnect.Core.Demo
                 var newNftView = new NftViewData()
                 {
                     Icon = nftIcon,
-                    Name = nftName
+                    Name = nftName,
+                    NFTAddress = nft.Address,
                 };
 
                 nftVisual.Add(newNftView);
