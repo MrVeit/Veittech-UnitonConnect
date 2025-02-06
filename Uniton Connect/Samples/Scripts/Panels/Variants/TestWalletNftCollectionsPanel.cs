@@ -57,6 +57,8 @@ namespace UnitonConnect.Core.Demo
             _nftStorage.OnTransactionSended -= NftItemSended;
 
             TestInputViewEvents.OnNftItemSelected -= NftItemSelected;
+
+            UnSelectNftItems();
         }
 
         public void Init()
@@ -111,6 +113,11 @@ namespace UnitonConnect.Core.Demo
 
             if (_loadedCollections == null)
             {
+                Debug.LogWarning("Detected skam NFT items, " +
+                    "creating elements in gallery cancelled");
+
+                NftCollectionsNotFounded();
+
                 return;
             }
 

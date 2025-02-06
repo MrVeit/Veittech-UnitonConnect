@@ -54,7 +54,7 @@ namespace UnitonConnect.Core
         [Tooltip("List of available tokens for transactions/reading balances and more")]
         [SerializeField, Space] private JettonConfigsStorage _jettonStorage;
 
-        private NewWalletConfig _connectedWalletConfig;
+        private WalletConfig _connectedWalletConfig;
 
         private bool _isInitialized;
         private bool _isWalletConnected;
@@ -64,7 +64,7 @@ namespace UnitonConnect.Core
 
         public decimal TonBalance { get; private set; }
 
-        public NewWalletConfig ConnectedWalletConfig => _connectedWalletConfig;
+        public WalletConfig ConnectedWalletConfig => _connectedWalletConfig;
         public JettonConfigsStorage JettonStorage => _jettonStorage;
 
         public bool IsInitialized => _isInitialized;
@@ -81,19 +81,9 @@ namespace UnitonConnect.Core
         public event IUnitonConnectSDKCallbacks.OnInitialize OnInitiliazed;
 
         /// <summary>
-        /// Callback if native sdk initialization finished with same result
-        /// </summary>
-        public event IUnitonConnectSDKCallbacks.OnNativeUnitonConnectInitialize OnNativeInitialized;
-
-        /// <summary>
         /// Callback in case of successful native wallet connection
         /// </summary>
         public event IUnitonConnectWalletCallbacks.OnWalletConnect OnWalletConnected;
-
-        /// <summary>
-        /// Callback in case of successful native wallet connection
-        /// </summary>
-        public event IUnitonConnectWalletCallbacks.OnNativeWalletConnectionFinish OnNativeWalletConnectionFinished;
 
         /// <summary>
         /// Callback for error handling, in case of unsuccessful wallet connection
@@ -101,19 +91,9 @@ namespace UnitonConnect.Core
         public event IUnitonConnectWalletCallbacks.OnWalletConnectFail OnWalletConnectFailed;
 
         /// <summary>
-        /// Callback for error handling, in case of unsuccessful wallet connection
-        /// </summary>
-        public event IUnitonConnectWalletCallbacks.OnNativeWalletConnectionFail OnNativeWalletConnectionFailed;
-
-        /// <summary>
         /// Callback for processing the status of restored native connection to the wallet
         /// </summary>
         public event IUnitonConnectWalletCallbacks.OnWalletConnectRestore OnWalletConnectRestored;
-
-        /// <summary>
-        /// Callback for processing the status of restored native connection to the wallet
-        /// </summary>
-        public event IUnitonConnectWalletCallbacks.OnNativeWalletConnectionRestore OnNativeWalletConnectionRestored;
 
         /// <summary>
         /// Callback to handle native wallet connection disconnection status
@@ -121,38 +101,19 @@ namespace UnitonConnect.Core
         public event IUnitonConnectWalletCallbacks.OnWalletDisconnect OnWalletDisconnected;
 
         /// <summary>
-        /// Callback to handle native wallet connection disconnection status
-        /// </summary>
-        public event IUnitonConnectWalletCallbacks.OnNativeWalletDisconnect OnNativeWalletDisconnected;
-
-        /// <summary>
         /// Callback to process the status of the sent toncoin transaction and get its hash
         /// </summary>
         public event IUnitonConnectTonCallbacks.OnTonTransactionSend OnTonTransactionSended;
 
         /// <summary>
-        /// Callback to process the status of a sent toncoin transaction and retrieve its hash
-        /// </summary>
-        public event IUnitonConnectTonCallbacks.OnNativeTransactionSendingFinish OnNativeSendingTonFinished;
-
-        /// <summary>
         /// Callback to handle failed sending of a transaction with toncoin
         /// </summary>
         public event IUnitonConnectTonCallbacks.OnTonTransactionSendFail OnTonTransactionSendFailed;
-        /// <summary>
-        /// Callback to handle failed sending of a transaction with toncoin
-        /// </summary>
-        public event IUnitonConnectTonCallbacks.OnNativeTransactionSendingFail OnNativeTransactionSendingFailed;
 
         /// <summary>
         /// Callback to retrieve transaction information from the blockchain after the transaction has been successfully sent
         /// </summary>
         public event IUnitonConnectTonCallbacks.OnTonTransactionConfirm OnTonTransactionConfirmed;
-
-        /// <summary>
-        /// Callback to retrieve transaction information from the blockchain after it has been successfully sent
-        /// </summary>
-        public event IUnitonConnectTonCallbacks.OnNativeTransactionConfirm OnNativeTransactionConfirmed;
 
         /// <summary>
         /// Callback to get the current amount of toncoin on the wallet
@@ -398,10 +359,9 @@ namespace UnitonConnect.Core
         private void OnInitialize(bool isSuccess)
         {
             OnInitiliazed?.Invoke(isSuccess);
-            OnNativeInitialized?.Invoke(isSuccess);
         }
 
-        private void OnConnect(NewWalletConfig walletConfig)
+        private void OnConnect(WalletConfig walletConfig)
         {
             _isWalletConnected = true;
 
@@ -410,20 +370,11 @@ namespace UnitonConnect.Core
             var nonBouceableAddress = WalletConnectUtils
                 .GetNonBounceableAddress(walletConfig.Address);
 
-            var config = new WalletConfig()
-            {
-                Address = nonBouceableAddress,
-                Chain = walletConfig.Chain,
-                PublicKey = walletConfig.PublicKey,
-                StateInit = walletConfig.StateInit,
-            };
+            walletConfig.Address = nonBouceableAddress;
 
-            NewWalletConfig updatedConfig = config;
+            Wallet = new UserWallet(nonBouceableAddress, walletConfig);
 
-            Wallet = new UserWallet(nonBouceableAddress, updatedConfig);
-
-            OnWalletConnected?.Invoke(config);
-            OnNativeWalletConnectionFinished?.Invoke(updatedConfig);
+            OnWalletConnected?.Invoke(walletConfig);
         }
 
         private void OnConnectFail(string errorMessage)
@@ -431,7 +382,6 @@ namespace UnitonConnect.Core
             _isWalletConnected = false;
 
             OnWalletConnectFailed?.Invoke(errorMessage);
-            OnNativeWalletConnectionFailed?.Invoke(errorMessage);
         }
 
         private void OnConnectRestore(bool isRestored)
@@ -442,7 +392,6 @@ namespace UnitonConnect.Core
             }
 
             OnWalletConnectRestored?.Invoke(isRestored);
-            OnNativeWalletConnectionRestored?.Invoke(isRestored);
         }
 
         private void OnDisconnect(bool isSuccess)
@@ -452,13 +401,11 @@ namespace UnitonConnect.Core
             Wallet = new UserWallet(null, null);
 
             OnWalletDisconnected?.Invoke(isSuccess);
-            OnNativeWalletDisconnected?.Invoke(isSuccess);
         }
 
         private void OnSendingTonFinish(string transactionHash)
         {
             OnTonTransactionSended?.Invoke(transactionHash);
-            OnNativeSendingTonFinished?.Invoke(transactionHash);
 
             UnitonConnectLogger.Log("Ton transaction successfully sended, " +
                 "start fetching status from blockchain...");
@@ -469,13 +416,11 @@ namespace UnitonConnect.Core
         private void OnSendingTonFail(string errorMessage)
         {
             OnTonTransactionSendFailed?.Invoke(errorMessage);
-            OnNativeTransactionSendingFailed?.Invoke(errorMessage);
         }
 
         private void OnSendingTonConfirm(SuccessTransactionData transactionData)
         {
             OnTonTransactionConfirmed?.Invoke(transactionData);
-            OnNativeTransactionConfirmed?.Invoke(transactionData);
         }
     }
 }

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -6,7 +5,6 @@ using UnitonConnect.Runtime.Data;
 
 namespace UnitonConnect.Core.Data
 {
-    [Serializable]
     public sealed class UserAccountData
     {
         [JsonProperty("address")]

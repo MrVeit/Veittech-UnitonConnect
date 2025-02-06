@@ -39,8 +39,8 @@ namespace UnitonConnect.Core.Demo
 
             _unitonSDK.OnWalletConnected += WalletConnectionFinished;
             _unitonSDK.OnWalletConnectFailed += WalletConnectionFailed;
-            _unitonSDK.OnWalletConnectRestored += WalletConnectionRestored;
 
+            _unitonSDK.OnWalletConnectRestored += WalletConnectionRestored;
             _unitonSDK.OnWalletDisconnected += WalletDisconnected;
 
             _unitonSDK.OnTonTransactionSended += TonTransactionSended;
@@ -55,14 +55,14 @@ namespace UnitonConnect.Core.Demo
 
             _unitonSDK.OnWalletConnected -= WalletConnectionFinished;
             _unitonSDK.OnWalletConnectFailed -= WalletConnectionFailed;
+
             _unitonSDK.OnWalletConnectRestored -= WalletConnectionRestored;
+            _unitonSDK.OnWalletDisconnected -= WalletDisconnected;
 
-            _unitonSDK.OnNativeWalletDisconnected -= WalletDisconnected;
+            _unitonSDK.OnTonTransactionSended -= TonTransactionSended;
+            _unitonSDK.OnTonTransactionSendFailed -= TonTransactionSendFailed;
 
-            _unitonSDK.OnNativeSendingTonFinished -= TonTransactionSended;
-            _unitonSDK.OnNativeTransactionConfirmed -= TonTransactionConfirmed;
-
-            _unitonSDK.OnNativeTransactionSendingFailed -= TonTransactionSendFailed;
+            _unitonSDK.OnTonTransactionConfirmed -= TonTransactionConfirmed;
 
             if (_nftModule == null)
             {
@@ -117,10 +117,13 @@ namespace UnitonConnect.Core.Demo
 
             string recipientAddress = transaction.OutMessages[0].Recipient.Address;
 
-            if (transactionName == "JETTON" || 
-                transactionName == "NFT")
+            if (transactionName == "JETTON")
             {
                 recipientAddress = transaction.OutMessages[0].DecodedBody.RecipientAddress;
+            }
+            else if (transactionName == "NFT")
+            {
+                recipientAddress = transaction.OutMessages[0].DecodedBody.NewOwner;
             }
 
             var convertedAddress = WalletConnectUtils.GetNonBounceableAddress(recipientAddress);
@@ -131,8 +134,17 @@ namespace UnitonConnect.Core.Demo
             {
                 message = transaction.OutMessages[0].DecodedBody.MessageText;
             }
+            else if (transactionName == "JETTON")
+            {
+                message = transaction.OutMessages[0].DecodedBody.ForwardPayload.Value.Value.MessageText;
+            }
 
-            _debugMessage.text = $"Loaded {transactionName} transaction data: \n" +
+            if (transactionName != "TON")
+            {
+                transactionName = transaction.OutMessages[0].DecodedOperationName.ToUpper();
+            }
+
+            _debugMessage.text = $"Loaded '{transactionName}' transaction data: \n" +
                 $"STATUS: {transaction.IsSuccess},\n" +
                 $"HASH: {transaction.Hash},\n" +
                 $"NEW BALANCE: {newBalance} TON,\n" +
@@ -166,7 +178,7 @@ namespace UnitonConnect.Core.Demo
             _jettonModule.OnTransactionSendFailed += JettonTransactionSendFailed;
         }
 
-        private void WalletConnectionFinished(NewWalletConfig wallet)
+        private void WalletConnectionFinished(WalletConfig wallet)
         {
             if (_unitonSDK.IsWalletConnected)
             {

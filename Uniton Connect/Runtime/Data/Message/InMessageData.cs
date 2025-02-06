@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace UnitonConnect.Core.Data
 {
-    [Serializable]
     public class InMessageData
     {
         [JsonProperty("msg_type")]
@@ -35,10 +33,10 @@ namespace UnitonConnect.Core.Data
         public long IhrFee { get; set; }
 
         [JsonProperty("destination")]
-        public TransactionRecipientData Recipient { get; set; }
+        public WalletAccountData Recipient { get; set; }
 
         [JsonProperty("source")]
-        public TransactionSenderData Sender { get; set; }
+        public WalletAccountData Sender { get; set; }
 
         [JsonProperty("import_fee")]
         public long ImportFee { get; set; }
@@ -59,7 +57,7 @@ namespace UnitonConnect.Core.Data
         public string RawBody { get; set; }
 
         [JsonProperty("decoded_op_name")]
-        public string DecodedOpName { get; set; }
+        public string DecodedOperationName { get; set; }
 
         [JsonProperty("decoded_body")]
         public TransactionDecodedBodyData DecodedBody { get; set; }
@@ -80,7 +78,6 @@ namespace UnitonConnect.Core.Data
         public string Amount { get; set; }
 
         [JsonProperty("preview")]
-
         public string Preview { get; set; }
     }
 

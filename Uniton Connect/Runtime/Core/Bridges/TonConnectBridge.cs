@@ -163,7 +163,7 @@ namespace UnitonConnect.Core
             }
 
             var walletConfig = JsonConvert.DeserializeObject<
-                NewWalletConfig>(walletInfo);
+                WalletConfig>(walletInfo);
 
             if (walletConfig == null)
             {
@@ -360,7 +360,7 @@ namespace UnitonConnect.Core
         private static Action<bool> OnWalletDisconnected;
         private static Action<bool> OnWalletConnectionRestored;
 
-        private static Action<NewWalletConfig> OnWalletSuccessfullyConnected;
+        private static Action<WalletConfig> OnWalletSuccessfullyConnected;
         private static Action<string> OnWalletConnectFailed;
 
         private static Action<string> OnTonTransactionSended;
@@ -381,7 +381,7 @@ namespace UnitonConnect.Core
         }
 
         internal static void Init(string manifestUrl, 
-            Action<bool> sdkInitialized, Action<NewWalletConfig> walletConnectionDetected,
+            Action<bool> sdkInitialized, Action<WalletConfig> walletConnectionDetected,
             Action<string> walletConnectionDetectFailed, Action<bool> connectionRestored)
         {
             OnInitialized = sdkInitialized;
@@ -397,7 +397,7 @@ namespace UnitonConnect.Core
         }
 
         internal static void Connect(
-            Action<NewWalletConfig> walletConnected,
+            Action<WalletConfig> walletConnected,
             Action<string> walletConnectFailed)
         {
             OnWalletSuccessfullyConnected = walletConnected;

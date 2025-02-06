@@ -1,9 +1,7 @@
-using System;
 using Newtonsoft.Json;
 
 namespace UnitonConnect.Core.Data
 {
-    [Serializable]
     public sealed class TransactionInternalMessageData
     {
         [JsonProperty("ihr_disabled")]

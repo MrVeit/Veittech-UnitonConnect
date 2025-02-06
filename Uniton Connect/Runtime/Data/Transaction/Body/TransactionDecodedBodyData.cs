@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace UnitonConnect.Core.Data
 {
-    [Serializable]
     public sealed class TransactionDecodedBodyData
     {
         // TON TRANSACTION BODY
@@ -47,7 +45,18 @@ namespace UnitonConnect.Core.Data
         [JsonProperty("forward_ton_amount")]
         public string ForwardTonAmount { get; set; }
 
+        [JsonProperty("forward_amount")]
+        public ServerResponseData ForwardAmount { get; set; }
+
         [JsonProperty("forward_payload")]
-        public object ForwardPayload { get; set; }
+        public TransactionBodyData? ForwardPayload { get; set; }
+
+        // NFT TRANSACTION BODY
+
+        [JsonProperty("new_owner")]
+        public string NewOwner { get; set; }
+
+        [JsonProperty("custom_payload")]
+        public object CustomPayload { get; set; }
     }
 }
