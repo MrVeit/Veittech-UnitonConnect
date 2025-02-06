@@ -470,7 +470,7 @@ const tonConnectBridge = {
             const parsedAddress = tonConnect.parseAddress(address);
             const bouceableAddress = parsedAddress.toString(true, true, true, false);
 
-            console.log(`[UNITON CONNECT] Address ${correctAddress} converted `+
+            console.log(`[UNITON CONNECT] Address ${parsedAddress} converted `+
                 `to bounceable format: ${bouceableAddress}`);
 
             const addressPtr = tonConnect.allocString(bouceableAddress);
@@ -490,7 +490,7 @@ const tonConnectBridge = {
             const parsedAddress = tonConnect.parseAddress(address);
             const nonBouceableAddress = parsedAddress.toString(true, true, false, false);
 
-            console.log(`[UNITON CONNECT] Address ${correctAddress} converted to `+
+            console.log(`[UNITON CONNECT] Address ${parsedAddress} converted to `+
                 `non bouceable format: ${nonBouceableAddress}`);
 
             const addressPtr = tonConnect.allocString(nonBouceableAddress);
@@ -510,7 +510,7 @@ const tonConnectBridge = {
             const parsedAddress = tonConnect.parseAddress(address);
             const hexAddress = parsedAddress.toString(false);
 
-            console.log(`[UNITON CONNECT] Address ${correctAddress} `+
+            console.log(`[UNITON CONNECT] Address ${parsedAddress} `+
                 `converted to hex/raw format: ${hexAddress}`);
 
             const addressPtr = tonConnect.allocString(hexAddress);
