@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
@@ -15,13 +16,14 @@ namespace UnitonConnect.Core.Demo
         [SerializeField, Space] private TestWalletInterfaceAdapter _interfaceAdapter;
         [SerializeField, Space] private TestNftView _nftPrefab;
         [SerializeField, Space] private TextMeshProUGUI _warningMessage;
-        [SerializeField, Space] private GameObject _loadAnimation;
+        [SerializeField] private GameObject _loadAnimation;
         [SerializeField, Space] private Transform _contentParent;
         [SerializeField] private RectTransform _contentSize;
+        [SerializeField, Space] private TestOpenNftTransactionPanelButton _openNftTransferPanelButton;
         [SerializeField, Space] private List<TestNftView> _createdNfts;
 
         private UnitonConnectSDK _unitonConnect => _interfaceAdapter.UnitonSDK;
-        private UserAssets.NFT _nftModule => _interfaceAdapter.NftStorage;
+        private UserAssets.NFT _nftStorage => _interfaceAdapter.NftStorage;
 
         private List<NftItemData> _loadedCollections;
 
@@ -29,22 +31,32 @@ namespace UnitonConnect.Core.Demo
 
         private void OnEnable()
         {
+            _openNftTransferPanelButton.DisableInteractable();
+
             _unitonConnect.OnWalletDisconnected += RemoveNftCollectionStorage;
 
-            _nftModule.OnNftCollectionsClaimed += NftCollectionsClaimed;
-            _nftModule.OnTargetNftCollectionClaimed += TargetNftCollectionClaimed;
+            _nftStorage.OnNftCollectionsClaimed += NftCollectionsClaimed;
+            _nftStorage.OnTargetNftCollectionClaimed += TargetNftCollectionClaimed;
 
-            _nftModule.OnNftCollectionsNotFounded += NftCollectionsNotFounded;
+            _nftStorage.OnNftCollectionsNotFounded += NftCollectionsNotFounded;
+
+            _nftStorage.OnTransactionSended += NftItemSended;
+
+            TestInputViewEvents.OnNftItemSelected += NftItemSelected;
         }
 
         private void OnDestroy()
         {
             _unitonConnect.OnWalletDisconnected -= RemoveNftCollectionStorage;
 
-            _nftModule.OnNftCollectionsClaimed -= NftCollectionsClaimed;
-            _nftModule.OnTargetNftCollectionClaimed -= TargetNftCollectionClaimed;
+            _nftStorage.OnNftCollectionsClaimed -= NftCollectionsClaimed;
+            _nftStorage.OnTargetNftCollectionClaimed -= TargetNftCollectionClaimed;
 
-            _nftModule.OnNftCollectionsNotFounded -= NftCollectionsNotFounded;
+            _nftStorage.OnNftCollectionsNotFounded -= NftCollectionsNotFounded;
+
+            _nftStorage.OnTransactionSended -= NftItemSended;
+
+            TestInputViewEvents.OnNftItemSelected -= NftItemSelected;
         }
 
         public void Init()
@@ -59,7 +71,7 @@ namespace UnitonConnect.Core.Demo
                 return;
             }
 
-            _nftModule.Load(10);
+            _nftStorage.Load(10);
 
             _loadAnimation.SetActive(true);
             _warningMessage.gameObject.SetActive(false);
@@ -89,7 +101,8 @@ namespace UnitonConnect.Core.Demo
             _isInitialized = false;
         }
 
-        private async void CreateNftViewContainer(NftCollectionData collections, 
+        private async void CreateNftViewContainer(
+            NftCollectionData collections, 
             Action<List<NftViewData>> visualCreated)
         {
             List<NftViewData> nftVisual = new();
@@ -126,7 +139,8 @@ namespace UnitonConnect.Core.Demo
             visualCreated?.Invoke(nftVisual);
         }
 
-        private void CreateNftItem(List<NftViewData> viewContainer)
+        private void CreateNftItem(
+            List<NftViewData> viewContainer)
         {
             if (_createdNfts.Count > 0)
             {
@@ -135,7 +149,8 @@ namespace UnitonConnect.Core.Demo
 
             foreach (var nftItem in viewContainer)
             {
-                var newNftView = Instantiate(_nftPrefab, _contentParent);
+                var newNftView = Instantiate(
+                    _nftPrefab, _contentParent);
 
                 newNftView.SetView(nftItem);
 
@@ -145,6 +160,20 @@ namespace UnitonConnect.Core.Demo
             _loadAnimation.SetActive(false);
 
             _isInitialized = true;
+        }
+
+        private void UnSelectNftItems()
+        {
+            if (_createdNfts == null ||
+                _createdNfts.Count <= 0)
+            {
+                return;
+            }
+
+            foreach (var nftItem in _createdNfts)
+            {
+                nftItem.UnSelect();
+            }
         }
 
         private bool IsExistNFTs()
@@ -157,7 +186,8 @@ namespace UnitonConnect.Core.Demo
             return false;
         }
 
-        private void NftCollectionsClaimed(NftCollectionData nftCollections)
+        private void NftCollectionsClaimed(
+            NftCollectionData nftCollections)
         {
             if (IsExistNFTs())
             {
@@ -183,7 +213,8 @@ namespace UnitonConnect.Core.Demo
             });
         }
 
-        private void TargetNftCollectionClaimed(NftCollectionData collection)
+        private void TargetNftCollectionClaimed(
+            NftCollectionData collection)
         {
             NftCollectionsClaimed(collection);
         }
@@ -193,6 +224,63 @@ namespace UnitonConnect.Core.Demo
             _warningMessage.gameObject.SetActive(true);
 
             _loadAnimation.SetActive(false);
+        }
+
+        private void NftItemSended(string nftItemAddress,
+            SuccessTransactionData transactiionData)
+        {
+            var foundedItem = _createdNfts.FirstOrDefault(
+                nftItem => nftItem.Address == nftItemAddress);
+
+            if (foundedItem == null)
+            {
+                Debug.LogWarning($"Target nft item not " +
+                    $"found in gallery: {nftItemAddress}");
+
+                return;
+            }
+
+            for (int i = 0; i < _createdNfts.Count; i++)
+            {
+                if (_createdNfts[i].Address == nftItemAddress)
+                {
+                    Destroy(_createdNfts[i].gameObject);
+
+                    _createdNfts.RemoveAt(i);
+
+                    if (_createdNfts.Count <= 0)
+                    {
+                        NftCollectionsNotFounded();
+                    }
+
+                    Debug.Log("Cleared NFT from gallery after send new recipient");
+
+                    break;
+                }
+            }
+        }
+
+        private void NftItemSelected(string nftAddress)
+        {
+            if (_createdNfts == null ||
+                _createdNfts.Count <= 0)
+            {
+                return;
+            }
+
+            UnSelectNftItems();
+
+            TestNftView selectedItem = _createdNfts.FirstOrDefault(
+                nftItem => nftItem.Address == nftAddress);
+
+            selectedItem.Select();
+
+            _openNftTransferPanelButton.EnableInteractable();
+            _openNftTransferPanelButton.Init(_nftStorage,
+                selectedItem.ItemName, selectedItem.Address);
+
+            Debug.Log($"Selected NFT item for " +
+                $"transfer with address '{selectedItem.Address}'");
         }
     }
 }

@@ -72,6 +72,9 @@ namespace UnitonConnect.Core.Demo
             _nftModule.OnNftCollectionsClaimed -= NftCollectionsLoaded;
             _nftModule.OnTargetNftCollectionClaimed -= TargetNftCollectionLoaded;
 
+            _nftModule.OnTransactionSended -= NftTransactionSended;
+            _nftModule.OnTransactionSendFailed -= NftTransactionSendFailed;
+
             if (_jettonModule == null)
             {
                 return;
@@ -114,7 +117,8 @@ namespace UnitonConnect.Core.Demo
 
             string recipientAddress = transaction.OutMessages[0].Recipient.Address;
 
-            if (transactionName == "JETTON")
+            if (transactionName == "JETTON" || 
+                transactionName == "NFT")
             {
                 recipientAddress = transaction.OutMessages[0].DecodedBody.RecipientAddress;
             }
@@ -154,6 +158,9 @@ namespace UnitonConnect.Core.Demo
 
             _nftModule.OnNftCollectionsClaimed += NftCollectionsLoaded;
             _nftModule.OnTargetNftCollectionClaimed += TargetNftCollectionLoaded;
+
+            _nftModule.OnTransactionSended += NftTransactionSended;
+            _nftModule.OnTransactionSendFailed += NftTransactionSendFailed;
 
             _jettonModule.OnTransactionSended += JettonTransactionSended;
             _jettonModule.OnTransactionSendFailed += JettonTransactionSendFailed;
@@ -285,6 +292,19 @@ namespace UnitonConnect.Core.Demo
         {
             _debugMessage.text = $"Failed to send jetton transaction" +
                 $" with token: {masterAddress}, reason: {errorMessage}";
+        }
+
+        private void NftTransactionSended(string nftItemAddress,
+            SuccessTransactionData transactiionData)
+        {
+            PrintSuccessTransactionData("NFT", transactiionData);
+        }
+
+        private void NftTransactionSendFailed(
+            string nftItemAddress, string errorMessage)
+        {
+            _debugMessage.text = $"Failed to send NFT item" +
+                $" with address: {nftItemAddress}, reason: {errorMessage}";
         }
     }
 }

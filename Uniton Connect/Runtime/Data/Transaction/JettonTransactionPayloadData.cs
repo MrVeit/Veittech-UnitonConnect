@@ -4,10 +4,10 @@ using Newtonsoft.Json;
 namespace UnitonConnect.Core.Data
 {
     [Serializable]
-    public sealed class TransactionPayloadComponentsData
+    public sealed class JettonTransactionPayloadData
     {
         [JsonProperty("amount")]
-        public decimal JettonAmount { get; set; }
+        public decimal Amount { get; set; }
 
         [JsonProperty("gasFee")]
         public decimal GasFeeInTon { get; set; }
@@ -16,10 +16,10 @@ namespace UnitonConnect.Core.Data
         public string SenderTonAddress { get; set; }
 
         [JsonProperty("recipientAddress")]
-        public string RecipientJettonAddress { get; set; }
+        public string RecipientTonAddress { get; set; }
 
         [JsonProperty("jettonType")]
-        public string JettonName { get; set; }
+        public string ShortName { get; set; }
 
         [JsonProperty("message")]
         public string? Comment { get; set; }

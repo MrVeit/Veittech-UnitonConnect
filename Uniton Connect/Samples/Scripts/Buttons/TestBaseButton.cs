@@ -29,5 +29,15 @@ namespace UnitonConnect.Core.Demo
         {
             _target.onClick.RemoveAllListeners();
         }
+
+        public void EnableInteractable()
+        {
+            _target.interactable = true;
+        }
+
+        public void DisableInteractable()
+        {
+            _target.interactable = false;
+        }
     }
 }

@@ -20,11 +20,11 @@ const tonConnectBridge = {
             return allocate(intArrayFromString(stringData), 'i8', ALLOC_NORMAL);
         },
 
-        isAvailableSDK: function()
+        isAvailableTonConnect: function()
         {
             if (!window.tonConnectUI)
             {
-                console.error(`Ton Connect UI is not initialized`);
+                console.error(`[UNITON CONNECT] Ton Connect UI is not initialized`);
 
                 return false;
             }
@@ -36,7 +36,7 @@ const tonConnectBridge = {
         {
             if (!window.tonWeb)
             {
-                console.error(`Library 'Ton Web' is not exist`);
+                console.error(`[UNITON CONNECT] Library 'Ton Web' is not exist`);
 
                 return false;
             }
@@ -44,23 +44,47 @@ const tonConnectBridge = {
             return true;
         },
 
+        isInitialized: function()
+        {
+            if (!tonConnect.isAvailableTonConnect())
+            {
+                return false;
+            }
+
+            if (!tonConnect.isAvailableTonWeb())
+            {
+                return false;
+            }
+
+            return true;
+        },
+
+        parseAddress: function(address)
+        {
+            const correctAddress = UTF8ToString(address);
+
+            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
+
+            return parsedAddress;
+        },
+
         init: function(manifestUrl, callback)
         {
-                const url = UTF8ToString(manifestUrl);
+            const url = UTF8ToString(manifestUrl);
 
-                window.tonConnectUI = new TON_CONNECT_UI.TonConnectUI(
-                {
-                    manifestUrl: url,
-                });
+            window.tonConnectUI = new TON_CONNECT_UI.TonConnectUI(
+            {
+                manifestUrl: url,
+            });
 
-                if (!tonConnect.isAvailableSDK())
-                {
-                    dynCall('vi', callback, [0]);
+            if (!tonConnect.isAvailableTonConnect())
+            {
+                dynCall('vi', callback, [0]);
 
-                    return;
-                }
+                return;
+            }
 
-                dynCall('vi', callback, [1]);
+            dynCall('vi', callback, [1]);
         },
         
         initTonWeb: function()
@@ -120,7 +144,7 @@ const tonConnectBridge = {
 
         subscribeToStatusChanged: function(callback)
         {
-            if (!tonConnect.isAvailableSDK())
+            if (!tonConnect.isInitialized())
             {
                 return;
             }
@@ -133,7 +157,7 @@ const tonConnectBridge = {
                     const walletInfo = JSON.stringify(window.tonConnectUI.account);
                     const walletPtr = tonConnect.allocString(walletInfo);
 
-                    console.log(`Parsed account: ` +
+                    console.log(`[UNITON CONNECT] Parsed account: ` +
                         `${JSON.stringify(window.tonConnectUI.account)}`);
 
                     dynCall('vi', callback, [walletPtr]);
@@ -163,7 +187,7 @@ const tonConnectBridge = {
 
         subscribeToRestoreConnection: function(callback)
         {
-            if (!tonConnect.isAvailableSDK())
+            if (!tonConnect.isInitialized())
             {
                 dynCall('vi', callback, [0]);
 
@@ -242,8 +266,8 @@ const tonConnectBridge = {
             }
         },
 
-        getTonTransactionPayload: async function(nanoInTon, 
-            recipientAddress, message)
+        getTonTransactionPayload: async function(
+            nanoInTon, recipientAddress, message)
         {
             const tonWeb = window.tonWeb;
 
@@ -283,10 +307,10 @@ const tonConnectBridge = {
             return transactionData;
         },
 
-        sendTransactionWithPayload: async function(
-            senderJettonAddress, gasFeeAmount, payload, callback)
+        sendAsssetsTransaction: async function(
+            itemAddress, gasFeeAmount, payload, callback)
         {
-            if (!tonConnect.isAvailableSDK())
+            if (!tonConnect.isInitialized())
             {
                 const errorMessage = tonConnect.allocString("SDK is not initialized");
 
@@ -299,11 +323,12 @@ const tonConnectBridge = {
 
             const tonWeb = window.tonWeb;
 
-            const jettonSender = UTF8ToString(senderJettonAddress);
+            const senderOrNftAddress = UTF8ToString(itemAddress);
             const gasFee = UTF8ToString(gasFeeAmount);
             const transactionPayload = UTF8ToString(payload);
 
-            console.log(`Parsed jetton transaction payload: ${transactionPayload}`);
+            console.log(`[UNITON CONNECT] Parsed assets transaction `+
+                `payload: ${transactionPayload}`);
 
             try
             {
@@ -311,24 +336,26 @@ const tonConnectBridge = {
                     validUntil: Math.floor(Date.now() / 1000) + 360,
                     messages: [
                     {  
-                        address: jettonSender, 
+                        address: senderOrNftAddress, 
                         amount: gasFee,
                         payload: transactionPayload
                     }
                 ]};
 
-                console.log(`Parsed jetton transaction data: ${JSON.stringify(transactionData)}`);
+                console.log(`[UNITON CONNECT] Parsed assets transaction `+
+                    `data: ${JSON.stringify(transactionData)}`);
 
                 const result = await window.tonConnectUI.sendTransaction(transactionData, 
                 {
-                    modals: ['before', 'success', 'error']
+                    modals: ['before', 'success', 'error'],
+                    notifications: ['before', 'success', 'error']
                 });
             
                 if (!result || !result.boc)
                 {
                     const emptyPtr = tonConnect.allocString("EMPTY_BOC");
 
-                    console.error(`No BOC returned from transaction`);
+                    console.error(`[UNITON CONNECT] No BOC returned from assets transaction`);
 
                     dynCall('vi', callback, [emptyPtr]);
 
@@ -338,12 +365,9 @@ const tonConnectBridge = {
                 }
                 
                 let claimedBoc = result.boc;
+                const hashBase64 = tonConnect.convertBocToHashBase64(claimedBoc);
 
-                const bocBytes = tonWeb.utils.base64ToBytes(claimedBoc);
-                const bocCellBytes = await tonWeb.boc.Cell.oneFromBoc(bocBytes).hash();
-                const hashBase64 = tonWeb.utils.bytesToBase64(bocCellBytes);
-
-                console.log(`Parsed jetton transaction hash: ${hashBase64}`);
+                console.log(`[UNITON CONNECT] Parsed assets transaction hash: ${hashBase64}`);
 
                 const hashPtr = tonConnect.allocString(hashBase64);
 
@@ -361,10 +385,10 @@ const tonConnectBridge = {
             }
         },
 
-        sendTransaction: async function(nanoInTon, 
-            recipientAddress, message, callback) 
+        sendTonTransaction: async function(
+            nanoInTon, recipientAddress, message, callback) 
         {
-            if (!tonConnect.isAvailableSDK()) 
+            if (!tonConnect.isInitialized()) 
             {
                 const nullPtr = tonConnect.allocString("null");
 
@@ -396,7 +420,7 @@ const tonConnectBridge = {
                 {
                     const emptyPtr = tonConnect.allocString("EMPTY_BOC");
 
-                    console.error(`[UNITON CONNECT] No BOC returned from transaction`);
+                    console.error(`[UNITON CONNECT] No BOC returned from toncoin transaction`);
 
                     dynCall('vi', callback, [emptyPtr]);
 
@@ -406,12 +430,9 @@ const tonConnectBridge = {
                 }
                 
                 let claimedBoc = result.boc;
+                const hashBase64 = tonConnect.convertBocToHashBase64(claimedBoc);
 
-                const bocBytes = tonWeb.utils.base64ToBytes(claimedBoc);
-                const bocCellBytes = await tonWeb.boc.Cell.oneFromBoc(bocBytes).hash();
-                const hashBase64 = tonWeb.utils.bytesToBase64(bocCellBytes);
-
-                console.log(`[UNITON CONNECT] Parsed transaction hash: ${hashBase64}`);
+                console.log(`[UNITON CONNECT] Parsed toncoin transaction hash: ${hashBase64}`);
 
                 const hashPtr = tonConnect.allocString(hashBase64);
 
@@ -429,24 +450,28 @@ const tonConnectBridge = {
             }
         },
 
+        convertBocToHashBase64: async function(claimedBoc)
+        {
+            const bocBytes = tonWeb.utils.base64ToBytes(claimedBoc);
+
+            const bocCellBytes = await tonWeb.boc.Cell.oneFromBoc(bocBytes).hash();
+            const hashBase64 = tonWeb.utils.bytesToBase64(bocCellBytes);
+
+            return hashBase64;
+        },
+
         toBounceable: function(address, valueClaimed)
         {
-            if (!tonConnect.isAvailableSDK())
+            if (!tonConnect.isInitialized())
             {
                 return;
             }
 
-            if (!tonConnect.isAvailableTonWeb())
-            {
-                return;
-            }
-
-            const correctAddress = UTF8ToString(address);
-            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
-
+            const parsedAddress = tonConnect.parseAddress(address);
             const bouceableAddress = parsedAddress.toString(true, true, true, false);
 
-            console.log(`Address ${correctAddress} converted to bouceable format: ${bouceableAddress}`);
+            console.log(`[UNITON CONNECT] Address ${correctAddress} converted `+
+                `to bounceable format: ${bouceableAddress}`);
 
             const addressPtr = tonConnect.allocString(bouceableAddress);
 
@@ -457,22 +482,16 @@ const tonConnectBridge = {
 
         toNonBounceable: function(address, valueClaimed)
         {
-            if (!tonConnect.isAvailableSDK())
+            if (!tonConnect.isInitialized())
             {
                 return;
             }
 
-            if (!tonConnect.isAvailableTonWeb())
-            {
-                return;
-            }
-
-            const correctAddress = UTF8ToString(address);
-            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
-
+            const parsedAddress = tonConnect.parseAddress(address);
             const nonBouceableAddress = parsedAddress.toString(true, true, false, false);
 
-            console.log(`Address ${correctAddress} converted to non bouceable format: ${nonBouceableAddress}`);
+            console.log(`[UNITON CONNECT] Address ${correctAddress} converted to `+
+                `non bouceable format: ${nonBouceableAddress}`);
 
             const addressPtr = tonConnect.allocString(nonBouceableAddress);
 
@@ -483,22 +502,16 @@ const tonConnectBridge = {
 
         toHex: function(address, valueClaimed)
         {
-            if (!tonConnect.isAvailableSDK())
+            if (!tonConnect.isInitialized())
             {
                 return;
             }
 
-            if (!tonConnect.isAvailableTonWeb())
-            {
-                return;
-            }
-
-            const correctAddress = UTF8ToString(address);
-            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
-
+            const parsedAddress = tonConnect.parseAddress(address);
             const hexAddress = parsedAddress.toString(false);
 
-            console.log(`Address ${correctAddress} converted to hex/raw format: ${hexAddress}`);
+            console.log(`[UNITON CONNECT] Address ${correctAddress} `+
+                `converted to hex/raw format: ${hexAddress}`);
 
             const addressPtr = tonConnect.allocString(hexAddress);
 
@@ -509,56 +522,32 @@ const tonConnectBridge = {
 
         isUserFriendly: function(address)
         {
-            if (!tonConnect.isAvailableSDK())
+            if (!tonConnect.isInitialized())
             {
                 return;
             }
 
-            if (!tonConnect.isAvailableTonWeb())
-            {
-                return;
-            }
-
-            const correctAddress = UTF8ToString(address);
-            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
-
-            return parsedAddress.isUserFriendly;
+            return tonConnect.parseAddress(address).isUserFriendly;
         },
 
         isBounceable: function(address)
         {
-            if (!tonConnect.isAvailableSDK())
+            if (!tonConnect.isInitialized())
             {
                 return;
             }
 
-            if (!tonConnect.isAvailableTonWeb())
-            {
-                return;
-            }
-
-            const correctAddress = UTF8ToString(address);
-            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
-
-            return parsedAddress.isBounceable;
+            return tonConnect.parseAddress(address).isBounceable;
         },
 
         isTestOnly: function(address)
         {
-            if (!tonConnect.isAvailableSDK())
+            if (!tonConnect.isInitialized())
             {
                 return;
             }
 
-            if (!tonConnect.isAvailableTonWeb())
-            {
-                return;
-            }
-
-            const correctAddress = UTF8ToString(address);
-            const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
-
-            return parsedAddress.isTestOnly;
+            return tonConnect.parseAddress(address).isTestOnly;
         }
     },
 
@@ -604,12 +593,34 @@ const tonConnectBridge = {
 
     SubscribeToTransactionEvents: function(successCallback, errorCallback)
     {
-        tonConnect.subscribeToTransactionEvents(successCallback, errorCallback);
+        tonConnect.subscribeToTransactionEvents(
+            successCallback, errorCallback);
     },
 
     UnSubscribeToTransactionEvents: function()
     {
         tonConnect.unsubscribeToTransactionEvents();
+    },
+
+    SendTonTransaction: function(
+        nanoInTon, recipientAddress, callback)
+    {
+        tonConnect.sendTonTransaction(nanoInTon,
+            recipientAddress, "CLEAR", callback);
+    },
+
+    SendTonTransactionWithMessage: function(
+        nanoInTon, recipientAddress, message, callback)
+    {
+        tonConnect.sendTonTransaction(nanoInTon,
+            recipientAddress, message, callback);
+    },
+
+    SendTransactionWithPayload: function(
+        targetAddress, gasFee, payload, callback)
+    {
+        tonConnect.sendAsssetsTransaction(
+            targetAddress, gasFee, payload, callback);
     },
 
     ToBounceableAddress: function(address, valueClaimed)
@@ -640,24 +651,6 @@ const tonConnectBridge = {
     IsTestnetAddress: function(address)
     {
         return tonConnect.isTestOnly(address);
-    },
-
-    SendTransaction: function(nanoInTon, recipientAddress, callback)
-    {
-        tonConnect.sendTransaction(nanoInTon, recipientAddress, "CLEAR", callback);
-    },
-
-    SendTransactionWithMessage: function(nanoInTon, 
-        recipientAddress, message, callback)
-    {
-        tonConnect.sendTransaction(nanoInTon, recipientAddress, message, callback);
-    },
-
-    SendJettonTransaction: function(senderJettonAddress, 
-        amount, payload, callback)
-    {
-        tonConnect.sendTransactionWithPayload(senderJettonAddress, 
-            amount, payload, callback);
     }
 };
 

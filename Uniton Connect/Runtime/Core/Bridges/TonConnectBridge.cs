@@ -65,16 +65,16 @@ namespace UnitonConnect.Core
             string address, Action<string> addressClaimed);
 
         [DllImport("__Internal")]
-        private static extern void SendTransaction(string nanoTons,
+        private static extern void SendTonTransaction(string nanoTons,
             string recipientAddress, Action<string> onTransactionSended);
 
         [DllImport("__Internal")]
-        private static extern void SendTransactionWithMessage(string nanoTons,
+        private static extern void SendTonTransactionWithMessage(string nanoTons,
             string recipientAddress, string message, Action<string> onTransactionSended);
 
         [DllImport("__Internal")]
-        private static extern void SendJettonTransaction(string jettonMaster, string amount,
-            string payload, Action<string> transactionSended);
+        private static extern void SendTransactionWithPayload(string jettonMassterOrNftAddress, 
+            string gasFee, string payload, Action<string> transactionSended);
 
         #endregion
 
@@ -208,7 +208,7 @@ namespace UnitonConnect.Core
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
-        private static void OnTransactionSend(string parsedHash)
+        private static void OnTonTransactionSend(string parsedHash)
         {
             if (string.IsNullOrEmpty(parsedHash))
             {
@@ -278,6 +278,41 @@ namespace UnitonConnect.Core
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnNftTransactionSend(string parsedHash)
+        {
+            if (string.IsNullOrEmpty(parsedHash))
+            {
+                var message = $"Failed to send NFT item, something wrong...";
+
+                UnitonConnectLogger.LogError(message);
+
+                OnNftTransactionSendFailed?.Invoke(message);
+
+                CloseModal(OnModalWindowClose);
+
+                return;
+            }
+
+            if (parsedHash == EMPTY_BOC_ERROR)
+            {
+                var message = $"NFT transaction successfully sended, but no returned Boc";
+
+                UnitonConnectLogger.LogError(message);
+
+                OnNftTransactionSendFailed?.Invoke(message);
+
+                CloseModal(OnModalWindowClose);
+
+                return;
+            }
+
+            UnitonConnectLogger.Log($"NFT transaction successfully sended," +
+                $"parsed hash: {parsedHash}");
+
+            OnNftTransactionSended?.Invoke(parsedHash);
+        }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
         private static void OnTransactionSuccessfullySign(string eventData)
         {
             UnitonConnectLogger.Log($"Transaction successfully signed with data: {eventData}");
@@ -334,6 +369,9 @@ namespace UnitonConnect.Core
         private static Action<string> OnJettonTransactionSended;
         private static Action<string> OnJettonTransactionSendFailed;
 
+        private static Action<string> OnNftTransactionSended;
+        private static Action<string> OnNftTransactionSendFailed;
+
         private static Action<string> OnAddressParsed;
 
         internal static void UnSubscribe()
@@ -385,21 +423,19 @@ namespace UnitonConnect.Core
                 message, transactionSended, transactionSendFailed);
         }
 
-        internal static void SendTon(string recipientAddress,
-            decimal tonAmount, Action<string> transactionSended,
-            Action<string> transactionSendFailed)
-        {
-            SendTonByParams(recipientAddress, tonAmount, 
-                null, transactionSended, transactionSendFailed);
-        }
-
-        internal static void SendJetton(string senderJettonWalletContract, string amount, 
+        internal static void SendJetton(string senderJettonWalletContract, string gasFee, 
             string payload, Action<string> transactionSended, Action<string> transactionSendFailed)
         {
-            SendJettonByParams(senderJettonWalletContract, amount, 
+            SendJettonByParams(senderJettonWalletContract, gasFee, 
                 payload, transactionSended, transactionSendFailed);
         }
 
+        internal static void SendNft(string nftItemAddress, string gasFee, string payload,
+            Action<string> transactionSended, Action<string> transactionSendFailed)
+        {
+            SendNftByParams(nftItemAddress, gasFee, payload,
+                transactionSended, transactionSendFailed);
+        }
 
         internal sealed class Utils
         {
@@ -499,33 +535,48 @@ namespace UnitonConnect.Core
             OnTonTransactionSended = transactionSended;
             OnTonTransactionSendFailed = transactionSendFailed;
 
-            SubscribeToTransactionEvents(OnTransactionSuccessfullySign,
-                OnTransactionSignFail);
+            SubscribeToTransactionEvents(
+                OnTransactionSuccessfullySign, OnTransactionSignFail);
 
             var targetAddress = WalletConnectUtils.GetHEXAddress(recipientAddress);
             var tonInNanotons = UserAssetsUtils.ToNanoton(tonAmount).ToString();
 
             if (string.IsNullOrEmpty(message))
             {
-                SendTransaction(tonInNanotons, targetAddress, OnTransactionSend);
+                SendTonTransaction(tonInNanotons, 
+                    targetAddress, OnTonTransactionSend);
 
                 return;
             }
 
-            SendTransactionWithMessage(tonInNanotons, 
-                targetAddress, message, OnTransactionSend);
+            SendTonTransactionWithMessage(tonInNanotons, 
+                targetAddress, message, OnTonTransactionSend);
         }
 
-        private static void SendJettonByParams(string senderJettonWalletContract, string amount,
+        private static void SendJettonByParams(string senderJettonWalletContract, string gasFee,
             string payload, Action<string> transactionSended, Action<string> transactionSendFailed)
         {
             OnJettonTransactionSended = transactionSended;
             OnJettonTransactionSendFailed = transactionSendFailed;
 
-            SubscribeToTransactionEvents(OnTransactionSuccessfullySign,
-                OnTransactionSignFail);
+            SubscribeToTransactionEvents(
+                OnTransactionSuccessfullySign, OnTransactionSignFail);
 
-            SendJettonTransaction(senderJettonWalletContract, amount, payload, OnJettonTransactionSend);
+            SendTransactionWithPayload(senderJettonWalletContract, 
+                gasFee, payload, OnJettonTransactionSend);
+        }
+
+        private static void SendNftByParams(string nftItemAddress, string gasFee,
+            string payload, Action<string> transactionSended, Action<string> transactionSendFailed)
+        {
+            OnNftTransactionSended = transactionSended;
+            OnNftTransactionSendFailed = transactionSendFailed;
+
+            SubscribeToTransactionEvents(
+                OnTransactionSuccessfullySign, OnTransactionSignFail);
+
+            SendTransactionWithPayload(nftItemAddress,
+                gasFee, payload, OnNftTransactionSend);
         }
 
         private static bool IsSuccess(int statusCode)

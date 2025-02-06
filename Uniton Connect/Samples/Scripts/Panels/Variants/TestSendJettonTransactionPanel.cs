@@ -1,5 +1,7 @@
 using UnityEngine;
 using TMPro;
+using UnitonConnect.Core.Common;
+using UnitonConnect.DeFi;
 
 namespace UnitonConnect.Core.Demo
 {
@@ -10,6 +12,8 @@ namespace UnitonConnect.Core.Demo
         [SerializeField] private TMP_InputField _amountBar;
         [SerializeField] private TMP_InputField _commentBar;
         [SerializeField, Space] private TestWalletAddressBarView _targetWalletAddress;
+        [SerializeField] private TestWalletAddressBarView _masterAddressView;
+        [SerializeField, Space] private TestSelectedJettonBar _selectedJettonView;
         [SerializeField, Space] private TestBalanceWidgetsPanel _widgetsPanel;
 
         private const string START_MESSAGE = "Made by Uniton Connect";
@@ -19,6 +23,17 @@ namespace UnitonConnect.Core.Demo
         private const float START_AMOUNT = 0.005f;
         private const float START_FEE = 0.018f;
 
+        public UserAssets.Jetton JettonWallet => _interfaceAdapter.JettonModule;
+
+        public string Amount => _amountBar.text;
+        public string GasFee => _gasFeeBar.text;
+
+        public string RecipientAddress => _targetWalletAddress.FullAddress;
+        public string JettonAddress => _masterAddressView.FullAddress;
+        public string Comment => _commentBar.text;
+
+        public JettonTypes SelectedJetton => _selectedJettonView.CurrentJetton;
+
         public void Init()
         {
             _commentBar.text = START_MESSAGE;
@@ -26,7 +41,6 @@ namespace UnitonConnect.Core.Demo
             _gasFeeBar.text = START_FEE.ToString();
 
             _targetWalletAddress.Set(CREATOR_ADDRESS);
-
             _widgetsPanel.Init();
         }
     }

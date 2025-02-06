@@ -6,6 +6,9 @@ namespace UnitonConnect.Core.Common
         NOT,
         DOGS,
         USDT,
+        AquaUSD,
+        jUSDT,
+        jUSDC,
         Custom
     }
 }

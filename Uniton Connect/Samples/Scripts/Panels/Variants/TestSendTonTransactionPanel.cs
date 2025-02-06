@@ -6,15 +6,13 @@ using UnitonConnect.Core.Utils;
 
 namespace UnitonConnect.Core.Demo
 {
-    public sealed class TestSendTransactionPanel : TestBasePanel
+    public sealed class TestSendTonTransactionPanel : TestBasePanel
     {
         [SerializeField, Space] private TestWalletInterfaceAdapter _interfaceAdapter;
         [SerializeField, Space] private TMP_InputField _amountBar;
         [SerializeField] private TMP_InputField _messageBar;
         [SerializeField, Space] private TestWalletAddressBarView _targetWalletAddress;
         [SerializeField, Space] private TextMeshProUGUI _balanceBar;
-
-        private UnitonConnectSDK _unitonConnect => _interfaceAdapter.UnitonSDK;
 
         private string _latestTransactionHash;
 
@@ -24,46 +22,38 @@ namespace UnitonConnect.Core.Demo
 
         private const float START_TON_AMOUNT = 0.01f;
 
+        public UnitonConnectSDK UnitonConnect => _interfaceAdapter.UnitonSDK;
+
+        public string Amount => _amountBar.text;
+        public string Comment => _messageBar.text;
+        public string Recipient => _targetWalletAddress.FullAddress;
+
         private void OnEnable()
         {
-            _unitonConnect.OnTonBalanceClaimed += TonBalanceClaimed;
+            UnitonConnect.OnTonBalanceClaimed += TonBalanceClaimed;
 
-            _unitonConnect.OnTonTransactionSended += TransactionSendingFinished;
-            _unitonConnect.OnTonTransactionConfirmed += TonTransactionConfirmed;
-
-            _unitonConnect.LoadBalance();
+            UnitonConnect.OnTonTransactionSended += TransactionSendingFinished;
+            UnitonConnect.OnTonTransactionConfirmed += TonTransactionConfirmed;
         }
 
         private void OnDisable()
         {
-            _unitonConnect.OnTonBalanceClaimed -= TonBalanceClaimed;
+            UnitonConnect.OnTonBalanceClaimed -= TonBalanceClaimed;
 
-            _unitonConnect.OnTonTransactionSended -= TransactionSendingFinished;
-            _unitonConnect.OnTonTransactionConfirmed -= TonTransactionConfirmed;
+            UnitonConnect.OnTonTransactionSended -= TransactionSendingFinished;
+            UnitonConnect.OnTonTransactionConfirmed -= TonTransactionConfirmed;
         }
 
         public void Init()
         {
-            SetAmountBar(START_TON_AMOUNT);
-            SetTargetAddress(CREATOR_WALLET_ADDRESS);
-            SetMessageBar(START_MESSAGE);
+            _amountBar.text = START_TON_AMOUNT.ToString();
+            _messageBar.text = START_MESSAGE;
 
-            SetTonBalance(_unitonConnect.TonBalance);
-        }
+            SetTonBalance(UnitonConnect.TonBalance);
 
-        private void SetAmountBar(float amount)
-        {
-            _amountBar.text = $"{amount}";
-        }
+            _targetWalletAddress.Set(CREATOR_WALLET_ADDRESS);
 
-        private void SetMessageBar(string text)
-        {
-            _messageBar.text = text;
-        }
-
-        private void SetTargetAddress(string address)
-        {
-            _targetWalletAddress.Set(address);
+            UnitonConnect.LoadBalance();
         }
 
         private void SetTonBalance(decimal balance)
