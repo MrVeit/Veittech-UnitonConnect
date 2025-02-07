@@ -116,14 +116,15 @@ namespace UnitonConnect.Core.Demo
             }
 
             string recipientAddress = transaction.OutMessages[0].Recipient.Address;
+            var decodedBody = transaction.OutMessages[0].DecodedBody;
 
             if (transactionName == "JETTON")
             {
-                recipientAddress = transaction.OutMessages[0].DecodedBody.RecipientAddress;
+                recipientAddress = decodedBody.RecipientAddress;
             }
             else if (transactionName == "NFT")
             {
-                recipientAddress = transaction.OutMessages[0].DecodedBody.NewOwner;
+                recipientAddress = decodedBody.NewOwner;
             }
 
             var convertedAddress = WalletConnectUtils.GetNonBounceableAddress(recipientAddress);
@@ -132,23 +133,39 @@ namespace UnitonConnect.Core.Demo
 
             if (transactionName == "TON")
             {
-                message = transaction.OutMessages[0].DecodedBody.MessageText;
+                if (decodedBody != null)
+                {
+                    message = decodedBody.MessageText;
+                }
             }
             else if (transactionName == "JETTON")
             {
-                message = transaction.OutMessages[0].DecodedBody.ForwardPayload.Value.Value.MessageText;
+                var payload = decodedBody.ForwardPayload;
+
+                if (payload.IsRight)
+                {
+                    message = message = payload.Value.Value.MessageText;
+
+                    Debug.LogWarning(("Detected jetton transfer with message"));
+                }
             }
+
+            string transactionHeader = string.Empty;
 
             if (transactionName != "TON")
             {
-                transactionName = transaction.OutMessages[0].DecodedOperationName.ToUpper();
+                transactionHeader = transaction.OutMessages[0].DecodedOperationName.ToUpper();
+            }
+            else
+            {
+                transactionHeader = "TON_TRANSFER";
             }
 
-            _debugMessage.text = $"Loaded '{transactionName}' transaction data: \n" +
+            _debugMessage.text = $"Loaded '{transactionHeader}' transaction data: \n" +
                 $"STATUS: {transaction.IsSuccess},\n" +
                 $"HASH: {transaction.Hash},\n" +
                 $"NEW BALANCE: {newBalance} TON,\n" +
-                $"FEE: {fee} TON,\n" +
+                $"TOTAL FEE: {fee} TON,\n" +
                 $"SENDED AMOUNT: {sendedAmount} {transactionName},\n" +
                 $"RECIPIENT ADDRESS: {convertedAddress},\n" +
                 $"MESSAGE: {message}";

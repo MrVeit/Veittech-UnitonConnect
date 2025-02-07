@@ -46,7 +46,7 @@ namespace UnitonConnect.Core.Data
         public string ForwardTonAmount { get; set; }
 
         [JsonProperty("forward_amount")]
-        public ServerResponseData ForwardAmount { get; set; }
+        public string ForwardAmount { get; set; }
 
         [JsonProperty("forward_payload")]
         public TransactionBodyData? ForwardPayload { get; set; }
