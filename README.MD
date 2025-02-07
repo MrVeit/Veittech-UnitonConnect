@@ -22,12 +22,12 @@ This reflects the functionality already added to the library as well as that pla
 - [x] Connecting TON wallets,
 - [x] Reading Toncoin balance,
 - [x] Reading Jettons balance,
-- [x] Reading available NFT collections,
+- [x] Reading NFT collections,
 - [x] Sending Toncoin between wallets,
 - [x] Sending Jettons between wallets,
-- [ ] Sending NFT collections between wallets,
+- [x] Sending NFT items between wallets,
 - [ ] Swapping Jettons to Toncoin and reverse,
-- [ ] Burning available NFT collections,
+- [ ] Burning NFT items on a wallet,
 - [ ] Loading last successful transactions with Toncoin,
 - [x] Loading last successful transactions with Jettons,
 - [ ] Loading last successful transactions with NFT Collections,
@@ -44,7 +44,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
 # Supported Wallets & Platforms
 
 |                Wallet Provider                | WebGL Desktop | WebGL Mobile |
-| --------------------------------------------- |   :--------:  |  :--------:  |
+| --------------------------------------------- | :-----------: | :----------: |
 | **Telegram Wallet**                           | ✔️           | ✔️           |
 | **Ton Keeper**                                | ✔️           | ✔️           |
 | **My Ton Wallet**                             | ✔️           | ✔️           |
@@ -64,6 +64,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **XTon Wallet (Web Extension)**               | ✔️           | ❌           |
 | **Ton Wallet (Web Extension)**                | ✔️           | ❌           |
 | **Tobi Copilot**                              | ⚠️           | ✔️           |
+| **Tomo Wallet**                               | ⚠️           | ✔️           |
 
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
@@ -89,8 +90,8 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **Open Mask (Web Extension)**  | 💻       | 💻     |
 | **XTon Wallet (Web Extension)**| 💻       | 💻     |
 | **Ton Wallet (Web Extension)** | 💻       | 💻     |
-| **Tobi Copilot**               | 💻+📱    | 📱     |
-
+| **Tobi Copilot**               | 💻+📱    | 📱      |
+| **Tomo Wallet**                | ❌       | 💻+📱  |
 
 <sub>💻+📱 All Clients</sub> <sub>💻 Desktop Client</sub> &nbsp; <sub>📱 Mobile Client</sub> &nbsp; <sub>❌ Not Supported</sub>
 
@@ -100,14 +101,11 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | ----------------------- | :--------: | :------------------------: |
 | **TON**                 | ✔️         | Balance, Send             |
 | **USDT**                | ✔️         | Balance, Send, History    |
-| **jUSDT**               | ✔️         | Balance, Send, History    |
-| **jUSDC**               | ✔️         | Balance, Send, History    |
-| **AquaUSD**             | ✔️         | Balance, Send, History    |
 | **GRAM**                | ✔️         | Balance, Send, History    |
 | **NOT**                 | ✔️         | Balance, Send, History    |
 | **DOGS**                | ✔️         | Balance, Send, History    |
 | **Custom Jetton**       | ✔️         | Balance, Send, History    |
-| **NFT**                 | ✔️         | Balance, Filter           |
+| **NFT**                 | ✔️         | Balance, Send, Filter     |
  
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
