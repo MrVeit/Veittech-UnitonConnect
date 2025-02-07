@@ -25,7 +25,7 @@ This reflects the functionality already added to the library as well as that pla
 - [x] Reading NFT collections,
 - [x] Sending Toncoin between wallets,
 - [x] Sending Jettons between wallets,
-- [x] Sending NFT collections between wallets,
+- [x] Sending NFT items between wallets,
 - [ ] Swapping Jettons to Toncoin and reverse,
 - [ ] Burning NFT items on a wallet,
 - [ ] Loading last successful transactions with Toncoin,
