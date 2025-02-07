@@ -11,21 +11,11 @@ namespace UnitonConnect.Core.Common
 
         delegate void OnTonTransactionConfirm(SuccessTransactionData transactionData);
 
-        delegate void OnNativeTransactionSendingFinish(string transactionHash);
-        delegate void OnNativeTransactionSendingFail(string errorMessage);
-
-        delegate void OnNativeTransactionConfirm(SuccessTransactionData transactionData);
-
         event OnTonBalanceClaim OnTonBalanceClaimed;
 
         event OnTonTransactionSend OnTonTransactionSended;
         event OnTonTransactionSendFail OnTonTransactionSendFailed;
 
         event OnTonTransactionConfirm OnTonTransactionConfirmed;
-
-        event OnNativeTransactionSendingFinish OnNativeSendingTonFinished;
-        event OnNativeTransactionSendingFail OnNativeTransactionSendingFailed;
-
-        event OnNativeTransactionConfirm OnNativeTransactionConfirmed;
     }
 }

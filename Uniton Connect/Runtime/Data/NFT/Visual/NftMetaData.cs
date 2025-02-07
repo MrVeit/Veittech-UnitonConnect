@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace UnitonConnect.Runtime.Data
 {
-    [Serializable]
     public sealed class NftMetaData
     {
         [JsonProperty("name")]
@@ -20,7 +18,6 @@ namespace UnitonConnect.Runtime.Data
         public List<NftMetaAttributeData> Attributes { get; set; }
     }
 
-    [Serializable]
     public sealed class NftMetaAttributeData
     {
         [JsonProperty("trait_type")]

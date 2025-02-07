@@ -1,25 +1,23 @@
 using UnityEngine;
-using TMPro;
 
 namespace UnitonConnect.Core.Demo
 {
     public sealed class TestSendTonButton : TestBaseButton
     {
-        [SerializeField, Space] private TestWalletInterfaceAdapter _userInterfaceAdapter;
-        [SerializeField, Space] private TMP_InputField _amountBar;
-        [SerializeField] private TMP_InputField _messageBar;
-        [SerializeField, Space] private TestWalletAddressBarView _addressBar;
+        [SerializeField, Space] private TestSendTonTransactionPanel _transactionPanel;
 
         public sealed override void OnClick()
         {
-            var amount = ParseAmountFromBar(_amountBar.text);
-            var recipient = _addressBar.FullAddress;
-            var message = _messageBar.text;
+            var amount = ParseAmountFromBar(
+                _transactionPanel.Amount);
+
+            var recipient = _transactionPanel.Recipient;
+            var message = _transactionPanel.Comment;
 
             Debug.Log($"Start creating transaction with ton amount: " +
                 $"{amount} by recipient: {recipient} with message {message}");
 
-            _userInterfaceAdapter.UnitonSDK.SendTransaction(recipient, amount, message);
+            _transactionPanel.UnitonConnect.SendTransaction(recipient, amount, message);
         }
 
         private decimal ParseAmountFromBar(string amountFromBar)

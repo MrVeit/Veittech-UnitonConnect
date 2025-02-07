@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace UnitonConnect.Core.Data
 {
-    [Serializable]
     public sealed class JettonWalletData
     {
         [JsonProperty("address")]
@@ -29,7 +27,6 @@ namespace UnitonConnect.Core.Data
         public string DataHash { get; set; }
     }
 
-    [Serializable]
     public sealed class MintlessInfo
     {
         [JsonProperty("amount")]
@@ -45,7 +42,6 @@ namespace UnitonConnect.Core.Data
         public long StartFrom { get; set; }
     }
 
-    [Serializable]
     public sealed class AddressBookPage
     {
         [JsonProperty("user_friendly")]

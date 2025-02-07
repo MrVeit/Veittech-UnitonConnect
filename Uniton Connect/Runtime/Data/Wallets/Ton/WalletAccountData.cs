@@ -1,19 +1,17 @@
-using System;
 using Newtonsoft.Json;
 
 namespace UnitonConnect.Core.Data
 {
-    [Serializable]
-    public class WalletAccountData
+    public sealed class WalletAccountData
     {
         [JsonProperty("address")]
         public string Address { get; set; }
 
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [JsonProperty("icon")]
-        public string IconUrl { get; set; }
+        public string? IconUrl { get; set; }
 
         [JsonProperty("is_scam")]
         public bool IsScam { get; set; }

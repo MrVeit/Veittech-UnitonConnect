@@ -1,9 +1,7 @@
-using System;
 using Newtonsoft.Json;
 
 namespace UnitonConnect.Runtime.Data
 {
-    [Serializable]
     public sealed class NftCollectionOwnerData
     {
         [JsonProperty("address")]

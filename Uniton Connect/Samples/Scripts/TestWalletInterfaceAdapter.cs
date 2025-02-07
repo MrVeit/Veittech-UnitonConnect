@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -19,12 +20,12 @@ namespace UnitonConnect.Core.Demo
         [SerializeField] private Button _openNftCollectionButton;
         [SerializeField, Space] private TestWalletNftCollectionsPanel _nftCollectionPanel;
 
-        private string _latestTransactionHash;
-
         private UnitonConnectSDK _unitonSDK;
 
         private UserAssets.NFT _nftModule;
         private UserAssets.Jetton _jettonModule;
+
+        private string _latestTransactionHash;
 
         public UnitonConnectSDK UnitonSDK => _unitonSDK;
         public UserAssets.NFT NftStorage => _nftModule;
@@ -38,8 +39,8 @@ namespace UnitonConnect.Core.Demo
 
             _unitonSDK.OnWalletConnected += WalletConnectionFinished;
             _unitonSDK.OnWalletConnectFailed += WalletConnectionFailed;
-            _unitonSDK.OnWalletConnectRestored += WalletConnectionRestored;
 
+            _unitonSDK.OnWalletConnectRestored += WalletConnectionRestored;
             _unitonSDK.OnWalletDisconnected += WalletDisconnected;
 
             _unitonSDK.OnTonTransactionSended += TonTransactionSended;
@@ -54,14 +55,14 @@ namespace UnitonConnect.Core.Demo
 
             _unitonSDK.OnWalletConnected -= WalletConnectionFinished;
             _unitonSDK.OnWalletConnectFailed -= WalletConnectionFailed;
+
             _unitonSDK.OnWalletConnectRestored -= WalletConnectionRestored;
+            _unitonSDK.OnWalletDisconnected -= WalletDisconnected;
 
-            _unitonSDK.OnNativeWalletDisconnected -= WalletDisconnected;
+            _unitonSDK.OnTonTransactionSended -= TonTransactionSended;
+            _unitonSDK.OnTonTransactionSendFailed -= TonTransactionSendFailed;
 
-            _unitonSDK.OnNativeSendingTonFinished -= TonTransactionSended;
-            _unitonSDK.OnNativeTransactionConfirmed -= TonTransactionConfirmed;
-
-            _unitonSDK.OnNativeTransactionSendingFailed -= TonTransactionSendFailed;
+            _unitonSDK.OnTonTransactionConfirmed -= TonTransactionConfirmed;
 
             if (_nftModule == null)
             {
@@ -70,6 +71,9 @@ namespace UnitonConnect.Core.Demo
 
             _nftModule.OnNftCollectionsClaimed -= NftCollectionsLoaded;
             _nftModule.OnTargetNftCollectionClaimed -= TargetNftCollectionLoaded;
+
+            _nftModule.OnTransactionSended -= NftTransactionSended;
+            _nftModule.OnTransactionSendFailed -= NftTransactionSendFailed;
 
             if (_jettonModule == null)
             {
@@ -112,10 +116,15 @@ namespace UnitonConnect.Core.Demo
             }
 
             string recipientAddress = transaction.OutMessages[0].Recipient.Address;
+            var decodedBody = transaction.OutMessages[0].DecodedBody;
 
             if (transactionName == "JETTON")
             {
-                recipientAddress = transaction.OutMessages[0].DecodedBody.RecipientAddress;
+                recipientAddress = decodedBody.RecipientAddress;
+            }
+            else if (transactionName == "NFT")
+            {
+                recipientAddress = decodedBody.NewOwner;
             }
 
             var convertedAddress = WalletConnectUtils.GetNonBounceableAddress(recipientAddress);
@@ -124,14 +133,39 @@ namespace UnitonConnect.Core.Demo
 
             if (transactionName == "TON")
             {
-                message = transaction.OutMessages[0].DecodedBody.MessageText;
+                if (decodedBody != null)
+                {
+                    message = decodedBody.MessageText;
+                }
+            }
+            else if (transactionName == "JETTON")
+            {
+                var payload = decodedBody.ForwardPayload;
+
+                if (payload.IsRight)
+                {
+                    message = message = payload.Value.Value.MessageText;
+
+                    Debug.LogWarning(("Detected jetton transfer with message"));
+                }
             }
 
-            _debugMessage.text = $"Loaded {transactionName} transaction data: \n" +
+            string transactionHeader = string.Empty;
+
+            if (transactionName != "TON")
+            {
+                transactionHeader = transaction.OutMessages[0].DecodedOperationName.ToUpper();
+            }
+            else
+            {
+                transactionHeader = "TON_TRANSFER";
+            }
+
+            _debugMessage.text = $"Loaded '{transactionHeader}' transaction data: \n" +
                 $"STATUS: {transaction.IsSuccess},\n" +
                 $"HASH: {transaction.Hash},\n" +
                 $"NEW BALANCE: {newBalance} TON,\n" +
-                $"FEE: {fee} TON,\n" +
+                $"TOTAL FEE: {fee} TON,\n" +
                 $"SENDED AMOUNT: {sendedAmount} {transactionName},\n" +
                 $"RECIPIENT ADDRESS: {convertedAddress},\n" +
                 $"MESSAGE: {message}";
@@ -154,11 +188,14 @@ namespace UnitonConnect.Core.Demo
             _nftModule.OnNftCollectionsClaimed += NftCollectionsLoaded;
             _nftModule.OnTargetNftCollectionClaimed += TargetNftCollectionLoaded;
 
+            _nftModule.OnTransactionSended += NftTransactionSended;
+            _nftModule.OnTransactionSendFailed += NftTransactionSendFailed;
+
             _jettonModule.OnTransactionSended += JettonTransactionSended;
             _jettonModule.OnTransactionSendFailed += JettonTransactionSendFailed;
         }
 
-        private void WalletConnectionFinished(NewWalletConfig wallet)
+        private void WalletConnectionFinished(WalletConfig wallet)
         {
             if (_unitonSDK.IsWalletConnected)
             {
@@ -284,6 +321,19 @@ namespace UnitonConnect.Core.Demo
         {
             _debugMessage.text = $"Failed to send jetton transaction" +
                 $" with token: {masterAddress}, reason: {errorMessage}";
+        }
+
+        private void NftTransactionSended(string nftItemAddress,
+            SuccessTransactionData transactiionData)
+        {
+            PrintSuccessTransactionData("NFT", transactiionData);
+        }
+
+        private void NftTransactionSendFailed(
+            string nftItemAddress, string errorMessage)
+        {
+            _debugMessage.text = $"Failed to send NFT item" +
+                $" with address: {nftItemAddress}, reason: {errorMessage}";
         }
     }
 }

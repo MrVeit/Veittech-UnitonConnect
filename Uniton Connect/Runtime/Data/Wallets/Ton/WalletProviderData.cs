@@ -1,10 +1,8 @@
-using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace UnitonConnect.Core.Data
 {
-    [Serializable]
     public sealed class WalletProviderData
     {
         [JsonProperty("app_name")]

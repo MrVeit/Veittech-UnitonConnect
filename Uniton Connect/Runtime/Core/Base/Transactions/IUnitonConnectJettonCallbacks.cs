@@ -15,8 +15,8 @@ namespace UnitonConnect.Core.Common
 
         delegate void OnJettonTransactionSend(string masterAddress,
             SuccessTransactionData transactionData);
-        delegate void OnJettonTransactionSendFail(string masterAddress,
-            string errorMessage);
+        delegate void OnJettonTransactionSendFail(
+            string masterAddress, string errorMessage);
 
         event OnJettonBalanceLoaded OnBalanceLoaded;
         event OnJettonAddressParsed OnAddressParsed;

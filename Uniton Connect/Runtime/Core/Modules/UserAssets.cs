@@ -32,6 +32,8 @@ namespace UnitonConnect.DeFi
             private readonly MonoBehaviour _mono;
             private readonly UnitonConnectSDK _sdk;
 
+            private string _latestNftItemAddress;
+
             public NFT(MonoBehaviour mono,
                 UnitonConnectSDK sdk)
             {
@@ -58,6 +60,16 @@ namespace UnitonConnect.DeFi
             /// Callback for notification that no NFTs are detected on the account
             /// </summary>
             public event IUnitonConnectNftCallbacks.OnNftCollectionsNotFound OnNftCollectionsNotFounded;
+
+            /// <summary>
+            /// Callback to retrieve nft transaction information from the blockchain after a successful send.
+            /// </summary>
+            public event IUnitonConnectNftCallbacks.OnNftTransactionSend OnTransactionSended;
+
+            /// <summary>
+            /// Callback to handle an unsuccessful nft transaction submission
+            /// </summary>
+            public event IUnitonConnectNftCallbacks.OnNftTransactionSendFail OnTransactionSendFailed;
 
             /// <summary>
             /// Receive all available collections on your NFT account
@@ -113,6 +125,87 @@ namespace UnitonConnect.DeFi
 
                     OnTargetNftCollectionClaimed?.Invoke(LatestTargetNftCollection);
                 }));
+            }
+
+            /// <summary>
+            /// Sending an nft item to its smart contract address to the target recipient
+            /// </summary>
+            /// <param name="recipient"></param>
+            /// <param name="nftItemAddress"></param>
+            /// <param name="gasFee">Validated range from 0.05 TON</param>
+            public void SendTransaction(string nftItemAddress,
+                string recipient, decimal gasFee)
+            {
+                CreateTransactionPayload(recipient, nftItemAddress, gasFee);
+            }
+
+            private void CreateTransactionPayload(string recipient, 
+                string nftItemAddress, decimal gasFee)
+            {
+                if (!IsWalletConnected())
+                {
+                    return;
+                }
+
+                var ownerAddress = _sdk.Wallet.ToHex();
+                var recipientToHex = WalletConnectUtils.GetHEXAddress(recipient);
+
+                if (WalletConnectUtils.IsAddressesMatch(recipient))
+                {
+                    return;
+                }
+
+                _latestNftItemAddress = nftItemAddress;
+
+                _mono.StartCoroutine(CreateTransaction(recipientToHex,
+                    ownerAddress, nftItemAddress, gasFee));
+            }
+
+            private IEnumerator CreateTransaction(string recipient,
+                string sender, string nftItemAddress, decimal gasFee)
+            {
+                yield return TonApiBridge.NFT.GetTransactionPayload(
+                    recipient, sender, (payload) =>
+                {
+                    if (string.IsNullOrEmpty(payload))
+                    {
+                        UnitonConnectLogger.LogError($"Failed to create a payload" +
+                            $" to send NFT item to {recipient}, try again later.");
+
+                        return;
+                    }
+
+                    var feeInNano = UserAssetsUtils.ToNanoton(gasFee);
+
+                    TonConnectBridge.SendNft(nftItemAddress,
+                        feeInNano.ToString(), payload, (transactionHash) =>
+                    {
+                        UnitonConnectLogger.Log($"NFT transaction with " +
+                            $"payload successfully sended: {transactionHash}");
+
+                        _mono.StartCoroutine(LoadTransactionStatus(_mono, transactionHash,
+                            _latestNftItemAddress, (nftAddress, transactionData) =>
+                        {
+                            OnTransactionSended?.Invoke(
+                                nftAddress, transactionData);
+
+                            UnitonConnectLogger.Log($"Nft item successfully " +
+                                $"sended with address: {nftAddress}");
+                        },
+                        (nftAddress, error) =>
+                        {
+                            OnTransactionSendFailed?.Invoke(nftAddress, error);
+
+                            UnitonConnectLogger.LogError($"Failed to send nft " +
+                                $"item '{nftAddress}', reason: {error}");
+                        }));
+                    },
+                    (errorMessage) =>
+                    {
+                        OnTransactionSendFailed?.Invoke(
+                            _latestNftItemAddress, errorMessage);
+                    });
+                });
             }
 
             private string ConvertAddressToEncodedURL(string address)
@@ -301,7 +394,8 @@ namespace UnitonConnect.DeFi
                 {
                     if (loadedTransactions == null)
                     {
-                        OnLastTransactionsLoaded?.Invoke(type, new List<JettonTransactionData>());
+                        OnLastTransactionsLoaded?.Invoke(type, 
+                            new List<JettonTransactionData>());
 
                         return;
                     }
@@ -318,23 +412,11 @@ namespace UnitonConnect.DeFi
             /// <param name="type"></param>
             /// <param name="recipientAddress"></param>
             /// <param name="amount"></param>
-            /// <param name="gasFee">Validated range from 0.003 (with available token wallet) to 0.011 (with deposited token wallet) </param>
+            /// <param name="gasFee">Validated range from 0.05 TON (with available jetton wallet)
+            /// to 0.1 TON (with creating jetton wallet) </param>
             public void SendTransaction(JettonTypes type, string recipientAddress,
                 decimal amount, decimal gasFee, string message = null)
             {
-                if (!IsWalletConnected())
-                {
-                    return;
-                }
-
-                if (string.IsNullOrEmpty(recipientAddress))
-                {
-                    UnitonConnectLogger.LogWarning("Recipient address " +
-                        "is required, transaction cancelled");
-
-                    return;
-                }
-
                 var targetJetton = GetConfigByType(type);
 
                 if (targetJetton == null)
@@ -344,7 +426,8 @@ namespace UnitonConnect.DeFi
 
                 _latestMasterAddress = targetJetton.MasterAddress;
 
-                SendTransaction(_latestMasterAddress, recipientAddress, amount, gasFee, message);
+                CreateTransactionPayload(type, _latestMasterAddress, 
+                    recipientAddress, amount, gasFee, message);
             }
 
             /// <summary>
@@ -354,10 +437,39 @@ namespace UnitonConnect.DeFi
             /// <param name="masterAddress"></param>
             /// <param name="recipientAddress"></param>
             /// <param name="amount"></param>
-            /// <param name="gasFee">Validated range from 0.003 TON (with available jetton wallet)
-            /// to 0.012 TON (with creating jetton wallet) </param>
+            /// <param name="gasFee">Validated range from 0.05 TON (with available jetton wallet)
+            /// to 0.1 TON (with creating jetton wallet) </param>
             public void SendTransaction(string masterAddress, string recipientAddress,
                 decimal amount, decimal gasFee, string message = null)
+            {
+                CreateTransactionPayload(JettonTypes.Custom, masterAddress, 
+                    recipientAddress, amount, gasFee, message);
+            }
+
+            private void GetAddress(string masterAddress, string tonAddress,
+                 Action<JettonWalletData> walletParsed)
+            {
+                _mono.StartCoroutine(UserAssetsUtils.GetJettonWalletByAddress(
+                    masterAddress, tonAddress, (parsedJettonWallet) =>
+                    {
+                        if (parsedJettonWallet == null)
+                        {
+                            UnitonConnectLogger.LogWarning($"Jetton Wallet is not" +
+                                $" deployed by master address: {masterAddress}");
+
+                            walletParsed?.Invoke(null);
+
+                            return;
+                        }
+
+                        walletParsed?.Invoke(parsedJettonWallet);
+
+                        UnitonConnectLogger.Log($"Parsed jetton wallet: {parsedJettonWallet.Address}");
+                    }));
+            }
+
+            private void CreateTransactionPayload(JettonTypes type, string masterAddress, 
+                string recipient, decimal amount, decimal gasFee, string message = null)
             {
                 if (!IsWalletConnected())
                 {
@@ -366,13 +478,14 @@ namespace UnitonConnect.DeFi
 
                 if (string.IsNullOrEmpty(LatestJettonWalletAddress))
                 {
-                    UnitonConnectLogger.LogWarning("The jetton wallet has not been loaded, start parsing...");
+                    UnitonConnectLogger.LogWarning("The jetton wallet " +
+                        "has not been loaded, start parsing...");
                 }
 
                 var ownerAddress = _sdk.Wallet.ToHex();
-                var recipientToHex = WalletConnectUtils.GetHEXAddress(recipientAddress);
+                var recipientToHex = WalletConnectUtils.GetHEXAddress(recipient);
 
-                if (WalletConnectUtils.IsAddressesMatch(recipientAddress))
+                if (WalletConnectUtils.IsAddressesMatch(recipient))
                 {
                     return;
                 }
@@ -389,38 +502,16 @@ namespace UnitonConnect.DeFi
 
                     LatestJettonWalletAddress = walletConfig.Address;
 
-                    _mono.StartCoroutine(CreateTransaction(amount, gasFee, 
-                        ownerAddress, recipientAddress));
+                    _mono.StartCoroutine(CreateTransaction(type,
+                        amount, gasFee, ownerAddress, recipient, message));
                 });
             }
 
-            private void GetAddress(string masterAddress, string tonAddress,
-                Action<JettonWalletData> walletParsed)
+            private IEnumerator CreateTransaction(JettonTypes jettonType, decimal amount,
+                decimal gasFee, string sender, string recipient, string message = null)
             {
-                _mono.StartCoroutine(UserAssetsUtils.GetJettonWalletByAddress(
-                    masterAddress, tonAddress, (parsedJettonWallet) =>
-                {
-                    if (parsedJettonWallet == null)
-                    {
-                        UnitonConnectLogger.LogWarning($"Jetton Wallet is not" +
-                            $" deployed by master address: {masterAddress}");
-
-                        walletParsed?.Invoke(null);
-
-                        return;
-                    }
-
-                    walletParsed?.Invoke(parsedJettonWallet);
-
-                    UnitonConnectLogger.Log($"Parsed jetton wallet: {parsedJettonWallet.Address}");
-                }));
-            }
-
-            private IEnumerator CreateTransaction(decimal amount, decimal gasFee,
-                string sender, string recipient)
-            {
-                yield return TonApiBridge.GetTransactionPayload(amount,
-                    ForwardFee, sender, recipient, (payload) =>
+                yield return TonApiBridge.Jetton.GetTransactionPayload(jettonType, amount,
+                    ForwardFee, sender, recipient, message, (payload) =>
                 {
                     if (string.IsNullOrEmpty(payload))
                     {
@@ -438,46 +529,24 @@ namespace UnitonConnect.DeFi
                         UnitonConnectLogger.Log($"Jetton transaction with " +
                         $"payload successfully sended: {transactionHash}");
 
-                        _mono.StartCoroutine(LoadTransactionStatus(transactionHash));
+                        _mono.StartCoroutine(LoadTransactionStatus(_mono,
+                            transactionHash, _latestMasterAddress,
+                            (masterAddress, transactionData) =>
+                        {
+                            OnTransactionSended?.Invoke(
+                                masterAddress, transactionData);
+                        },
+                        (masterAddress, error) =>
+                        {
+                            OnTransactionSendFailed?.Invoke(
+                                masterAddress, error);
+                        }));
                     },
                     (errorMessage) =>
                     {
-                        OnTransactionSendFailed?.Invoke(_latestMasterAddress, errorMessage);
+                        OnTransactionSendFailed?.Invoke(
+                            _latestMasterAddress, errorMessage);
                     });
-                });
-            }
-
-            private IEnumerator LoadTransactionStatus(
-                string transactionHash, bool isFailedResponse = false)
-            {
-                var delay = _sdk.TransactionFetchDelay;
-
-                if (isFailedResponse)
-                {
-                    UnitonConnectLogger.LogWarning($"Enabled a delay of {delay} seconds " +
-                        "between attempts due to a failed last request");
-
-                    yield return new WaitForSeconds(delay);
-                }
-
-                yield return TonApiBridge.GetTransactionData(
-                    transactionHash, (transactionData) =>
-                {
-                    OnTransactionSended?.Invoke(_latestMasterAddress, transactionData);
-                },
-                (errorMessage) =>
-                {
-                    UnitonConnectLogger.LogError($"Failed to fetch jetton" +
-                        $" transaction data, reason: {errorMessage}");
-
-                    if (errorMessage == "entity not found")
-                    {
-                        _mono.StartCoroutine(LoadTransactionStatus(transactionHash, true));
-
-                        return;
-                    }
-
-                    OnTransactionSendFailed?.Invoke(_latestMasterAddress, errorMessage);
                 });
             }
 
@@ -496,18 +565,54 @@ namespace UnitonConnect.DeFi
 
                 return targetJetton;
             }
+        }
 
-            private bool IsWalletConnected()
+        internal static IEnumerator LoadTransactionStatus(MonoBehaviour mono, string hash, 
+            string itemId, Action<string, SuccessTransactionData> transactionConfirmed,
+            Action<string, string> transactionSendFailed, bool isFailedResponse = false)
+        {
+            var delay = UnitonConnectSDK.Instance.TransactionFetchDelay;
+
+            if (isFailedResponse)
             {
-                if (!_sdk.IsWalletConnected)
-                {
-                    UnitonConnectLogger.LogWarning("Wallet is not connected, action canceled");
+                UnitonConnectLogger.LogWarning($"Enabled a delay of {delay} seconds " +
+                    "between attempts due to a failed last request");
 
-                    return false;
+                yield return new WaitForSeconds(delay);
+            }
+
+            yield return TonApiBridge.GetTransactionData(hash,
+                (transactionData) =>
+            {
+                transactionConfirmed?.Invoke(itemId, transactionData);
+            },
+            (errorMessage) =>
+            {
+                UnitonConnectLogger.LogError($"Failed to fetch " +
+                    $"transaction data, reason: {errorMessage}");
+
+                if (errorMessage == "entity not found")
+                {
+                    mono.StartCoroutine(LoadTransactionStatus(mono, hash,
+                        itemId, transactionConfirmed, transactionSendFailed, true));
+
+                    return;
                 }
 
-                return true;
+                transactionSendFailed?.Invoke(itemId, errorMessage);
+            });
+        }
+
+        internal static bool IsWalletConnected()
+        {
+            if (!UnitonConnectSDK.Instance.IsWalletConnected)
+            {
+                UnitonConnectLogger.LogWarning("Wallet is not connected, action canceled");
+
+                return false;
             }
+
+            return true;
         }
     }
 }

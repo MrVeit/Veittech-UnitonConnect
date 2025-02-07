@@ -23,7 +23,7 @@ namespace UnitonConnect.Core.Common
         public string StateInit { get; private set; }
 
         public UserWallet(string address,
-            NewWalletConfig walletConfig)
+            WalletConfig walletConfig)
         {
             _address = address;
 
