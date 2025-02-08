@@ -111,7 +111,7 @@ You can test the SDK without installation on a demo app [in your browser](https:
 
 |                Features                  | Client-Side  | Client+Server-Side |
 | ---------------------------------------- | :----------: | :----------------: |
-| **Connect TON Wallets**                  | ✔️          | ✔️                 |
+| **Connecting TON Wallets**               | ✔️          | ✔️                 |
 | **Reading Toncoin balance**              | ✔️          | ✔️                 |
 | **Reading Jettons balance**              | ❌          | ✔️                 |
 | **Reading NFT collections**              | ❌          | ✔️                 |
@@ -426,6 +426,10 @@ To get a detailed status with all transaction information, subscribe to the `OnT
 
 **IMPORTANT:** Transaction confirmation is done `real-time`, based on a snapshot of the blockchain via the `third-party solution Ton API. The processing time depends **on the speed of the TON blockchain.** You can adjust the processing time yourself (standard delay is 15 seconds).
 
+### Sending NFT items
+
+### Sending jettons
+
 ### Loading NFT collections
 
 Below shows the implementation of `downloading all` and `target NFTs` from a connected wallet:
@@ -583,6 +587,122 @@ decimal currentBalance = 1.5f;
 decimal nanotons = currentBalance.ToNanoton(); // 150000000
 decimal tons = nanotons.FromNanoton(); // 1.5 TON
 ```
+
+### Loading jetton balance
+
+Starting from `version 0.5.0` the possibility of `reading current token balance` on the connected wallet from the standard list or by specifying the master address has been added.
+Implementation of balance request in both cases is shown below:
+
+```c#
+public sealed class JettonBalanceLoadingExample: MonoBehaviour
+{
+    [SerializeField, Space] private TextMeshProUGUI _balanceBar;
+
+    private UnitonConnectSDK _unitonConnect;
+    private UserAssets.Jetton _jettonWallet;
+
+    private void OnDisable()
+    {
+        _jettonWallet.OnBalanceLoaded -= JettonBalanceClaimed;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+        _jettonWallet = _unitonConnect.Assets.Jetton;
+
+        if (!_unitonConnect.IsWalletConnected)
+        {
+            Debug.LogWarning("Wallet is not connected");
+
+            return;
+        }
+
+        _jettonWallet.OnBalanceLoaded += JettonBalanceClaimed;
+
+        // USDt master address
+        _jettonWallet.GetBalance("EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs");
+
+        // OR
+
+        _jettonWallet.GetBalance(JettonTypes.USDT);
+    }
+
+    private void JettonBalanceClaimed(decimal balance, 
+        string jettonName, string masterAddress)
+    {
+        Debug.Log($"Loaded balance {balance} for "+
+            "jetton {jettonName} by master address {masterAddress}");
+
+        _balanceBar.text = $"{balance} USDt";
+    }
+}
+```
+
+In case this `jetton is missing` on the wallet - the event will return 0 as balance.
+You can read the list of `classic jettons`, which are automatically `read with master address` before sending [in this section](https://github.com/MrVeit/Veittech-UnitonConnect#supported-tokens--available-func).
+
+### Loading Jetton Wallet
+
+Starting with `version 0.5.0`, an option to **receive the target jetton wallet** has been added. This option is especially useful for checking if there is a `deployed wallet`, so that you don't need to create a transfer transaction to pay for in-game purchases and so on.
+
+**P.S:** each existing jetton wallet is a separate “smart contract” that has its own address and is directly **participating in the transfer of jettons** to the recipient.
+You can read more about this mechanism [in the official Ton documentation](https://docs.ton.org/develop/dapps/asset-processing/jettons).
+
+Below is an example of requesting `address of USDt` wallet on a connected wallet:
+
+```c#
+public sealed class JettonWalletAddressLoadingExample: MonoBehaviour
+{
+    [SerializeField, Space] private TextMeshProUGUI _usdtWalletAddress;
+
+    private UnitonConnectSDK _unitonConnect;
+    private UserAssets.Jetton _jettonWallet;
+
+    private void OnDisable()
+    {
+        _jettonWallet.OnAddressParsed -= JettonAddressParsed;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+        _jettonWallet = _unitonConnect.Assets.Jetton;
+
+        if (!_unitonConnect.IsWalletConnected)
+        {
+            Debug.LogWarning("Wallet is not connected");
+
+            return;
+        }
+
+        _jettonWallet.OnAddressParsed += JettonAddressParsed;
+
+        // USDt master address
+        _jettonWallet.GetAddress("EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs");
+
+        // OR
+
+        _jettonWallet.GetAddress(JettonTypes.USDT);
+    }
+
+    private void JettonAddressParsed(JettonWalletData walletConfig)
+    {
+        Debug.Log($"Loaded jetton wallet with address {walletConfig.Address},"+
+          $"current balance: {walletConfig.Balance}, owner: {walletConfig.Owner} "+
+          #"and master address: {walletConfig.MasterAddress}");
+
+        _balanceBar.text = $"USDt wallet address: {walletConfig.Address}";
+    }
+}
+```
+
+If the request is successful, the `OnAddressParsed` event returns the `wallet jetton` config, where the current balance, the owner's address and the master address of the jetton itself are specified as additional fields.
+Otherwise, if the wallet owner did not previously have this jetton on their balance, `null` will be returned.
+
+**IMPORTANT:** all addresses are returned `in HEX/RAW format`, so they should be converted additionally if necessary.
+
+**P.S:** If you need to check if the recipient has a wallet token, you can use the utility `UserAssetsUtils.GetJettonWalletByAddress(string jettonMasterAddress, string ownerAddress, Action<JettonWalletData> jettonWalletParsed)`, but in this case the `OnAddressParsed` event will not be called.
 
 # Build
 
