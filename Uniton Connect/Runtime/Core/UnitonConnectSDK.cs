@@ -50,7 +50,7 @@ namespace UnitonConnect.Core
         [Tooltip("Turn it off if you want to do your own cdk initialization in your scripts")]
         [SerializeField, Space] private bool _initializeOnAwake;
         [Tooltip("Delay before requesting in blockchain to retrieve data about the sent transaction")]
-        [SerializeField, Space, Range(15f, 500f)] private float _confirmDelay;
+        [SerializeField, Space, Range(15f, 500f)] private float _confirmDelay = 15f;
         [Tooltip("List of available tokens for transactions/reading balances and more")]
         [SerializeField, Space] private JettonConfigsStorage _jettonStorage;
 
@@ -315,8 +315,13 @@ namespace UnitonConnect.Core
         {
             if (isFailed)
             {
-                UnitonConnectLogger.LogWarning($"Enabled a delay of {_confirmDelay} seconds " +
-                    $"between attempts due to a failed last request");
+                if (_confirmDelay <= 0)
+                {
+                    _confirmDelay = 15f;
+                }
+
+                UnitonConnectLogger.LogWarning($"Enabled a delay of {_confirmDelay} " +
+                    $"seconds between attempts due to a failed last request");
 
                 yield return new WaitForSeconds(_confirmDelay);
             }

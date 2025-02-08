@@ -346,10 +346,16 @@ namespace UnitonConnect.DeFi
                     decimal balance = UserAssetsUtils.FromNanoton(balanceInNano);
 
                     var tokenName = loadedJettonConfig.Configuration.Name;
+
+                    UnitonConnectLogger.Log($"Loaded jetton balance " +
+                        $"{tokenName} with balance {balance}");
                     
-                    if (tokenName == ClassicJettonNames.USDT_NAME)
+                    if (ClassicJettonNames.IsStablecoin(tokenName))
                     {
                         balance = (decimal)UserAssetsUtils.FromUSDtNanoton(balanceInNano);
+
+                        UnitonConnectLogger.Log($"Loaded jetton by type " +
+                            $"'Stablecoin' with name {tokenName} and balance: {balance}");
                     }
 
                     OnBalanceLoaded?.Invoke(balance, tokenName, masterAddress);
@@ -564,6 +570,11 @@ namespace UnitonConnect.DeFi
 
             if (isFailedResponse)
             {
+                if (delay <= 0)
+                {
+                    delay = 15f;
+                }
+
                 UnitonConnectLogger.LogWarning($"Enabled a delay of {delay} seconds " +
                     "between attempts due to a failed last request");
 

@@ -351,12 +351,14 @@ namespace UnitonConnect.ThirdParty
                         yield break;
                     }
 
-                    var loadedWallet = JsonConvert.DeserializeObject<JettonBalanceData>(responseData);
+                    var loadedWallet = JsonConvert.DeserializeObject<JettonConfigData>(responseData);
 
-                    jettonBalanceLoaded?.Invoke(loadedWallet);
+                    var jettonBalanceConfig = loadedWallet.JettonConfig;
 
-                    UnitonConnectLogger.Log($"Loaded jetton {loadedWallet.Configuration.Name} " +
-                        $"with balance in nano: {loadedWallet.BalanceInNano}");
+                    jettonBalanceLoaded?.Invoke(jettonBalanceConfig);
+
+                    UnitonConnectLogger.Log($"Loaded jetton {jettonBalanceConfig.Configuration.Name} " +
+                        $"with balance in nano: {jettonBalanceConfig.BalanceInNano}");
 
                     yield break;
                 }
