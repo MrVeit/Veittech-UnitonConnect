@@ -6,34 +6,33 @@ using Newtonsoft.Json;
 using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.Debugging;
+using UnitonConnect.Editor.Common;
 
 namespace UnitonConnect.ThirdParty
 {
     internal static class TonCenterApiBridge
     {
-        private const string API_URL = "https://toncenter.com/api";
-
-        internal sealed class NFT
-        {
-
-        }
-
         internal sealed class Jetton
         {
             internal static IEnumerator GetJettonWalletByOwner(string tonAddress,
-                string jettonMasterAddress, Action<JettonWalletsListData> jettonWalletsLoaded)
+                string jettonMasterAddress, Action<LoadedJettonWalletData> jettonWalletsLoaded)
             {
-                if (string.IsNullOrEmpty(tonAddress))
+                var dAppData = ProjectStorageConsts.GetRuntimeAppStorage();
+
+                var apiUrl = dAppData.Data.ServerApiLink;
+
+                if (string.IsNullOrEmpty(apiUrl))
                 {
-                    UnitonConnectLogger.LogWarning("Loading jetton wallets " +
-                        "failed, ton address is required");
+                    UnitonConnectLogger.LogError("Uniton Connect backend is not connected, " +
+                        "wallet token loading operation is not available");
 
                     jettonWalletsLoaded?.Invoke(null);
 
                     yield break;
                 }
 
-                var targetUrl = GetJettonWalletUlr(tonAddress, jettonMasterAddress);
+                string targetUrl = GetJettonWalletUlr(apiUrl,
+                    tonAddress, jettonMasterAddress);
 
                 using (UnityWebRequest request = UnityWebRequest.Get(targetUrl))
                 {
@@ -41,38 +40,60 @@ namespace UnitonConnect.ThirdParty
 
                     var responseResult = request.downloadHandler.text;
 
-                    UnitonConnectLogger.Log($"Parsed jetton wallets response: {responseResult}");
+                    UnitonConnectLogger.Log($"Parsed result for loading " +
+                        $"jetton wallet: {responseResult}");
 
-                    if (request.result == WebRequestUtils.SUCCESS)
+                    if (request.result != WebRequestUtils.SUCCESS)
                     {
-                        var jettonWalletsData = JsonConvert.DeserializeObject<JettonWalletsListData>(responseResult);
+                        var errorData = JsonConvert.DeserializeObject<
+                            ServerResponseData>(responseResult);
 
-                        if (jettonWalletsData == null || jettonWalletsData.JettonWallets.Count == 0)
-                        {
-                            UnitonConnectLogger.Log($"Jetton wallets is not exist by address: {tonAddress}");
+                        UnitonConnectLogger.LogError($"Failed to parsed jetton " +
+                            $"wallets, reason: {errorData.Message}");
 
-                            jettonWalletsLoaded?.Invoke(null);
-
-                            yield break;
-                        }
-
-                        jettonWalletsLoaded?.Invoke(jettonWalletsData);
+                        jettonWalletsLoaded?.Invoke(null);
 
                         yield break;
                     }
 
-                    var errorData = JsonConvert.DeserializeObject<TonCenterResponseErrorData>(responseResult);
+                    var jettonWalletsData = JsonConvert.DeserializeObject<
+                        LoadedJettonWalletData>(responseResult);
 
-                    UnitonConnectLogger.LogError($"Failed to parsed jetton wallets, reason: {errorData.Message}");
+                    if (jettonWalletsData == null)
+                    {
+                        UnitonConnectLogger.LogWarning($"Jetton wallet with master: " +
+                            $"{jettonMasterAddress} is not exist by address: {tonAddress}");
 
-                    jettonWalletsLoaded?.Invoke(null);
+                        jettonWalletsLoaded?.Invoke(null);
+
+                        yield break;
+                    }
+
+                    jettonWalletsLoaded?.Invoke(jettonWalletsData);
+
+                    yield break;
                 }
             }
 
             internal static IEnumerator GetLastTransactions(string ownerAddress,
                 string directionTag, int limit, Action<List<JettonTransactionData>> transactionsLoaded)
             {
-                var targetUrl = GetLastJettonTransactionsUrl(ownerAddress, directionTag, limit);
+                var dAppData = ProjectStorageConsts.GetRuntimeAppStorage();
+
+                var apiUrl = dAppData.Data.ServerApiLink;
+
+                if (string.IsNullOrEmpty(apiUrl))
+                {
+                    UnitonConnectLogger.LogError("Uniton Connect backend is not connected, " +
+                        "the operation of downloading the last successful token transactions is not available");
+
+                    transactionsLoaded?.Invoke(null);
+
+                    yield break;
+                }
+
+                var targetUrl = GetLastJettonTransactionsUrl(
+                    apiUrl, ownerAddress, directionTag, limit, 0);
 
                 using (UnityWebRequest request = UnityWebRequest.Get(targetUrl))
                 {
@@ -80,47 +101,54 @@ namespace UnitonConnect.ThirdParty
 
                     var responseResult = request.downloadHandler.text;
 
-                    UnitonConnectLogger.Log($"Parsed response for loading " +
+                    UnitonConnectLogger.Log($"Parsed result for loading " +
                         $"last jetton transactions: {responseResult}");
 
-                    if (request.result == WebRequestUtils.SUCCESS)
+                    if (request.result != WebRequestUtils.SUCCESS)
                     {
-                        var loadedTransactionsList = JsonConvert.DeserializeObject<JettonTransactionsListData>(responseResult);
+                        var errorData = JsonConvert.DeserializeObject<
+                            ServerResponseData>(responseResult);
 
-                        if (loadedTransactionsList.Transfers == null || 
-                            loadedTransactionsList.Transfers.Count == 0)
-                        {
-                            UnitonConnectLogger.Log($"Jetton transactions is not detected at wallet: {ownerAddress}");
+                        UnitonConnectLogger.LogError($"Failed to load last " +
+                            $"jetton transactions, reason: {errorData.Message}");
 
-                            transactionsLoaded?.Invoke(null);
-
-                            yield break;
-                        }
-
-                        transactionsLoaded?.Invoke(loadedTransactionsList.Transfers);
+                        transactionsLoaded?.Invoke(null);
 
                         yield break;
                     }
 
-                    var errorData = JsonConvert.DeserializeObject<TonCenterResponseErrorData>(responseResult);
+                    var loadedTransactionsList = JsonConvert.DeserializeObject<
+                        JettonTransactionsListData>(responseResult);
 
-                    UnitonConnectLogger.LogError($"Failed to load last jetton transactions, reason: {errorData.Message}");
+                    if (loadedTransactionsList.Transfers == null ||
+                        loadedTransactionsList.Transfers.Count == 0)
+                    {
+                        UnitonConnectLogger.Log($"Jetton transactions is not " +
+                            $"detected at wallet: {ownerAddress}");
 
-                    transactionsLoaded?.Invoke(null);
+                        transactionsLoaded?.Invoke(null);
+
+                        yield break;
+                    }
+
+                    transactionsLoaded?.Invoke(loadedTransactionsList.Transfers);
+
+                    yield break;
                 }
             }
 
-            internal static string GetJettonWalletUlr(string tonAddress, string jettonMaster)
+            internal static string GetJettonWalletUlr(string apiUrl,
+                string tonAddress, string jettonMaster)
             {
-                return $"{API_URL}/v3/jetton/wallets?owner_address={tonAddress}&" +
-                    $"jetton_address={jettonMaster}&exclude_zero_balance=false&limit=50&offset=0";
+                return $"{apiUrl}/api/uniton-connect/v1/account/{tonAddress}/" +
+                    $"assets/jetton/{jettonMaster}/limit/1/offset/0/wallet";
             }
 
-            internal static string GetLastJettonTransactionsUrl(string ownerAddress,
-                string directionTag, int limit)
+            internal static string GetLastJettonTransactionsUrl(string apiUrl,
+                string ownerAddress, string directionTag, int limit, int offset)
             {
-                return $"{API_URL}/v3/jetton/transfers?owner_address={ownerAddress}" +
-                    $"&direction={directionTag}&limit={limit}&offset=0";
+                return $"{apiUrl}/api/uniton-connect/v1/account/{ownerAddress}/" +
+                    $"assets/jetton/transactions/{directionTag}/limit/{limit}/offset/{offset}";
             }
         }
     }

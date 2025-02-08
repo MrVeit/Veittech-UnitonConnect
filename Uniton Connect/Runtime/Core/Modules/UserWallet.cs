@@ -3,24 +3,21 @@ using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.View;
 using UnitonConnect.Core.Utils.Debugging;
 
+using AddressUtils = UnitonConnect.Core.TonConnectBridge.Utils.Address;
+
 namespace UnitonConnect.Core.Common
 {
     public sealed class UserWallet
     {
         private readonly string _address;
 
-        public bool IsUserFriendly => 
-            TonConnectBridge.Utils.Address.IsUserFriendly(this.ToString());
-
-        public bool IsBounceable =>
-            TonConnectBridge.Utils.Address.IsBounceable(this.ToString());
-
-        public bool IsTestOnly =>
-            TonConnectBridge.Utils.Address.IsTestOnly(this.ToString());
-
         public string PublicKey { get; private set; }
         public string Chain { get; private set; }
         public string StateInit { get; private set; }
+
+        public bool IsUserFriendly => AddressUtils.IsUserFriendly(this.ToString());
+        public bool IsBounceable => AddressUtils.IsBounceable(this.ToString());
+        public bool IsTestOnly => AddressUtils.IsTestOnly(this.ToString());
 
         public UserWallet(string address,
             WalletConfig walletConfig)
@@ -38,6 +35,10 @@ namespace UnitonConnect.Core.Common
             Chain = walletConfig.Chain;
         }
 
+        /// <summary>
+        /// Returns the wallet address after a successful connection in its original form
+        /// </summary>
+        /// <returns></returns>
         public sealed override string ToString()
         {
             if (!IsAvaibleAddress())
@@ -49,7 +50,7 @@ namespace UnitonConnect.Core.Common
         }
 
         /// <summary>
-        /// Return the first and last characters of the wallet address
+        /// Returns the first and last characters of the wallet address to be briefly displayed in the interface
         /// </summary>
         /// <param name="charAmount">Number of characters to display among the first and last</param>
         public string ToShort(int charAmount)

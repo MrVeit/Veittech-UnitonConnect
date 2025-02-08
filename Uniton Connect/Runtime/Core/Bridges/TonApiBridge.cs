@@ -7,18 +7,16 @@ using UnityEngine.Networking;
 using Newtonsoft.Json;
 using UnitonConnect.Core;
 using UnitonConnect.Core.Data;
+using UnitonConnect.Core.Common;
 using UnitonConnect.Core.Utils;
 using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.Editor.Common;
-using UnitonConnect.Core.Common;
 
 namespace UnitonConnect.ThirdParty
 {
     internal static class TonApiBridge
     {
-        private const string API_URL = "https://tonapi.io/v2";
-
         private static UnitonConnectSDK UNITON_CONNECT => UnitonConnectSDK.Instance;
 
         private static string _walletAddress => UNITON_CONNECT.Wallet.ToString();
@@ -29,17 +27,16 @@ namespace UnitonConnect.ThirdParty
 
             if (string.IsNullOrEmpty(dAppData.Data.ServerApiLink))
             {
-                UnitonConnectLogger.LogError("For loading nft or wallet icon from the cache storage," +
-                    " you need to run the API Server to successfully convert to the desired format");
+                UnitonConnectLogger.LogError("Uniton Connect backend is not " +
+                    "connected, image parsing operation on the link is canceled");
 
                 return null;
             }
 
-            string apiUrl = GetIconConvertURL(imageUrl);
+            string apiUrl = dAppData.Data.ServerApiLink;
+            string targetUrl = GetIconConvertURL(apiUrl, imageUrl);
 
-            Debug.Log($"APi url response: {apiUrl}");
-
-            using (UnityWebRequest request = UnityWebRequest.Get(apiUrl))
+            using (UnityWebRequest request = UnityWebRequest.Get(targetUrl))
             {
                 var operation = request.SendWebRequest();
 
@@ -50,7 +47,8 @@ namespace UnitonConnect.ThirdParty
 
                 if (request.result != WebRequestUtils.SUCCESS)
                 {
-                    UnitonConnectLogger.LogError($"Failed to load image by api server: {request.error}");
+                    UnitonConnectLogger.LogError($"Failed to parse " +
+                        $"item icon, reason: {request.error}");
 
                     return null;
                 }
@@ -61,7 +59,8 @@ namespace UnitonConnect.ThirdParty
 
                 if (texture.LoadImage(imageData))
                 {
-                    UnitonConnectLogger.Log($"Loaded image {texture.name} with sise: {texture.width}x{texture.height}");
+                    UnitonConnectLogger.Log($"Loaded image {texture.name} " +
+                        $"with size: {texture.width}x{texture.height}");
 
                     return texture;
                 }
@@ -73,16 +72,23 @@ namespace UnitonConnect.ThirdParty
         internal static IEnumerator GetBalance(Action<long> walletBalanceClaimed)
         {
             var userEncodedAddress = ConvertAddressToEncodeURL(_walletAddress);
-            var targetUrl = GetUserWalletUrl(userEncodedAddress);
+            var targetUrl = GetUserTonWalletUrl(userEncodedAddress);
 
             using (UnityWebRequest request = UnityWebRequest.Get(targetUrl))
             {
                 yield return request.SendWebRequest();
 
+                var responseResult = request.downloadHandler.text;
+
                 if (request.result != WebRequestUtils.SUCCESS)
                 {
-                    UnitonConnectLogger.LogError($"Failed to request wallet address data," +
-                        $" possible reason: {request.error}");
+                    var responseData = JsonConvert.DeserializeObject<
+                        TonApiResponseErrorData>(responseResult);
+
+                    UnitonConnectLogger.LogError($"Failed to request wallet " +
+                        $"address data, possible reason: {responseData.Message}");
+
+                    walletBalanceClaimed?.Invoke(0);
 
                     yield break;
                 }
@@ -92,7 +98,10 @@ namespace UnitonConnect.ThirdParty
 
                 walletBalanceClaimed?.Invoke(data.Balance);
 
-                UnitonConnectLogger.Log($"Current TON balance in nanotons: {data.Balance}");
+                UnitonConnectLogger.Log($"Current toncoin balance " +
+                    $"by address {_walletAddress} in nanotons: {data.Balance}");
+
+                yield break;
             }
         }
 
@@ -110,11 +119,11 @@ namespace UnitonConnect.ThirdParty
 
                 if (request.result != WebRequestUtils.SUCCESS)
                 {
-                    UnitonConnectLogger.LogError($"Failed to fetch transaction data" +
-                        $" with hash: {transactionHash}, reason: {request.error}");
-
                     var responseData = JsonConvert.DeserializeObject<
                         TonApiResponseErrorData>(responseResult);
+
+                    UnitonConnectLogger.LogError($"Failed to fetch transaction data" +
+                        $" with hash: {transactionHash}, reason: {responseData.Message}");
 
                     fetchDataFailed?.Invoke(responseData.Message);
 
@@ -128,6 +137,8 @@ namespace UnitonConnect.ThirdParty
                     $"{transactionHash}, data: {responseResult}");
 
                 dataClaimed?.Invoke(transactionData);
+
+                yield break;
             }
         }
 
@@ -141,52 +152,79 @@ namespace UnitonConnect.ThirdParty
             return Uri.EscapeDataString(value);
         }
 
-        private static string GetUserWalletUrl(string hexAddress)
+        private static string GetUserTonWalletUrl(string hexAddress)
         {
-            return $"{API_URL}/accounts/{hexAddress}";
+            return $"https://tonapi.io/v2/accounts/{hexAddress}";
         }
 
         private static string GetTransactionDataUrl(string transactionHash)
         {
-            return $"{API_URL}/blockchain/transactions/{transactionHash}";
+            return $"https://tonapi.io/v2/blockchain/transactions/{transactionHash}";
         }
 
-        internal static string GetIconConvertURL(string iconUrl)
+        internal static string GetIconConvertURL(string apiUrl, string iconUrl)
         {
-            var runtimeData = ProjectStorageConsts.GetRuntimeAppStorage().Data;
-
-            string apiUrl = $"{runtimeData.ServerApiLink}" +
-                $"/api/uniton-connect/v1/assets/item-icon?url={UnityWebRequest.EscapeURL(iconUrl)}";
-
-            return apiUrl;
+            return $"{apiUrl}/api/uniton-connect/v1/assets/" +
+                $"item-icon?url={UnityWebRequest.EscapeURL(iconUrl)}";
         }
 
         internal static class NFT
         {
-            internal static IEnumerator GetCollections(string apiURL,
-                Action<NftCollectionData> collectionsClaimed)
+            internal static IEnumerator GetCollections(string collectionAddress, 
+                int limit, int offset, Action<NftCollectionData> collectionsClaimed)
             {
-                using (UnityWebRequest request = UnityWebRequest.Get(apiURL))
+                var apiUrl = ProjectStorageConsts.GetRuntimeAppStorage().Data.ServerApiLink;
+
+                if (string.IsNullOrEmpty(apiUrl))
+                {
+                    UnitonConnectLogger.LogError("Uniton Connect backend is not connected, " +
+                        "the nft collections download operation on the connected wallet is canceled.");
+
+                    collectionsClaimed?.Invoke(null);
+
+                    yield break;
+                }
+
+                var encodedWalletAddress = ConvertAddressToEncodeURL(_walletAddress);
+
+                string targetUrl = GetAllCollectionsUrl(
+                    apiUrl, encodedWalletAddress, limit, offset);
+
+                if (!string.IsNullOrEmpty(collectionAddress))
+                {
+                    var encodedCollectionAddress = ConvertAddressToEncodeURL(collectionAddress);
+
+                    targetUrl = GetTargetCollectionUrl(apiUrl, encodedWalletAddress, 
+                        encodedCollectionAddress, limit, offset);
+                }
+
+                using (UnityWebRequest request = UnityWebRequest.Get(targetUrl))
                 {
                     yield return request.SendWebRequest();
 
+                    var responseData = request.downloadHandler.text;
+
                     if (request.result != WebRequestUtils.SUCCESS)
                     {
-                        UnitonConnectLogger.LogError($"Failed to request nft collections," +
-                            $" possible reason: {request.error}");
+                        var errorData = JsonConvert.DeserializeObject<
+                            ServerResponseData>(responseData);
+
+                        UnitonConnectLogger.LogError($"Failed to request " +
+                            $"nft collections, reason: {errorData.Message}");
+
+                        collectionsClaimed?.Invoke(null);
 
                         yield break;
                     }
 
-                    var jsonResult = request.downloadHandler.text;
-                    var data = JsonConvert.DeserializeObject<NftCollectionData>(jsonResult);
+                    var data = JsonConvert.DeserializeObject<NftCollectionData>(responseData);
 
                     collectionsClaimed?.Invoke(data);
 
-                    UnitonConnectLogger.Log($"Nft collections loaded: {jsonResult}");
-                }
+                    UnitonConnectLogger.Log($"Nft collections loaded: {responseData}");
 
-                yield break;
+                    yield break;
+                }
             }
 
             internal static IEnumerator GetTransactionPayload(string recipient,
@@ -196,7 +234,8 @@ namespace UnitonConnect.ThirdParty
 
                 if (string.IsNullOrEmpty(apiUrl))
                 {
-                    UnitonConnectLogger.LogWarning("Server API url is not detected");
+                    UnitonConnectLogger.LogError("Uniton Connect backend is not connected, " +
+                        "payload generation operation for NFT transactions is canceled");
 
                     payloadLoaded?.Invoke(null);
 
@@ -221,33 +260,36 @@ namespace UnitonConnect.ThirdParty
                     request.uploadHandler = new UploadHandlerRaw(bodyRaw);
                     request.downloadHandler = new DownloadHandlerBuffer();
 
-                    WebRequestUtils.SetRequestHeader(request, WebRequestUtils.HEADER_CONTENT_TYPE,
+                    WebRequestUtils.SetRequestHeader(request,
+                        WebRequestUtils.HEADER_CONTENT_TYPE,
                         WebRequestUtils.HEADER_VALUNE_CONTENT_TYPE_JSON);
 
                     yield return request.SendWebRequest();
 
                     var responseData = request.downloadHandler.text;
 
-                    if (request.result == WebRequestUtils.SUCCESS)
+                    if (request.result != WebRequestUtils.SUCCESS)
                     {
-                        var loadedData = JsonConvert.DeserializeObject<
-                            LoadedTransactionPayloadData>(responseData);
+                        var errorData = JsonConvert.DeserializeObject<
+                             ServerResponseData>(responseData);
 
-                        UnitonConnectLogger.Log($"Jetton transaction " +
-                            $"payload created: {loadedData.Payload}");
+                        UnitonConnectLogger.LogError($"Failed to create NFT " +
+                            $"transaction payload, reason: {errorData.Message}");
 
-                        payloadLoaded?.Invoke(loadedData.Payload);
+                        payloadLoaded?.Invoke(null);
 
                         yield break;
                     }
 
-                    var errorData = JsonConvert.DeserializeObject<
-                        ServerResponseData>(responseData);
+                    var loadedData = JsonConvert.DeserializeObject<
+                        LoadedTransactionPayloadData>(responseData);
 
-                    UnitonConnectLogger.LogError($"Failed to create transaction`" +
-                        $" payload, reason: {errorData.Message}");
+                    UnitonConnectLogger.Log($"NFT transaction " +
+                        $"payload created: {loadedData.Payload}");
 
-                    payloadLoaded?.Invoke(null);
+                    payloadLoaded?.Invoke(loadedData.Payload);
+
+                    yield break;
                 }
             }
 
@@ -256,20 +298,18 @@ namespace UnitonConnect.ThirdParty
                 return $"{apiUrl}/api/uniton-connect/v1/assets/nft/payload";
             }
 
-            internal static string GetTargetCollectionUrl(
+            internal static string GetTargetCollectionUrl(string apiUrl, 
                 string hexAddress, string collectionAddress, int limit, int offset)
             {
-                return $"{GetUserWalletUrl(hexAddress)}" +
-                    $"/nfts?collection={collectionAddress}&limit={limit}" +
-                    $"&offset={offset}&indirect_ownership=false";
+                return $"{apiUrl}/api/uniton-connect/v1/account/{hexAddress}/" +
+                    $"assets/nft/{collectionAddress}/limit/{limit}/offset/{offset}";
             }
 
-            internal static string GetAllCollectionsUrl(
+            internal static string GetAllCollectionsUrl(string apiUrl,
                 string hexAddress, int limit, int offset)
             {
-                return $"{GetUserWalletUrl(hexAddress)}" +
-                    $"/nfts?limit={limit}" +
-                    $"&offset={offset}&indirect_ownership=false";
+                return $"{apiUrl}/api/uniton-connect/v1/account/{hexAddress}/" +
+                    $"assets/nft/limit/{limit}/offset/{offset}";
             }
         }
 
@@ -278,29 +318,47 @@ namespace UnitonConnect.ThirdParty
             internal static IEnumerator GetBalance(string tonAddress,
                 string masterJettonAddress, Action<JettonBalanceData> jettonBalanceLoaded)
             {
-                var targetUrl = GetBalanceUrl(tonAddress, masterJettonAddress);
+                var apiUrl = ProjectStorageConsts.GetRuntimeAppStorage().Data.ServerApiLink;
+
+                if (string.IsNullOrEmpty(apiUrl))
+                {
+                    UnitonConnectLogger.LogError("Uniton Connect backend is not connected, " +
+                        "operation of receiving token wallet balance at master address is canceled.");
+
+                    jettonBalanceLoaded?.Invoke(null);
+
+                    yield break;
+                }
+
+                var targetUrl = GetBalanceUrl(apiUrl, tonAddress, masterJettonAddress);
 
                 using (UnityWebRequest request = UnityWebRequest.Get(targetUrl))
                 {
                     yield return request.SendWebRequest();
 
-                    var responseJson = request.downloadHandler.text;
+                    var responseData = request.downloadHandler.text;
 
                     if (request.result != WebRequestUtils.SUCCESS)
                     {
-                        UnitonConnectLogger.LogError($"Failed to fetch jetton balance, reason: {responseJson}");
+                        var errorData = JsonConvert.DeserializeObject<
+                            ServerResponseData>(responseData);
+
+                        UnitonConnectLogger.LogError($"Failed to fetch " +
+                            $"jetton balance, reason: {errorData.Message}");
 
                         jettonBalanceLoaded?.Invoke(null);
 
                         yield break;
                     }
 
-                    var responseData = JsonConvert.DeserializeObject<JettonBalanceData>(responseJson);
+                    var loadedWallet = JsonConvert.DeserializeObject<JettonConfigData>(responseData);
 
-                    jettonBalanceLoaded?.Invoke(responseData);
+                    var jettonBalanceConfig = loadedWallet.JettonConfig;
 
-                    UnitonConnectLogger.Log($"Loaded jetton {responseData.Configuration.Name} " +
-                        $"with balance in nano: {responseData.BalanceInNano}");
+                    jettonBalanceLoaded?.Invoke(jettonBalanceConfig);
+
+                    UnitonConnectLogger.Log($"Loaded jetton {jettonBalanceConfig.Configuration.Name} " +
+                        $"with balance in nano: {jettonBalanceConfig.BalanceInNano}");
 
                     yield break;
                 }
@@ -314,7 +372,8 @@ namespace UnitonConnect.ThirdParty
 
                 if (string.IsNullOrEmpty(apiUrl))
                 {
-                    UnitonConnectLogger.LogWarning("Server API url is not detected");
+                    UnitonConnectLogger.LogWarning("Uniton Connect backend is not connected, " +
+                        "the payload generation operation for the transaction token is canceled");
 
                     payloadLoaded?.Invoke(null);
 
@@ -334,7 +393,8 @@ namespace UnitonConnect.ThirdParty
                 var jsonData = JsonConvert.SerializeObject(payloadData);
                 var targetUrl = GetTransactionPayloadUrl(apiUrl);
 
-                UnitonConnectLogger.Log($"Jetton transaciton data before create payload: {jsonData}");
+                UnitonConnectLogger.Log($"Jetton transaciton data " +
+                    $"before create payload: {jsonData}");
 
                 using (UnityWebRequest request = new(targetUrl, UnityWebRequest.kHttpVerbPOST))
                 {
@@ -343,40 +403,44 @@ namespace UnitonConnect.ThirdParty
                     request.uploadHandler = new UploadHandlerRaw(bodyRaw);
                     request.downloadHandler = new DownloadHandlerBuffer();
 
-                    WebRequestUtils.SetRequestHeader(request, WebRequestUtils.HEADER_CONTENT_TYPE,
+                    WebRequestUtils.SetRequestHeader(request,
+                        WebRequestUtils.HEADER_CONTENT_TYPE,
                         WebRequestUtils.HEADER_VALUNE_CONTENT_TYPE_JSON);
 
                     yield return request.SendWebRequest();
 
                     var responseData = request.downloadHandler.text;
 
-                    if (request.result == WebRequestUtils.SUCCESS)
+                    if (request.result != WebRequestUtils.SUCCESS)
                     {
-                        var loadedData = JsonConvert.DeserializeObject<
-                            LoadedTransactionPayloadData>(responseData);
+                        var errorData = JsonConvert.DeserializeObject<
+                            ServerResponseData>(responseData);
 
-                        UnitonConnectLogger.Log($"Jetton transaction " +
-                            $"payload created: {loadedData.Payload}");
+                        UnitonConnectLogger.LogError($"Failed to create " +
+                            $"transaction payload, reason: {errorData.Message}");
 
-                        payloadLoaded?.Invoke(loadedData.Payload);
+                        payloadLoaded?.Invoke(null);
 
                         yield break;
                     }
 
-                    var errorData = JsonConvert.DeserializeObject<
-                        ServerResponseData>(responseData);
+                    var loadedData = JsonConvert.DeserializeObject<
+                        LoadedTransactionPayloadData>(responseData);
 
-                    UnitonConnectLogger.LogError($"Failed to create transaction`" +
-                        $" payload, reason: {errorData.Message}");
+                    UnitonConnectLogger.Log($"Jetton transaction " +
+                        $"payload created: {loadedData.Payload}");
 
-                    payloadLoaded?.Invoke(null);
+                    payloadLoaded?.Invoke(loadedData.Payload);
+
+                    yield break;
                 }
             }
 
-            internal static string GetBalanceUrl(string tonAddress,
-                string masterJettonAddress)
+            internal static string GetBalanceUrl(string apiUrl,
+                string tonAddress, string masterJettonAddress)
             {
-                return $"{API_URL}/accounts/{tonAddress}/jettons/{masterJettonAddress}";
+                return $"{apiUrl}/api/uniton-connect/v1/account/{tonAddress}" +
+                    $"/assets/jetton/{masterJettonAddress}/balance";
             }
 
             internal static string GetTransactionPayloadUrl(string apiUrl)

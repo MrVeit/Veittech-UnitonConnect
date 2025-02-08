@@ -78,10 +78,8 @@ namespace UnitonConnect.DeFi
             /// <param name="offset">Number of gaps between collections</param>
             public void Load(int limit, int offset = 0)
             {
-                var encodedWalletAddress = ConvertAddressToEncodedURL(_walletAddress);
-                var url = TonApiBridge.NFT.GetAllCollectionsUrl(encodedWalletAddress, limit, offset);
-
-                _mono.StartCoroutine(TonApiBridge.NFT.GetCollections(url, (collections) =>
+                _mono.StartCoroutine(TonApiBridge.NFT.GetCollections(
+                    null, limit, offset, (collections) =>
                 {
                     if (collections.Items.Count == 0 || collections.Items == null)
                     {
@@ -102,15 +100,11 @@ namespace UnitonConnect.DeFi
             /// Get a collection on an account, with a specific contract address
             /// </summary>
             /// <param name="collectionAddress">Address nft collection</param>
-            public void LoadTargetCollection(string collectionAddress, int limit, int offset = 0)
+            public void LoadTargetCollection(string collectionAddress, 
+                int limit, int offset = 0)
             {
-                var encodedWalletAddress = ConvertAddressToEncodedURL(_walletAddress);
-                var encodedCollectionAddress = ConvertAddressToEncodedURL(collectionAddress);
-
-                var url = TonApiBridge.NFT.GetTargetCollectionUrl(encodedWalletAddress,
-                    encodedCollectionAddress, limit, offset);
-
-                _mono.StartCoroutine(TonApiBridge.NFT.GetCollections(url, (collection) =>
+                _mono.StartCoroutine(TonApiBridge.NFT.GetCollections(
+                    collectionAddress, limit, offset, (collection) =>
                 {
                     if (collection.Items.Count == 0 || collection.Items == null)
                     {
@@ -132,7 +126,7 @@ namespace UnitonConnect.DeFi
             /// </summary>
             /// <param name="recipient"></param>
             /// <param name="nftItemAddress"></param>
-            /// <param name="gasFee">Validated range from 0.05 TON</param>
+            /// <param name="gasFee">Validated range from 0.05-0.12 TON</param>
             public void SendTransaction(string nftItemAddress,
                 string recipient, decimal gasFee)
             {
@@ -207,11 +201,6 @@ namespace UnitonConnect.DeFi
                     });
                 });
             }
-
-            private string ConvertAddressToEncodedURL(string address)
-            {
-                return TonApiBridge.ConvertAddressToEncodeURL(address);
-            }
         }
 
         public sealed class Jetton : IUnitonConnectJettonCallbacks
@@ -219,9 +208,9 @@ namespace UnitonConnect.DeFi
             private readonly MonoBehaviour _mono;
             private readonly UnitonConnectSDK _sdk;
 
-            private string _latestMasterAddress;
-
             public readonly decimal ForwardFee = (decimal)0.0000000010f;
+
+            private string _latestMasterAddress;
 
             public string LatestJettonWalletAddress { get; private set; }
 
@@ -357,10 +346,16 @@ namespace UnitonConnect.DeFi
                     decimal balance = UserAssetsUtils.FromNanoton(balanceInNano);
 
                     var tokenName = loadedJettonConfig.Configuration.Name;
+
+                    UnitonConnectLogger.Log($"Loaded jetton balance " +
+                        $"{tokenName} with balance {balance}");
                     
-                    if (tokenName == ClassicJettonNames.USDT_NAME)
+                    if (ClassicJettonNames.IsStablecoin(tokenName))
                     {
                         balance = (decimal)UserAssetsUtils.FromUSDtNanoton(balanceInNano);
+
+                        UnitonConnectLogger.Log($"Loaded jetton by type " +
+                            $"'Stablecoin' with name {tokenName} and balance: {balance}");
                     }
 
                     OnBalanceLoaded?.Invoke(balance, tokenName, masterAddress);
@@ -412,8 +407,8 @@ namespace UnitonConnect.DeFi
             /// <param name="type"></param>
             /// <param name="recipientAddress"></param>
             /// <param name="amount"></param>
-            /// <param name="gasFee">Validated range from 0.05 TON (with available jetton wallet)
-            /// to 0.1 TON (with creating jetton wallet) </param>
+            /// <param name="gasFee">Validated range from 0.05-0.1 TON 
+            /// (with available jetton wallet by recipient or not)</param>
             public void SendTransaction(JettonTypes type, string recipientAddress,
                 decimal amount, decimal gasFee, string message = null)
             {
@@ -575,6 +570,11 @@ namespace UnitonConnect.DeFi
 
             if (isFailedResponse)
             {
+                if (delay <= 0)
+                {
+                    delay = 15f;
+                }
+
                 UnitonConnectLogger.LogWarning($"Enabled a delay of {delay} seconds " +
                     "between attempts due to a failed last request");
 

@@ -21,5 +21,8 @@ namespace UnitonConnect.Core.Data
 
         [JsonProperty("verification")]
         public string VerificationStatus { get; set; }
+
+        [JsonProperty("score")]
+        public int TrustScore { get; set; }
     }
 }

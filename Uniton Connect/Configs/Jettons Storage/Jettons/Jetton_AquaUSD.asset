@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 389a63dfb53dc8a4783bb7b37b8fd51f, type: 3}
+  m_Name: Jetton_AquaUSD
+  m_EditorClassIdentifier: 
+  <Type>k__BackingField: 4
+  <Name>k__BackingField: AquaUSD
+  <MasterAddress>k__BackingField: 0:160f2c40452977a25d86d5130b3307a9af7bfa4deaf996cde388096178ab2182
+  <IconUrl>k__BackingField: https://cache.tonapi.io/imgproxy/ya8_uDrmedWuCUiYk6Tr5ZjkUSCmRCTsySyefHoFQQs/rs:fill:200:200:1/g:no/aHR0cHM6Ly9hcHAuYXF1YXByb3RvY29sLnh5ei9hc3NldHMvYXF1YXVzZC1pY29uLnBuZw.webp

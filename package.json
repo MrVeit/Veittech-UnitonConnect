@@ -2,7 +2,7 @@
     "name": "com.veittech.uniton.connect",
     "version": "0.5.0",
     "displayName": "Uniton Connect",
-    "description": "A library for working with the Ton Connect ecosystem in Unity. Authorization through TON wallets via deeplink or QR code to your dApps, making transactions and more.",
+    "description": "A library for convenient work with the Ton ecosystem inside web applications on Unity.",
     "unity": "2020.3",
     "unityRelease": "0f6",
     "keywords": [
@@ -16,6 +16,7 @@
     "author": 
     {
       "name": "MrVeit",
-      "email": "misster.veit@gmail.com"
+      "email": "misster.veit@gmail.com",
+      "url": "https://github.com/MrVeit/Veittech-UnitonConnect"
     }
   }

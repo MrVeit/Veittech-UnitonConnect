@@ -76,8 +76,7 @@ namespace UnitonConnect.Core.Utils
             yield return TonCenterApiBridge.Jetton.GetJettonWalletByOwner(
                 tonAddress, masterAddress, (loadedWallet) =>
             {
-                if (loadedWallet.JettonWallets == null ||
-                    loadedWallet.JettonWallets.Count == 0)
+                if (loadedWallet.Wallet == null)
                 {
                     UnitonConnectLogger.LogWarning($"Jetton Wallet is not" +
                         $" deployed by master address: {masterAddress}");
@@ -87,7 +86,7 @@ namespace UnitonConnect.Core.Utils
                     return;
                 }
 
-                jettonWalletParsed?.Invoke(loadedWallet.JettonWallets[0]);
+                jettonWalletParsed?.Invoke(loadedWallet.Wallet);
             });
         }
 

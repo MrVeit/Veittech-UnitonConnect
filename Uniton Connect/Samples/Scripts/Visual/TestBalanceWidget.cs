@@ -15,6 +15,11 @@ namespace UnitonConnect.Core.Demo
 
         private void OnDestroy()
         {
+            if (_jettonAssets == null)
+            {
+                return;
+            }
+
             _jettonAssets.OnBalanceLoaded -= JettonBalanceLoaded;
         }
 
@@ -24,6 +29,9 @@ namespace UnitonConnect.Core.Demo
             _jettonAssets = jettonAssets;
 
             _jettonAssets.OnBalanceLoaded += JettonBalanceLoaded;
+
+            Debug.Log($"Initialized jetton balance widget " +
+                $"by master address: {_contractAddress}");
 
             LoadBalance();
         }
@@ -44,12 +52,14 @@ namespace UnitonConnect.Core.Demo
                 return;
             }
 
+            Debug.Log($"Loaded balance {balance} for jetton " +
+                $"{jettonName} by master address {masterAddress}");
+
             var shortedBalance = Math.Round(balance, 2);
 
             _balanceBar.text = $"{shortedBalance}";
 
-            Debug.Log($"Loaded jetton balance by name: " +
-                $"{jettonName}, value: {shortedBalance}");
+            Debug.Log($"Balance installed {shortedBalance} by jetton {jettonName}");
         }
     }
 }

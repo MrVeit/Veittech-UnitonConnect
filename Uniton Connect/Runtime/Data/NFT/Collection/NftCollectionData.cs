@@ -5,7 +5,7 @@ namespace UnitonConnect.Runtime.Data
 {
     public sealed class NftCollectionData
     {
-        [JsonProperty("nft_items")]
+        [JsonProperty("nftItems")]
         public List<NftItemData> Items { get; set; }
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using AOT;
 using Newtonsoft.Json;
@@ -91,7 +90,8 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            UnitonConnectLogger.LogError($"Failed to initialize Uniton Connect sdk, something wrong...");
+            UnitonConnectLogger.LogError($"Failed to initialize " +
+                $"Uniton Connect sdk, something wrong...");
         }
 
         [MonoPInvokeCallback(typeof(Action<int>))]

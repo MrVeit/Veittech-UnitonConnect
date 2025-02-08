@@ -255,6 +255,7 @@ namespace UnitonConnect.Core.Demo
                     Destroy(_createdNfts[i].gameObject);
 
                     _createdNfts.RemoveAt(i);
+                    _openNftTransferPanelButton.DisableInteractable();
 
                     if (_createdNfts.Count <= 0)
                     {
