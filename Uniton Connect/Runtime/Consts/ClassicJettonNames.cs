@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Collections.Generic;
+using UnitonConnect.Core.Utils.Debugging;
 
 namespace UnitonConnect.Core.Common
 {
@@ -25,7 +26,9 @@ namespace UnitonConnect.Core.Common
             var foundedStable = stablecoins.FirstOrDefault(
                 (targetStable) => targetStable == jettonName);
 
-            return string.IsNullOrEmpty(foundedStable);
+            UnitonConnectLogger.Log($"Parsed stablecoin in common storage: {foundedStable}");
+
+            return !string.IsNullOrEmpty(foundedStable);
         }
     }
 }
