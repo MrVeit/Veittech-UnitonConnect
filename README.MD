@@ -106,10 +106,8 @@ You can test the SDK without installation on a demo app [in your browser](https:
 | **DOGS**                | Balance, Send, History    |
 | **Custom Jetton**       | Balance, Send, History    |
 | **NFT**                 | Balance, Send, Filter     |
- 
-<sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
-# SDK Interaction Type & Available Features
+# SDK Interaction Types & Available Features
 
 |                Features                  | Client-Side  | Client+Server-Side |
 | ---------------------------------------- | :----------: | :----------------: |
