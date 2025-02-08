@@ -97,15 +97,15 @@ You can test the SDK without installation on a demo app [in your browser](https:
 
 # Supported Tokens & Available Features
 
-|           Token         |   Status   |          Features          |
-| ----------------------- | :--------: | :------------------------: |
-| **TON**                 | ✔️         | Balance, Send             |
-| **USDT**                | ✔️         | Balance, Send, History    |
-| **GRAM**                | ✔️         | Balance, Send, History    |
-| **NOT**                 | ✔️         | Balance, Send, History    |
-| **DOGS**                | ✔️         | Balance, Send, History    |
-| **Custom Jetton**       | ✔️         | Balance, Send, History    |
-| **NFT**                 | ✔️         | Balance, Send, Filter     |
+|           Token         |          Features         |
+| ----------------------- | :-----------------------: |
+| **TON**                 | Balance, Send             |
+| **USDT**                | Balance, Send, History    |
+| **GRAM**                | Balance, Send, History    |
+| **NOT**                 | Balance, Send, History    |
+| **DOGS**                | Balance, Send, History    |
+| **Custom Jetton**       | Balance, Send, History    |
+| **NFT**                 | Balance, Send, Filter     |
  
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
@@ -131,10 +131,10 @@ For the library to work correctly, the following dependencies **MUST BE INSTALLE
 
 # Migration
 
-This section is for smooth migration between sdk versions, in case of a global API change.
+This section is for smooth migration between sdk versions, in case of a `global API change`.
 
-- **[From 0.2.* to 0.2.9.5](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/Docs/MigrationToNativeSDKGuide.MD)**,
-- **[From 0.2.9.5 to 0.5.0](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/Docs/MigrationToNativeSDKGuide.MD)**.
+- **[From 0.2.* to 0.2.9.5](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/Docs/MigrationToNativeSDKGuide.MD),**
+- **[From 0.2.9.5 to 0.5.0](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/Docs/MigrationToNativeSDKGuide.MD).**
 
 # Installation
 
@@ -577,7 +577,7 @@ public sealed class TonBalanceLoadingExample: MonoBehaviour
 }
 ```
 
-If you need to transfer your ton balance to `nanoton and reverse`, you can use the following methods:
+If you need to convert your ton balance to `nanoton and reverse`, you can use the following methods:
 
 ```c#
 decimal currentBalance = 1.5f;
@@ -595,7 +595,7 @@ In order to create a project, you must first configure several settings in the `
 After a successful build, **2 files** will be created in the build directory: `icon.png` and `dAppData.json`. These will contain all the information you entered earlier in the `dApp Config` window.
 You can now publish your project anywhere you want. After publishing your project, go back to the `dApp Config` window and specify the correct link so that the SDK will work correctly with your project.
 
-For test mode **I recommend** using `Github Actions` with their `Static Page` feature. Guidelines for deploying a WebGL build to Unity can be found online, so there is no need to describe them here.
+For test mode **I recommend** using `Github Actions` with their `Static Page` feature. Guidelines for deploying a WebGL build to Unity can be found `in google`, so there is no need to describe them here.
 
 # Backend Set Up
 
@@ -621,7 +621,7 @@ TON_CENTER_API_KEY="YOUR-TON-CENTER-API-KEY"
 ```
 
 - The `PORT` variable is a free port that the api server will listen on to receive requests and send responses to the unity client,
-- The `TON_API_KEY` variable is the api key that will be used by the sdk client `=to send requests `to the Ton Api`. To get it, you need to log in via telegram [on their dashboard](https://tonconsole.com/) and then enter it here,
+- The `TON_API_KEY` variable is the api key that will be used by the sdk client to send requests `to the Ton Api`. To get it, you need to log in via telegram [on their dashboard](https://tonconsole.com/) and then enter it here,
 - The `TON_CENTER_API_KEY` variable is an api key, which is also used to send requests, but now `in Ton Center V3`, due to the unavailability of some features in the first provider. To get it, you need to enter [their official bot](https://t.me/toncenter) via telegram.
 
 Now you can run the `backend locally`, for full access to `all SDK features`.
