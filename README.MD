@@ -331,7 +331,7 @@ string nonBounceableAddress = UnitonConnectSDK.Instance.Wallet.ToNonBounceable()
 Below is the implementation of sending Toncoin considering the latest `version 0.5.0`:
 
 ```c#
-public sealed class TransactionSendingExample: MonoBehaviour
+public sealed class TonTransactionSendingExample: MonoBehaviour
 {
     [SerializeField, Space] private Button _sendTransctionButton;
 
@@ -428,8 +428,146 @@ To get a detailed status with all transaction information, subscribe to the `OnT
 
 ### Sending Jettons
 
+Starting with `version 0.5.0` access the ability to `send any jetton`, below shows the implementation of sending Notocin:
+
+```c#
+public sealed class JettonTransactionSendingExample: MonoBehaviour
+{
+    [SerializeField, Space] private Button _sendTransctionButton;
+
+    private UnitonConnectSDK _unitonConnect;
+    private UserAssets.Jetton _jettonWallet;
+
+    private void OnDisable()
+    {
+        _jettonWallet.OnTransactionSended -= JettonTransactionSendingFinished;
+        _jettonWallet.OnTransactionSendFailed -= JettonTransactionSendFailed;
+
+        _sendTransctionButton.onClick.RemoveListener(Send);
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+        _jettonWallet = _unitonConnect.Assets.Jetton;
+
+        _jettonWallet.OnTransactionSended += JettonTransactionSendingFinished;
+        _jettonWallet.OnTransactionSendFailed += JettonTransactionSendFailed;
+
+        _sendTransctionButton.onClick.AddListener(Send);
+    }
+
+    private void Send()
+    {
+        if (!_unitonConnect.IsWalletConnected)
+        {
+            Debug.LogWarning("Wallet was not connected");
+
+            return;
+        }
+
+        var notcoinMaster = "EQAvlWFDxGF2lXm67y4yzC17wYKD9A0guwPkMs1gOsM__NOT";
+        var creatorAddress = "EQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4UrpH_";
+        var message = "Made by Uniton Connect";
+
+        _jettonWallet.SendTransaction(JettonTypes.NOT,
+           creatorAddress, (decimal)10000, (decimal)0.1f, message);
+
+        // OR
+
+        _jettonWallet.SendTransaction(notcoinMaster,
+           creatorAddress, (decimal)10000, (decimal)0.1f, message);
+    }
+
+    private void JettonTransactionSendingFinished(string masterAddress,
+        SuccessTransactionData transactionData)
+    {
+        var recipient = transactionData.OutMessages[0].DecodedBody.RecipientAddress;
+
+        Debug.Log($"Jetton transaction successfully "+
+          $"founded, query id: {_lastTransactionQuery}, "+
+          $"jetton master: {masterAddress}, recipient: {recipient}");
+    }
+
+    private void JettonTransactionSendFailed(string errorMessage)
+    {
+        Debug.LogError($"Failed to send ton transaction, reason: {errorMessage}");
+    }
+}
+```
+
+Sending jettons is different from the toncoin of transactions. First of all, you need to `calculate the gas correctly` so that tokens are not lost. Based on my testing results, it is better to `specify 0.1 TON` as the gas so that **most tokens** are successfully sent and a smart contract** jetton is automatically **deployed** if the recipient does not have it.
+
+While the result of a **successful send** for ton transactions can be tracked almost immediately, jettons require direct confirmation on the blockchain. Because of the nature of these jettons, a transaction can be "successful" and return its hash, but fail at one stage of interaction `with the smart contract`. Therefore, while sending such a transaction, it is better **to display the loading screen** in the game and wait for the exact result to confirm receipt!
+
+P.S: the jetton transaction can also be sent without a message, so you don't have to specify it.
+
 ### Sending NFT items
 
+Starting with `version 0.5.0` access the ability to `send items of NFT collections`, below shows the implementation of this feature:
+
+```c#
+public sealed class NftTransactionSendingExample: MonoBehaviour
+{
+    [SerializeField, Space] private Button _sendTransctionButton;
+
+    private UnitonConnectSDK _unitonConnect;
+    private UserAssets.NFT _nftStorage;
+
+    private void OnDisable()
+    {
+        _nftStorage.OnTransactionSended -= NftTransactionSendingFinished;
+        _nftStorage.OnTransactionSendFailed -= NftTransactionSendFailed;
+
+        _sendTransctionButton.onClick.RemoveListener(Send);
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+        _nftStorage = unitonConnect.Assets.NFT;
+
+        _nftStorage.OnTransactionSended += NftTransactionSendingFinished;
+        _nftStorage.OnTransactionSendFailed += NftTransactionSendFailed;
+
+        _sendTransctionButton.onClick.AddListener(Send);
+    }
+
+    private void Send()
+    {
+        if (!_unitonConnect.IsWalletConnected)
+        {
+            Debug.LogWarning("Wallet was not connected");
+
+            return;
+        }
+
+        var nftItemAddress = "EQCYYWQNYgl6OAhNsU75sik2oC1HoKuerXN5-Pq9JLh-SDra";
+        var creatorAddress = "EQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4UrpH_";
+
+        _nftStorage.SendTransaction(nftItemAddress, creatorAddress, (decimal)0.05f);
+    }
+
+    private void NftTransactionSendingFinished(string nftItemAddress,
+         SuccessTransactionData transactiionData)
+    {
+        var queryId = transactiionData.OutMessages[0].DecodedBody.QueryId;
+        var recipient = transactionData.OutMessages[0].DecodedBody.RecipientAddress;
+
+        Debug.Log($"Nft transaction successfully founded, query id: {queryId}, "+
+          $"item address: {nftItemAddress}, recipient: {recipient}");
+    }
+
+    private void NftTransactionSendFailed(string errorMessage)
+    {
+        Debug.LogError($"Failed to send ton transaction, reason: {errorMessage}");
+    }
+}
+```
+
+When sending a nft item to a recipient, you need to `specify the address` of the item itself (not the nft collection), since everyone `has a unique one`. After running test transactions, I found out that the gas price can range from `0.05-0.1 TON`, but for reliability it is better `to specify 0.1 TON` to successfully send the item to the recipient.
+
+**P.S:** nft transfers like jettons are `confirmed directly` through the blockchain, so waiting for the final result of the transfer may take some time.
 
 ### Loading TON balance
 
@@ -546,7 +684,7 @@ public sealed class LoadingNftsExample : MonoBehaviour
     [SerializeField] private Button _loadTargetNftCollection;
 
     private UnitonConnectSDK _unitonConnect;
-    private UserAssets.NFT _nftStorage => _unitonConnect.UserAssets.Nft;
+    private UserAssets.NFT _nftStorage => _unitonConnect.Assets.Nft;
 
     private void Start()
     {
@@ -653,7 +791,7 @@ You can read more about this mechanism [in the official Ton documentation](https
 Below is an example of requesting `address of USDt` wallet on a connected wallet:
 
 ```c#
-public sealed class JettonWalletAddressLoadingExample: MonoBehaviour
+public sealed class JettonWalletLoadingExample: MonoBehaviour
 {
     [SerializeField, Space] private TextMeshProUGUI _usdtWalletAddress;
 
@@ -704,6 +842,8 @@ Otherwise, if the wallet owner did not previously have this jetton on their bala
 **IMPORTANT:** all addresses are returned `in HEX/RAW format`, so they should be converted additionally if necessary.
 
 **P.S:** If you need to check if the recipient has a wallet jetton, you can use the utility `UserAssetsUtils.GetJettonWalletByAddress(string jettonMasterAddress, string ownerAddress, Action<JettonWalletData> jettonWalletParsed)`, but in this case the `OnAddressParsed` event will not be called.
+
+# Loading Jetton transactions history
 
 # Build
 
