@@ -126,15 +126,15 @@ You can test the SDK without installation on a demo app [in your browser](https:
 
 # Dependencies
 
-For the library to work correctly, the following dependencies **must be installed** in the project before use:
+For the library to work correctly, the following dependencies **MUST BE INSTALLED** in the project before use:
 - **[Newtonsoft](https://www.youtube.com/watch?v=3H6xkl_EsvQ)** - modern solution for convenient work with json files.
 
 # Migration
 
 This section is for smooth migration between sdk versions, in case of a global API change.
 
-- **[From 0.2.* to 0.2.9.5](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/Docs/MigrationToNativeSDKGuide.MD),**
-- **[From 0.2.9.5 to 0.5.0](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/Docs/MigrationToNativeSDKGuide.MD)
+- **[From 0.2.* to 0.2.9.5](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/Docs/MigrationToNativeSDKGuide.MD)**,
+- **[From 0.2.9.5 to 0.5.0](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/Docs/MigrationToNativeSDKGuide.MD)**.
 
 # Installation
 
@@ -191,7 +191,7 @@ public sealed class InitExample: MonoBehaviour
 If you just want to test the SDK, activate the `Test Mode` option of the `UnitonConnectSDK` component. In this case, the SDK will initialize the library's test application.
 In case you want your application name, its logo and a link to the project itself to be displayed when connecting to the wallets. You need to enter these data in the `dApp Config` window, which is located at the `Uniton Connect -> dApp Config` path.
 
-** IMPORTANT:** starting with version 0.2.9.5 of the library, the core library has switched to `native plugins/solutions` in JavaScript. Therefore, the library functionality cannot work in `Editor mode`. To test the functionality of the library in your project, it is **RECOMMENDED** to make a build with a test scene from the SDK.
+**IMPORTANT:** starting with `version 0.2.9.5` of the library, the core library has switched **to native plugins/solutions** in `JavaScript`. Therefore, the library functionality cannot work in `Editor mode`. To test the functionality of the library in your project, it is **RECOMMENDED** to make a build with a test scene from the SDK.
 
 <p align="center">
  <img width="500px" src="Assets/dAppConfigWindow.png" alt="qr"/>
@@ -199,10 +199,9 @@ In case you want your application name, its logo and a link to the project itsel
 
 Here you need to select your game/application logo, enter a title and provide a link to the site where it will be published.
 
-P.S: for correct saving of your application logo after building, please read the compression type of the selected SDK logo standard.
+**P.S:** for correct saving of your application logo after building, please `read the compression type` of the selected SDK logo standard.
 
-** IMPORTANT:** Starting with `version 0.2.8`, you need to provide a link to a custom API server that loads NFT collection images `bypassing CORS` and converts them to `jpeg` format.
-Starting with `version 0.5.0`, new SDK options related to the `Defi section` require a connection to the library backend.
+**IMPORTANT:** Starting with `version 0.2.8`, you need to provide a reference to a custom API server that loads NFT collection images `bypassing CORS` and using the new SDK options associated with the `DeFi section` (from version 0.5.0 and above).
 To bring up your own API server via the `library backend template` on **Node.js**, go to the [Backend Set Up](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/README.MD#backend-set-up) section.
 
 Now you need to do the first build of the project to generate the application configuration from the editor to a json file. 
@@ -289,7 +288,7 @@ public sealed class ConnectWalletExample: MonoBehaviour
 **P.S:** after clicking the button and calling the `Connect()` method, a native window will open, which will display the wallets available for connection (depending on whether the web application is running on PC or phone, their number will be different).
 Once the selected wallet is successfully connected, you can beautifully display its address. The SDK has a method `UnitonConnectSDK.Instance.Wallet.ToShort(int size)`, which shows only the first and last characters of the address.
 
-P.S.: Starting from `version 0.2.8`, you can change the address format of the connected TON-wallet.
+**P.S:** Starting from `version 0.2.8`, you can change the address format of the connected TON Wallet.
 
 Conversion to `HEX/RAW` format:
 ```c#
@@ -331,7 +330,7 @@ string nonBounceableAddress = UnitonConnectSDK.Instance.Wallet.ToNonBounceable()
 
 ### Sending Toncoin
 
-Below is the implementation of sending Toncoin considering the latest `release version 0.5.0`:
+Below is the implementation of sending Toncoin considering the latest `version 0.5.0`:
 
 ```c#
 public sealed class TransactionSendingExample: MonoBehaviour
@@ -539,7 +538,7 @@ The method names reflect the size of the `webp` image `in pixels`, or you can ch
 
 ### Loading TON balance
 
-Below is the implementation of `Toncoin balance` request on the connected wallet:
+Below is the implementation of `toncoin balance` request on the connected wallet:
 
 ```c#
 public sealed class TonBalanceLoadingExample: MonoBehaviour
@@ -578,14 +577,13 @@ public sealed class TonBalanceLoadingExample: MonoBehaviour
 }
 ```
 
-If you need to transfer your Ton balance to Nanoton and reverse, you can use the following methods:
+If you need to transfer your ton balance to `nanoton and reverse`, you can use the following methods:
 
 ```c#
-decimal nanotons = tonBalance.ToNanoton();
-decimal tons = nanotons.FromNanoton()
+decimal currentBalance = 1.5f;
 
-Debug.Log($"Loaded TON balance: {tonBalance}");
-Debug.Log($"Loaded TON balance in nanotons: {nanotons}");
+decimal nanotons = currentBalance.ToNanoton(); // 150000000
+decimal tons = nanotons.FromNanoton(); // 1.5 TON
 ```
 
 # Build
@@ -623,8 +621,8 @@ TON_CENTER_API_KEY="YOUR-TON-CENTER-API-KEY"
 ```
 
 - The `PORT` variable is a free port that the api server will listen on to receive requests and send responses to the unity client,
-- The `TON_API_KEY` variable is the api key that will be used by the sdk client `to send requests to the Ton Api`. To get it, you need to log in via telegram [on their dashboard](https://tonconsole.com/) and then enter it here,
-- The `TON_CENTER_API_KEY` variable is an api key, which is also used to send requests, but now in Ton Center V3, due to the unavailability of some features in the first provider. To get it, you need to enter [their official bot](https://t.me/toncenter) via telegram.
+- The `TON_API_KEY` variable is the api key that will be used by the sdk client `=to send requests `to the Ton Api`. To get it, you need to log in via telegram [on their dashboard](https://tonconsole.com/) and then enter it here,
+- The `TON_CENTER_API_KEY` variable is an api key, which is also used to send requests, but now `in Ton Center V3`, due to the unavailability of some features in the first provider. To get it, you need to enter [their official bot](https://t.me/toncenter) via telegram.
 
 Now you can run the `backend locally`, for full access to `all SDK features`.
 To do this, open a terminal in the code editor in which you opened the project and enter the following command:
@@ -638,8 +636,8 @@ Try reinstalling it or search google for a solution to the problem.
 
 **P.S:** Now you can go back to your Unity project, open the dApp configuration window via `Uniton Connect -> dApp Config` and fill the `API Server URL` field with the value `http://localhost:3000`.
 
-**IMPORTANT:** This method will only work **FOR LOCAL TESTING**, so that requests will come into the backend of the cdk `on the local port`. How to do this, deploy unity web build locally - search on the same `google`.
-In case you need to `run the web build` elsewhere (Github Pages, ItchIo and other sites), and `test inside a Telegram bot`, you need to upload the backend sdk to your rented `VPS/VDS server`.
+**IMPORTANT:** This method will only work **FOR LOCAL TESTING**, so that requests will come into the backend of the cdk `on the local port`. How to do this, deploy web build locally - search on the same `google`.
+In case you need to run the web build `elsewhere` (Github Pages, ItchIo and other sites) and `test inside a Telegram bot`, you need to upload the backend sdk to your rented `VPS/VDS server`.
 
 # Production Backend Deploy
 
