@@ -50,7 +50,7 @@ namespace UnitonConnect.Core
         [Tooltip("Turn it off if you want to do your own cdk initialization in your scripts")]
         [SerializeField, Space] private bool _initializeOnAwake;
         [Tooltip("Delay before requesting in blockchain to retrieve data about the sent transaction")]
-        [SerializeField, Space, Range(15f, 500f)] private float _confirmTransactionDelay;
+        [SerializeField, Space, Range(15f, 500f)] private float _confirmDelay;
         [Tooltip("List of available tokens for transactions/reading balances and more")]
         [SerializeField, Space] private JettonConfigsStorage _jettonStorage;
 
@@ -73,7 +73,7 @@ namespace UnitonConnect.Core
 
         public bool IsWalletConnected => _isWalletConnected;
 
-        public float TransactionFetchDelay => _confirmTransactionDelay;
+        public float TransactionFetchDelay => _confirmDelay;
 
         /// <summary>
         /// Callback if native sdk initialization finished with same result
@@ -315,7 +315,10 @@ namespace UnitonConnect.Core
         {
             if (isFailed)
             {
-                yield return new WaitForSeconds(_confirmTransactionDelay);
+                UnitonConnectLogger.LogWarning($"Enabled a delay of {_confirmDelay} seconds " +
+                    $"between attempts due to a failed last request");
+
+                yield return new WaitForSeconds(_confirmDelay);
             }
 
             yield return TonApiBridge.GetTransactionData(transactionHash, (transactionData) =>

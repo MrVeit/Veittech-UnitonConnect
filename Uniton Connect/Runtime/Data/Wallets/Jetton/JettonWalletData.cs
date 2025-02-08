@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace UnitonConnect.Core.Data
@@ -25,26 +24,5 @@ namespace UnitonConnect.Core.Data
 
         [JsonProperty("data_hash")]
         public string DataHash { get; set; }
-    }
-
-    public sealed class MintlessInfo
-    {
-        [JsonProperty("amount")]
-        public string Amount { get; set; }
-
-        [JsonProperty("custom_payload_api_uri")]
-        public List<string> CustomPayloadApiUrl { get; set; }
-
-        [JsonProperty("expire_at")]
-        public long ExpireAt { get; set; }
-
-        [JsonProperty("start_from")]
-        public long StartFrom { get; set; }
-    }
-
-    public sealed class AddressBookPage
-    {
-        [JsonProperty("user_friendly")]
-        public string UserFriendly { get; set; }
     }
 }

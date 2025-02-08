@@ -1119,7 +1119,7 @@ MonoBehaviour:
   _testMode: 1
   _debugMode: 1
   _initializeOnAwake: 0
-  _confirmTransactionDelay: 15
+  _confirmDelay: 0
   _jettonStorage: {fileID: 11400000, guid: a7b6e10d62286724a802b407a76b868e, type: 2}
 --- !u!1 &147073027
 GameObject:
@@ -1446,7 +1446,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: v. 0.5.0-preview
+  m_text: v. 0.5.0
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
