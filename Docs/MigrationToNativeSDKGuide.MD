@@ -947,6 +947,7 @@ public sealed class OldRestoreConnectionExample: MonoBehaviour
 ```
 
 After
+```c#
 public sealed class NewRestoreConnectionExample: MonoBehaviour
 {
     private UnitonConnectSDK _unitonConnect;
