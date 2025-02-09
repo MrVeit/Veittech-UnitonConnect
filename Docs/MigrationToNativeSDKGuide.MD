@@ -2,7 +2,7 @@
 
 By migrating from [based TonSdk.NET](https://github.com/continuation-team/TonSdk.NET) to the [native JS SDK Ton Connect UI](https://github.com/ton-connect/sdk/tree/main/packages/ui), a number of changes have been made to the functionality of the SDK. The following shows how the library functions are implemented in a working environment before and after the API change.
 
-## **SDK INITIALIZATION:**
+## **SDK INITIALIZATION**
 
 Before
 ```c#
@@ -703,3 +703,612 @@ For example, the `Uniton Connect` template for assembly looks like this now:
 
 **IMPORTANT:** All methods marked as `Obsolute` will be removed or hidden from public access (this applies to utilities and other things that will only be used inside the SDK) after a couple of library version updates.
 On this occasion, backwards compatibility is still temporarily preserved for a smooth transition between versions, but not forever, sorry for the inconvenience :0
+
+# Migrating from 0.2.9.5 to 0.5.0
+
+For the global `0.5.0 update`, the logic of basic functions has been `artially redone`, including the names of some events.
+Below is shown the past and current implementation of the functionality that has undergone changes:
+
+## **SDK INITIALIZATION**
+
+Before
+```c#
+public sealed class OldInitExample: MonoBehaviour
+{
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnNativeInitialized -= SdkInitialized;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _unitonConnect.OnNativeInitialized += SdkInitialized;
+
+        _unitonConnect.Initialize();
+    }
+
+    private void SdkInitialized(bool isSuccess)
+    {
+        if (isSuccess)
+        {
+            Debug.Log("Sdk has been successfully initialized, " + 
+              "you can test the functionality ^-^");
+        }
+    }
+}
+```
+
+After
+```c#
+public sealed class NewInitExample: MonoBehaviour
+{
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDisable()
+    {
+        _unitonConnect.‎OnInitiliazed -= SdkInitialized;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _unitonConnect.‎OnInitiliazed += SdkInitialized;
+
+        _unitonConnect.Initialize();
+    }
+
+    private void SdkInitialized(bool isSuccess)
+    {
+        if (isSuccess)
+        {
+            Debug.Log("Sdk has been successfully initialized, " + 
+              "you can test the functionality ^-^");
+        }
+    }
+}
+```
+
+## **CONNECT WALLET**
+
+Before
+```c#
+public sealed class OldConnectWalletExample: MonoBehaviour
+{
+    [SerializeField, Space] private Button _connectButton;
+
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDisable()
+    {
+        _connectButton.onClick.RemoveListener(Connect);
+
+        _unitonConnect.OnNativeInitialized -= SdkInitialized;
+
+        _unitonConnect.OnNativeWalletConnectionFinished -= WalletConnectionFinished;
+        _unitonConnect.OnNativeWalletConnectionFailed -= WalletConnectionFailed;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _connectButton.interactable = false;
+        _connectButton.onClick.AddListener(Connect);
+
+        _unitonConnect.OnNativeInitialized += SdkInitialized;
+
+        _unitonConnect.OnNativeWalletConnectionFinished += WalletConnectionFinished;
+        _unitonConnect.OnNativeWalletConnectionFailed += WalletConnectionFailed;
+    }
+
+    private void Connect()
+    {
+        if (!_unitonConnect.IsInitialized)
+        {
+            Debug.LogWarning("Sdk is not initialized, connection canceled");
+  
+            return;
+        }
+
+        _unitonConnect.Connect();
+    }
+
+    private void SdkInitialized(bool isSuccess)
+    {
+        _connectButton.interactable = isSuccess;
+    }
+
+    private void WalletConnectionFinished(NewWalletConfig wallet)
+    {
+        var userAddress = wallet.Address;
+
+        var successConnectMessage = $"Wallet is connected, " +
+            $"Address: {WalletConnectUtils.GetNonBounceableAddress(userAddress), \n}" +
+            $"Public Key: {wallet.PublicKey}";
+        var shortAddress = WalletVisualUtils.ProcessWalletAddress(userAddress, 6);
+
+        Debug.Log(successConnectMessage);
+        Debug.Log($"Parsed short address: {shortAddress}");
+    }
+
+    private void WalletConnectionFailed(string errorMessage)
+    {
+        Debug.LogError("Failed to connect wallet, reason: {errorMessage}");
+    }
+}
+```
+
+After
+```c#
+public sealed class NewConnectWalletExample: MonoBehaviour
+{
+    [SerializeField, Space] private Button _connectButton;
+
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDisable()
+    {
+        _connectButton.onClick.RemoveListener(Connect);
+
+        _unitonConnect.‎OnInitiliazed -= SdkInitialized;
+
+        _unitonConnect.OnWalletConnected -= WalletConnectionFinished;
+        _unitonConnect.OnWalletConnectFailed -= WalletConnectionFailed;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _connectButton.interactable = false;
+        _connectButton.onClick.AddListener(Connect);
+
+        _unitonConnect.‎OnInitiliazed += SdkInitialized;
+
+        _unitonConnect.OnWalletConnected += WalletConnectionFinished;
+        _unitonConnect.OnWalletConnectFailed += WalletConnectionFailed;
+    }
+
+    private void Connect()
+    {
+        if (!_unitonConnect.IsInitialized)
+        {
+            Debug.LogWarning("Sdk is not initialized, connection canceled");
+  
+            return;
+        }
+
+        _unitonConnect.Connect();
+    }
+
+    private void SdkInitialized(bool isSuccess)
+    {
+        _connectButton.interactable = isSuccess;
+    }
+
+    private void WalletConnectionFinished(WalletConfig  wallet)
+    {
+        var userAddress = wallet.Address;
+
+        var successConnectMessage = $"Wallet is connected, " +
+            $"Address: {userAddress}, Public Key: {wallet.PublicKey}";
+
+        var shortAddress = _unitonConnect.Wallet.ToShort(6);
+
+        Debug.Log(successConnectMessage);
+        Debug.Log($"Parsed short address: {shortAddress}");
+    }
+
+    private void WalletConnectionFailed(string errorMessage)
+    {
+        Debug.LogError("Failed to connect wallet, reason: {errorMessage}");
+    }
+}
+```
+
+## **RESTORE WALLET CONNECTION**
+
+Before
+```c#
+public sealed class OldRestoreConnectionExample: MonoBehaviour
+{
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnNativeWalletConnectionRestored -= WalletConnectionRestored;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _unitonConnect.OnNativeWalletConnectionRestored += WalletConnectionRestored;
+    }
+
+    private void WalletConnectionRestored(bool isRestored)
+    {
+        if (!isRestored)
+        {
+            Debug.LogWarning("Wallet connection was not restored");
+
+            return;
+        }
+
+        Debug.Log($"Wallet connection restored, " +
+            $"loaded address: {_unitonConnect.Wallet.ToNonBounceable()}");
+    }
+}
+```
+
+After
+public sealed class NewRestoreConnectionExample: MonoBehaviour
+{
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnWalletConnectRestored -= WalletConnectionRestored;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _unitonConnect.OnWalletConnectRestored += WalletConnectionRestored;
+    }
+
+    private void WalletConnectionRestored(bool isRestored)
+    {
+        if (!isRestored)
+        {
+            Debug.LogWarning("Wallet connection was not restored");
+
+            return;
+        }
+
+        Debug.Log($"Wallet connection restored, " +
+            $"loaded address: {_unitonConnect.Wallet.ToNonBounceable()}");
+    }
+}
+```
+
+## **DISCONNECT WALLET**
+
+Before
+```c#
+public sealed class OldDisconnectWalletExample : MonoBehaviour
+{
+    [SerializeField, Space] private Button _disconnectButton;
+
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnNativeWalletDisconnected -= WalletDisconnected;
+
+        _disconnectButton.onClick.RemoveListener(Disconnect);
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _unitonConnect.OnNativeWalletDisconnected += WalletDisconnected;
+
+        _disconnectButton.interactable = true;
+
+        _disconnectButton.onClick.AddListener(Disconnect);
+    }
+
+    private void Disconnect()
+    {
+        _unitonConnect.Disconnect();
+    }
+
+    private void WalletDisconnected(bool isSuccess)
+    {
+        if (!isSuccess)
+        {
+            Debug.LogWarning("Failed to disconnect wallet, " +
+                "something wrong...");
+
+            return;
+        }
+
+        _disconnectButton.interactable = false;
+
+        Debug.Log($"Wallet successfully disconnected, " + 
+            $"status: {_unitonConnect.IsWalletConnected}");
+    }
+}
+```
+
+After
+```c#
+public sealed class NewDisconnectWalletExample : MonoBehaviour
+{
+    [SerializeField, Space] private Button _disconnectButton;
+
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnWalletDisconnected -= WalletDisconnected;
+
+        _disconnectButton.onClick.RemoveListener(Disconnect);
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _unitonConnect.OnWalletDisconnected += WalletDisconnected;
+
+        _disconnectButton.interactable = true;
+
+        _disconnectButton.onClick.AddListener(Disconnect);
+    }
+
+    private void Disconnect()
+    {
+        _unitonConnect.Disconnect();
+    }
+
+    private void WalletDisconnected(bool isSuccess)
+    {
+        if (!isSuccess)
+        {
+            Debug.LogWarning("Failed to disconnect wallet, " +
+                "something wrong...");
+
+            return;
+        }
+
+        _disconnectButton.interactable = false;
+
+        Debug.Log($"Wallet successfully disconnected, " + 
+            $"status: {_unitonConnect.IsWalletConnected}");
+    }
+}
+```
+
+## **LOADING TON BALANCE**
+
+Before
+```c#
+public sealed class OldTonBalanceLoaderExample: MonoBehaviour
+{
+    [SerializeField, Space] private TextMeshProUGUI _balanceBar;
+
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnTonBalanceClaimed -= TonBalanceClaimed;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        if (!_unitonConnect.IsWalletConnected)
+        {
+            Debug.LogWarning("Wallet is not connected");
+
+            return;
+        }
+
+        _unitonConnect.OnTonBalanceClaimed += TonBalanceClaimed;
+
+        _unitonConnect.LoadBalance(ClassicTokenTypes.Toncoin);
+    }
+
+    private void TonBalanceClaimed(decimal balance)
+    {
+        Debug.Log($"Loaded ton balance: {balance}");
+
+        _balanceBar.text = $"{balance} TON";
+    }
+}
+```
+
+After
+```c#
+public sealed class NewTonBalanceLoaderExample: MonoBehaviour
+{
+    [SerializeField, Space] private TextMeshProUGUI _balanceBar;
+
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnTonBalanceClaimed -= TonBalanceClaimed;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        if (!_unitonConnect.IsWalletConnected)
+        {
+            Debug.LogWarning("Wallet is not connected");
+
+            return;
+        }
+
+        _unitonConnect.OnTonBalanceClaimed += TonBalanceClaimed;
+
+        _unitonConnect.LoadBalance();
+    }
+
+    private void TonBalanceClaimed(decimal balance)
+    {
+        Debug.Log($"Loaded ton balance: {balance}, in nano: {balance.ToNanoton()}");
+
+        _balanceBar.text = $"{balance} TON";
+    }
+}
+```
+
+## **SENDING TONCOIN**
+
+Before
+```c#
+public sealed class OldTransactionSendingExample: MonoBehaviour
+{
+    [SerializeField, Space] private Button _sendTransctionButton;
+
+    private UnitonConnectSDK _unitonConnect;
+
+    private string _latestTransactionHash;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnNativeSendingTonFinished -= TransactionSendingFinished;
+        _unitonConnect.OnNativeTransactionConfirmed -= TonTransactionConfirmed;
+
+        _sendTransctionButton.onClick.RemoveListener(Send);
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _unitonConnect.OnNativeSendingTonFinished += TransactionSendingFinished;
+        _unitonConnect.OnNativeTransactionConfirmed += TonTransactionConfirmed;
+
+        _sendTransctionButton.onClick.AddListener(Send);
+    }
+
+    private void Send()
+    {
+        if (!_unitonConnect.IsWalletConnected)
+        {
+            Debug.LogWarning("Wallet was not connected");
+
+            return;
+        }
+
+        _unitonConnect.SendTransaction(ClassicTokenTypes.Toncoin,
+            "EQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4UrpH_", 
+            (double)10.0f, "Ton Foundation is scam!");
+    }
+
+    private void TransactionSendingFinished(string transactionHash)
+    {
+        _latestTransactionHash = transactionHash;
+
+        Debug.Log($"Ton transaction sended, hash: {transactionHash}");
+    }
+
+    private void TonTransactionConfirmed(
+        SuccessTransactionData transactionData)
+    {
+        Debug.Log($"Ton transaction {_latestTransactionHash} " +
+            $"confirmed with status: {transactionData.IsSuccess}");
+
+        var status = transactionData.IsSuccess;
+            var newBalance = transactionData.EndBalance.FromNanoton();
+            var fee = transactionData.TotalFees.FromNanoton();
+            var sendedAmount = transactionData.OutMessages[0].Value.FromNanoton();
+            var recipientAddress = transactionData.OutMessages[0].Recipient.Address;
+            var convertedAddress = WalletConnectUtils.GetNonBounceableAddress(recipientAddress);
+            var message = transactionData.OutMessages[0].DecodedBody.MessageText;
+
+        var transactionDetails = $"Loaded transaction data: \n" +
+                $"STATUS: {transactionData.IsSuccess},\n" +
+                $"HASH: {_latestTransactionHash},\n" +
+                $"NEW BALANCE: {newBalance} TON,\n" +
+                $"FEE: {fee} TON,\n" +
+                $"SENDED AMOUNT: {sendedAmount} TON,\n" +
+                $"RECIPIENT ADDRESS: {convertedAddress},\n" +
+                $"MESSAGE: {message}";
+
+        Debug.Log(transactionDetails);
+    }
+}
+```
+
+After
+```c#
+public sealed class NewTransactionSendingExample: MonoBehaviour
+{
+    [SerializeField, Space] private Button _sendTransctionButton;
+
+    private UnitonConnectSDK _unitonConnect;
+
+    private string _latestTransactionHash;
+
+    private void OnDisable()
+    {
+        _unitonConnect.OnTonTransactionSended -= TransactionSendingFinished;
+        _unitonConnect.OnTonTransactionConfirmed -= TonTransactionConfirmed;
+
+        _sendTransctionButton.onClick.RemoveListener(Send);
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _unitonConnect.OnTonTransactionSended += TransactionSendingFinished;
+        _unitonConnect.OnTonTransactionConfirmed += TonTransactionConfirmed;
+
+        _sendTransctionButton.onClick.AddListener(Send);
+    }
+
+    private void Send()
+    {
+        if (!_unitonConnect.IsWalletConnected)
+        {
+            Debug.LogWarning("Wallet was not connected");
+
+            return;
+        }
+
+        var creatorAddress = "EQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4UrpH_";
+        var message = "Made by Uniton Connect";
+
+        _unitonConnect.SendTransaction(creatorAddress, (decimal)10.0f, message);
+    }
+
+    private void TransactionSendingFinished(string transactionHash)
+    {
+        _latestTransactionHash = transactionHash;
+
+        Debug.Log($"Ton transaction sended, hash: {transactionHash}");
+    }
+
+    private void TonTransactionConfirmed(
+        SuccessTransactionData transactionData)
+    {
+        Debug.Log($"Ton transaction {_latestTransactionHash} " +
+            $"confirmed with status: {transactionData.IsSuccess}");
+
+        var status = transactionData.IsSuccess;
+            var newBalance = transactionData.EndBalance.FromNanoton();
+            var fee = transactionData.TotalFees.FromNanoton();
+            var sendedAmount = transactionData.OutMessages[0].Value.FromNanoton();
+            var recipientAddress = transactionData.OutMessages[0].Recipient.Address;
+            var convertedAddress = WalletConnectUtils.GetNonBounceableAddress(recipientAddress);
+            var message = transactionData.OutMessages[0].DecodedBody.MessageText;
+
+        var transactionDetails = $"Loaded transaction data: \n" +
+                $"STATUS: {transactionData.IsSuccess},\n" +
+                $"HASH: {_latestTransactionHash},\n" +
+                $"NEW BALANCE: {newBalance} TON,\n" +
+                $"FEE: {fee} TON,\n" +
+                $"SENDED AMOUNT: {sendedAmount} TON,\n" +
+                $"RECIPIENT ADDRESS: {convertedAddress},\n" +
+                $"MESSAGE: {message}";
+
+        Debug.Log(transactionDetails);
+    }
+}
+```
