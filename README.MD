@@ -131,12 +131,12 @@ For the library to work correctly, the following dependencies **MUST BE INSTALLE
 
 This section is for smooth migration between sdk versions, in case of a `global API change`.
 
-- **[From 0.2.* to 0.2.9.5](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/Docs/MigrationToNativeSDKGuide.MD),**
-- **[From 0.2.9.5 to 0.5.0](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/Docs/MigrationToNativeSDKGuide.MD).**
+- **[From 0.2.* to 0.2.9.5](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/Docs/MigrationToNativeSDKGuide.MD#migrating-from-02-to-0295),**
+- **[From 0.2.9.5 to 0.5.0](https://github.com/MrVeit/Veittech-UnitonConnect/blob/main/Docs/MigrationToNativeSDKGuide.MD#migrating-from-0295-to-050).**
 
 # Installation
 
-[Download the latest version of the SDK via the .unityPackage file here](https://github.com/MrVeit/Veittech-UnitonConnect/releases).
+**[Download the latest version of the SDK via the .unityPackage file here](https://github.com/MrVeit/Veittech-UnitonConnect/releases)**
 
 # Initialization
 
