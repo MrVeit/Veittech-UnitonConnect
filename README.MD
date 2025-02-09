@@ -403,13 +403,13 @@ public sealed class TonTransactionSendingExample: MonoBehaviour
         var message = transactionData.OutMessages[0].DecodedBody.MessageText;
 
         var transactionDetails = $"Loaded TON transaction data: \n" +
-                $"STATUS: {transactionData.IsSuccess},\n" +
-                $"HASH: {_latestTransactionHash},\n" +
-                $"NEW BALANCE: {newBalance} TON,\n" +
-                $"TOTAL FEE: {fee} TON,\n" +
-                $"SENDED AMOUNT: {sendedAmount} TON,\n" +
-                $"RECIPIENT ADDRESS: {convertedAddress},\n" +
-                $"MESSAGE: {message}";
+            $"STATUS: {transactionData.IsSuccess},\n" +
+            $"HASH: {_latestTransactionHash},\n" +
+            $"NEW BALANCE: {newBalance} TON,\n" +
+            $"TOTAL FEE: {fee} TON,\n" +
+            $"SENDED AMOUNT: {sendedAmount} TON,\n" +
+            $"RECIPIENT ADDRESS: {convertedAddress},\n" +
+            $"MESSAGE: {message}";
 
         Debug.Log(transactionDetails);
     }
@@ -482,11 +482,20 @@ public sealed class JettonTransactionSendingExample: MonoBehaviour
     private void JettonTransactionSendingFinished(string masterAddress,
         SuccessTransactionData transactionData)
     {
+        var sendedAmount transactionData.OutMessages[0].DecodedBody.SendedAmount;
         var recipient = transactionData.OutMessages[0].DecodedBody.RecipientAddress;
+        var payload = transactionData.OutMessages[0].DecodedBody.ForwardPayload;
 
-        Debug.Log($"Jetton transaction successfully "+
-          $"founded, query id: {_lastTransactionQuery}, "+
-          $"jetton master: {masterAddress}, recipient: {recipient}");
+        string message = string.Empty;
+
+        if (payload.IsRight)
+        {
+            message = payload.Value.Value.MessageText;
+        }
+
+        Debug.Log($"Jetton transaction successfully founded, "+
+          $"query id: {_lastTransactionQuery}, message: {message}, "+
+          $"sended: {sendedAmount}, jetton master: {masterAddress}, recipient: {recipient}");
     }
 
     private void JettonTransactionSendFailed(string errorMessage)
@@ -549,13 +558,14 @@ public sealed class NftTransactionSendingExample: MonoBehaviour
     }
 
     private void NftTransactionSendingFinished(string nftItemAddress,
-         SuccessTransactionData transactiionData)
+         SuccessTransactionData transactionData)
     {
-        var queryId = transactiionData.OutMessages[0].DecodedBody.QueryId;
-        var recipient = transactionData.OutMessages[0].DecodedBody.RecipientAddress;
+        var queryId = transactionData.OutMessages[0].DecodedBody.QueryId;
+        var totalFee = transactionData.TotalFees.FromNanoton();
+        var recipient = transactionData.OutMessages[0].DecodedBody.NewOwner;
 
         Debug.Log($"Nft transaction successfully founded, query id: {queryId}, "+
-          $"item address: {nftItemAddress}, recipient: {recipient}");
+          $"item address: {nftItemAddress}, recipient: {recipient}, total fee: {totalFee}");
     }
 
     private void NftTransactionSendFailed(string errorMessage)
@@ -844,6 +854,63 @@ Otherwise, if the wallet owner did not previously have this jetton on their bala
 **P.S:** If you need to check if the recipient has a wallet jetton, you can use the utility `UserAssetsUtils.GetJettonWalletByAddress(string jettonMasterAddress, string ownerAddress, Action<JettonWalletData> jettonWalletParsed)`, but in this case the `OnAddressParsed` event will not be called.
 
 # Loading Jetton transactions history
+
+Starting with `version 0.5.0`, a jetton **transaction history loading** has been added. This is especially useful to be 1000% sure that `jettons have reached` the recipient.
+
+Below is an example of how to use this option:
+
+```c#
+public sealed class LastSuccessfulJettonTransactionsLoader : MonoBehaviour
+{
+    [SerializeField, Space] private Button _loadTransactions;
+
+    private UnitonConnectSDK _unitonConnect;
+    private UserAssets.Jetton _jettonWallet;
+
+    private void OnDestroy()
+    {
+        _jettonWallet.OnLastTransactionsLoaded -= LatestTransactionsLoaded;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+        _jettonWallet = _unitonConnect.Assets.Jetton;
+
+        _loadTransactions.onClick.AddListener(Load);
+
+        _jettonWallet.OnLastTransactionsLoaded += LatestTransactionsLoaded;
+    }
+
+    private void Load()
+    {
+        _jettonWallet.GetLastTransactions(TransactionTypes.Sent, 10);
+    }
+
+    private void LatestTransactionsLoaded(TransactionTypes type, 
+        List<JettonTransactionData> transactions)
+    {
+        Debug.Log($"Last jetton transactions loaded with amount: {transactions.Count}");
+
+        foreach(var transaction in transactions)
+        {
+            Debug.Log($"Loaded {type} jetton transaction "+
+               "with query id: {transaction.QueryId}");
+        }
+    }
+}
+```
+
+In addition to **specifying the list size** for transactions, you can also specify their `received/sent' type. Thus, it is possible to `match the last transaction history` of the recipient and the sender in two queries.
+
+To request `recipient transaction history`, there is an additional argument to this method:
+
+```c#
+_jettonWallet.GetLastTransactions(TransactionTypes.Received, 10, 
+    "EQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4UrpH_");
+```
+
+**IMPORTANT:** The `QueryId` property is unique and is generated each time a payload is created for a transaction token. Thus, in addition to additional data in the form of `transaction hash`, `attached message`, it is also possible to check the successful sending status by it too.
 
 # Build
 
