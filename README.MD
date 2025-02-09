@@ -505,7 +505,7 @@ public sealed class JettonTransactionSendingExample: MonoBehaviour
 }
 ```
 
-Sending jettons is different from the toncoin of transactions. First of all, you need to `calculate the gas correctly` so that tokens are not lost. Based on my testing results, it is better to `specify 0.1 TON` as the gas so that **most tokens** are successfully sent and a smart contract** jetton is automatically **deployed** if the recipient does not have it.
+Sending jettons is different from the toncoin of transactions. First of all, you need to `calculate the gas correctly` so that tokens are not lost. Based on my testing results, it is better to `specify 0.1 TON` as the gas so that **most tokens** are successfully sent and a smart contract **jetton is automatically **deployed** if the recipient does not have it.
 
 While the result of a **successful send** for ton transactions can be tracked almost immediately, jettons require direct confirmation on the blockchain. Because of the nature of these jettons, a transaction can be "successful" and return its hash, but fail at one stage of interaction `with the smart contract`. Therefore, while sending such a transaction, it is better **to display the loading screen** in the game and wait for the exact result to confirm receipt!
 
@@ -631,7 +631,8 @@ decimal tons = nanotons.FromNanoton(); // 1.5 TON
 
 ### Loading Jetton balance
 
-Starting from `version 0.5.0` the possibility of `reading current token balance` on the connected wallet from the standard list or by specifying the master address has been added.
+Starting from `version 0.5.0` the possibility of `reading current jetton balance` on the connected wallet from the standard list or by specifying the master address has been added.
+
 Implementation of balance request in both cases is shown below:
 
 ```c#
@@ -853,9 +854,9 @@ Otherwise, if the wallet owner did not previously have this jetton on their bala
 
 **P.S:** If you need to check if the recipient has a wallet jetton, you can use the utility `UserAssetsUtils.GetJettonWalletByAddress(string jettonMasterAddress, string ownerAddress, Action<JettonWalletData> jettonWalletParsed)`, but in this case the `OnAddressParsed` event will not be called.
 
-# Loading Jetton transactions history
+### Loading Jetton transactions history
 
-Starting with `version 0.5.0`, a jetton **transaction history loading** has been added. This is especially useful to be 1000% sure that `jettons have reached` the recipient.
+Starting with `version 0.5.0`, a jetton **transaction history loading** has been added. This is especially useful to be 100% sure that `jettons have reached` the recipient.
 
 Below is an example of how to use this option:
 
@@ -892,7 +893,7 @@ public sealed class LastSuccessfulJettonTransactionsLoader : MonoBehaviour
     {
         Debug.Log($"Last jetton transactions loaded with amount: {transactions.Count}");
 
-        foreach(var transaction in transactions)
+        foreach (var transaction in transactions)
         {
             Debug.Log($"Loaded {type} jetton transaction "+
                "with query id: {transaction.QueryId}");
@@ -901,7 +902,7 @@ public sealed class LastSuccessfulJettonTransactionsLoader : MonoBehaviour
 }
 ```
 
-In addition to **specifying the list size** for transactions, you can also specify their `received/sent' type. Thus, it is possible to `match the last transaction history` of the recipient and the sender in two queries.
+In addition to **specifying the list size** for transactions, you can also specify their `received/sent` type. Thus, it is possible to `match the last transaction history` of the recipient and the sender in two queries.
 
 To request `recipient transaction history`, there is an additional argument to this method:
 
