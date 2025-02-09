@@ -968,9 +968,279 @@ In case you need to run the web build `elsewhere` (Github Pages, ItchIo and othe
 
 # Production Backend Deploy
 
+Here is a step-by-step guide to deploying the library backend on your server.
+
+As an example, we'll use a virtual server on Ubuntu OC, rented from this hosting provider (if you also decide to rent a server from them, follow [this link and get a nice discount in the form of 15% cashback](https://aeza.net/?ref=482600), if you top up your balance in the first 24 hours).
+
+**P.S:** Check the list of `installable modules`, if you have them `previously installed` on your server, you **can skip straight** to the startup section.
+
+## Installation of required modules
+
+Once we have rented a virtual server and connected to it via SSH, we can now install the required modules.
+
+### Installing Git
+
+Allows you to clone public/private repositories to your server.
+
+1. Update the list of packages on the server:
 ```
-Writing...
+sudo apt update
 ```
+
+2. Installing a module:
+```
+sudo apt install git -y
+```
+
+3. After the installation is complete, enter this command to verify that the installation was successful:
+```
+git --version
+```
+
+### Installing Docker
+
+Runs your project as an isolated container and greatly speeds up the process of running it on the server, without having to write a bunch of commands.
+
+1. First, you need to download the base packages for Docker:
+```
+sudo apt install apt-transport-https ca-certificates curl software-properties-common -y
+```
+
+2. Now we need to add the official Docker GPG key:
+```
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+```
+
+3. Now we need to add the docker repository to APT:
+```
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+```
+
+4. Update the list of packages on the server:
+```
+sudo apt update
+```
+
+5. Check that Docker will be installed from the official repository with the current version:
+```
+apt-cache policy docker-ce
+```
+
+6. The long-awaited installation of Docker on the server:
+```
+sudo apt install docker-ce -y
+```
+
+### Installing Make
+
+Allows you to quickly deploy/stop/delete your projects on the server, without having to type a bunch of commands.
+
+1. Update the list of packages on the server:
+```
+sudo apt update
+```
+
+2. Installing a package:
+```
+sudo apt install build-essential -y
+```
+
+3. Check that the module has been installed correctly:
+```
+make --version
+```
+
+### Installing Nginx
+
+The web server, which in this example will `proxy all requests` to your API server when you send `GET` and `POST` requests to your server's IP address or domain.
+
+1. Update the list of packages on the server:
+```
+sudo apt update
+```
+
+2. Installing a package:
+```
+sudo apt install nginx -y
+```
+
+3. Now it is necessary to check the status of Nginx operation:
+```
+sudo systemctl status nginx
+```
+
+4. Go to the IP address of your server in your browser:
+```
+http://YOUR_SERVER_IP_ADDRESS
+```
+
+After the correct installation, you need to make sure that `port 80` is open on the server.
+If Nginx is successfully installed and working correctly, you will **see a welcome page.**
+
+## Configuring components
+
+### Configuring HTTPS connection
+
+Telegram has very strict rules regarding requests to third-party resources from Telegram bots. Therefore, it is necessary to add the ability to connect to the API server via HTTPS 
+
+**P.S:** In general, this is a very important point, because with HTTP connection data can be quietly listened to by third parties, which entails information leakage and danger for your users).
+
+To proceed, you need to **register a domain** for your server so that you can install the certificate there.
+
+You can do this [right here](https://my.aeza.net/order/domain) if you have already clicked the link and received a [nice discount at checkout](https://aeza.net/?ref=482600).
+
+Once you have connected your server's IP address in the domain settings, you can start setting up the connection.
+If you don't have a reliable SSL certificate, you can generate one with a few commands.
+
+1. Update the list of packages on the server:
+```
+sudo apt update
+```
+
+2. Install the package and plugin for Nginx:
+```
+sudo apt install certbot python3-certbot-nginx -y
+``` 
+
+3. Obtaining SSL certificate:
+```
+sudo certbot --nginx -d YOUR_DOMAIN_NAME
+```
+
+In the `YOUR_DOMAIN_NAME` field, write the address of the leased domain that you should have previously purchased at this point.
+
+Follow the on-screen instructions to complete the process, many of which you can skip by pressing the `Enter` button. 
+Certbot will prompt you to choose whether to redirect `HTTP` traffic to `HTTPS`, which is recommended for security.
+
+### Configuring API server configuration
+
+1. Now you need to go to the nginx configuration directory and create a configuration for your API server:
+```
+cd /etc/nginx/sites-available/
+```
+
+2. Create a configuration with the name of your domain:
+```
+nano YOUR_DOMAIN_NAME
+```
+
+3. Copy and paste this configuration data, but replace `YOUR_DOMAIN_NAME` with your domain:
+
+```nginx
+
+server
+{
+    listen 80;
+    server_name YOUR_DOMAIN_NAME;
+
+    if ($host = YOUR_DOMAIN_NAME) {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server
+{
+   listen 443 ssl;
+   server_name YOUR_DOMAIN_NAME;
+
+   ssl_certificate /etc/letsencrypt/live/YOUR_DOMAIN_NAME/fullchain.pem; # managed by Certbot
+   ssl_certificate_key /etc/letsencrypt/live/YOUR_DOMAIN_NAME/privkey.pem; # managed by Certbot
+   include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+   ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+   location /api/uniton-connect/v1 {
+     proxy_pass http://localhost:3000;
+     proxy_set_header Host $host;
+     proxy_set_header X-Real-IP $remote_addr;
+     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+     proxy_set_header X-Forwarded-Proto $scheme;
+
+     add_header 'Access-Control-Allow-Origin' '*' always;
+     add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+     add_header 'Access-Control-Allow-Headers' 'Origin, Content-Type, Accept, Authorization' always;
+
+     if ($request_method = OPTIONS) {
+      return 204;
+     }
+
+     add_header 'X-Content-Type-Options' 'nosniff';
+     add_header 'Server' 'nginx';
+     add_header 'Cache-Control' 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0';
+   }
+}
+```
+
+Also, in addition to setting up nginx, in this configuration we set up mandatory headers so that the connection succeeds and is not blocked.
+
+**IMPORTANT:** Failure to do so will result in an attempt to send `any GET/POST` request from your Web App **inside Telegram being blocked.**
+
+4. Create a symbolic link to your configuration in the sites-enabled directory:
+```
+sudo ln -s /etc/nginx/sites-available/YOUR_DOMAIN_NAME /etc/nginx/sites-enabled/
+```
+
+5. Check the Nginx configuration for syntax errors:
+```
+sudo nginx -t
+```
+
+**IMPORTANT:** In case you see `syntax is OK`, you can proceed to the next step.
+
+6. Reboot Nginx to apply the new configuration:
+```
+sudo systemctl restart nginx
+```
+
+## Deploy
+
+After installing all the necessary modules and setting up the necessary configurations, you can start to deploy the backend.
+
+1. Go to the main directory of the server:
+```
+cd /root/
+```
+
+2. Clone the repository with the API server into the root directory:
+```
+git clone https://github.com/MrVeit/Veittech-UnitonConnect-ServerAPI.git
+```
+
+3. Get the contents of the directory:
+```
+ls -l
+```
+
+4. Navigate to the server API files:
+```
+cd Veittech-UnitonConnect-ServerAPI/src
+```
+
+5. Now we need to create a file with the storage of environment variables that are used in the project:
+```
+nano .env
+```
+
+**P.S:** We have already created it earlier [at this stage](https://github.com/MrVeit/Veittech-UnitonConnect#backend-set-up), so copy and paste these values.
+
+6. Start building and creating a docker container with an API server with a single command:
+```
+make run
+```
+
+7. To verify that the docker container is running, enter the following command:
+```
+docker ps
+```
+
+**P.S:** If the container is successfully started, you will see its name in the list, its id, and the time since it was started.
+
+8. After the deploy, check the docker container logs to make sure no errors occurred:
+```
+make logs
+```
+
+If the launch **was successful**, you will see only one line in the logs: `Uniton Connect Backend is listening at 3000`.
+The library backend is now running on your server and ready to receive requests from the Unity client to work with Jettons, NFT and other elements.
 
 # Donations
 
@@ -983,6 +1253,8 @@ Multichain Wallet (BTC/ETH/BNB/MATIC)
 ```
 0x231803Df809C207FaA330646BB5547fD087FEcA1
 ```
+
+**P.S:** If you donate, please include **your github/telegram nickname** in the `transfer comment` so I can add you as a sponsor of my library, thanks for your support!
 
 # Support
 
