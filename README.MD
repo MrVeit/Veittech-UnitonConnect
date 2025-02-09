@@ -972,7 +972,7 @@ Here is a step-by-step guide to deploying the library backend on your server.
 
 As an example, we'll use a virtual server on Ubuntu OC, rented from this hosting provider (if you also decide to rent a server from them, follow [this link and get a nice discount in the form of 15% cashback](https://aeza.net/?ref=482600), if you top up your balance in the first 24 hours).
 
-**P.S:** Check the list of `installable modules`, if you have them `previously installed` on your server, you **can skip straight** [to the startup section.](https://github.com/MrVeit/Veittech-UnitonConnect/blob/dev/README.MD#deploy)
+**P.S:** Check the list of `installable modules`, if you have them `previously installed` on your server, you **can skip straight** [to the startup section.](https://github.com/MrVeit/Veittech-UnitonConnect#deploy)
 
 ## Installation of required modules
 
