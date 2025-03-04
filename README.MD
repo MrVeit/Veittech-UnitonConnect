@@ -924,6 +924,12 @@ You can now publish your project anywhere you want. After publishing your projec
 
 For test mode **I recommend** using `Github Actions` with their `Static Page` feature. Guidelines for deploying a WebGL build to Unity can be found `in google`, so there is no need to describe them here.
 
+**IMPORNANT:** If your web server is configured with headers like `Content Security Policy` and `Cross-Origin Embedder Policy`, you may have problems during the SDK initialization phase, as it will not be able to work properly unless it downloads the native libraries via CDN. 
+
+**You have two solutions:**
+- Load locally `TonWeb` and `TonConnectUI` via the specified links in `index.html` from the build template and **specify a direct path** to them (in case it is important for you to keep these headers on the server for any security),
+- Disable or configure these headers incorrectly so that **they do not block loading** of external scripts (you can search on the Internet about this).
+
 # Backend Set Up
 
 First you need to download the source code for this `API server`, which the SDK accesses to convert images from NFT collections, as well as a number of other functions:
