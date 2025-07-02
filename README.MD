@@ -127,6 +127,8 @@ You can test the SDK without installation on a demo app [in your browser](https:
 For the library to work correctly, the following dependencies **MUST BE INSTALLED** in the project before use:
 - **[Newtonsoft](https://www.youtube.com/watch?v=3H6xkl_EsvQ)** - modern solution for convenient work with json files.
 
+**P.S:** Newtonsoft 3.2+ adds 2.5 MB to the web build, but if you don't need the new features or complex types in your project, I **RECOMMEND** using the [10-year-old version](https://github.com/SaladLab/Json.Net.Unity3D) (adds only 350-500 KB, depending on the package type).
+
 # Migration
 
 This section is for smooth migration between sdk versions, in case of a `global API change`.
