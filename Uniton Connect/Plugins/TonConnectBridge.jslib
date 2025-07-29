@@ -106,12 +106,12 @@ const tonConnectBridge = {
 
             if (!tonConnect.isAvailableTonConnect())
             {
-                this.sendDataToUnity('vi', callback, [0]);
+                {{{ makeDynCall('vi', 'callback') }}}(0);
 
                 return;
             }
 
-            this.sendDataToUnity('vi', callback, [1]);
+            {{{ makeDynCall('vi', 'callback') }}}(1);
         },
         
         initTonWeb: function()
@@ -125,11 +125,11 @@ const tonConnectBridge = {
             {
                 await window.tonConnectUI.openModal();
 
-                this.sendDataToUnity('vi', callback, [1]);
+                {{{ makeDynCall('vi', 'callback') }}}(1);
             }
             catch (error)
             {
-                this.sendDataToUnity('vi', callback, [0]);
+                {{{ makeDynCall('vi', 'callback') }}}(0);
             }
         },
 
@@ -139,11 +139,11 @@ const tonConnectBridge = {
             {
                 window.tonConnectUI.closeModal();
 
-                this.sendDataToUnity('vi', callback, [1]);
+                {{{ makeDynCall('vi', 'callback') }}}(1);
             }
             catch (error)
             {
-                this.sendDataToUnity('vi', callback, [0]);
+                {{{ makeDynCall('vi', 'callback') }}}(0);
             }
         },
 
@@ -155,13 +155,17 @@ const tonConnectBridge = {
 
                 const statusPtr = tonConnect.allocString("200");
 
-                this.sendDataToUnity('vi', callback, [statusPtr]);
+                {{{ makeDynCall('vi', 'callback') }}}(statusPtr);
+
+                _free(statusPtr);
             }
             catch (error)
             {
                 const statusPtr = tonConnect.allocString("500");
 
-                this.sendDataToUnity('vi', callback, [statusPtr]);
+                {{{ makeDynCall('vi', 'callback') }}}(statusPtr);
+
+                _free(statusPtr);
             }
         },
 
@@ -182,15 +186,19 @@ const tonConnectBridge = {
 
                     console.log(`[Uniton Connect] Parsed account: ` +
                         `${JSON.stringify(window.tonConnectUI.account)}`);
+    
+                    {{{ makeDynCall('vi', 'callback') }}}(walletPtr);
 
-                    this.sendDataToUnity('vi', callback, [walletPtr]);
+                    _free(walletPtr);
 
                     return;
                 }
 
                 const statusPtr = tonConnect.allocString("CONNECT_FAILED");
 
-                this.sendDataToUnity('vi', callback, [statusPtr]);
+                {{{ makeDynCall('vi', 'callback') }}}(statusPtr);
+
+                _free(statusPtr);
             });
         },
 
@@ -208,7 +216,7 @@ const tonConnectBridge = {
         {
             if (!tonConnect.isInitialized())
             {
-                this.sendDataToUnity('vi', callback, [0]);
+                {{{ makeDynCall('vi', 'callback') }}}(0);
 
                 return;
             }
@@ -217,12 +225,12 @@ const tonConnectBridge = {
             {
                 if (restored)
                 {
-                    this.sendDataToUnity('vi', callback, [1]);
+                    {{{ makeDynCall('vi', 'callback') }}}(1);
 
                     return;
                 }
 
-                this.sendDataToUnity('vi', callback, [0]);
+                {{{ makeDynCall('vi', 'callback') }}}(0);
             });
         },
 
@@ -236,7 +244,9 @@ const tonConnectBridge = {
                 const signedData = JSON.stringify(event.detail);
                 const signedPtr = tonConnect.allocString(signedData);
 
-                this.sendDataToUnity('vi', successCallback, [signedPtr]);
+                {{{ makeDynCall('vi', 'successCallback') }}}(signedPtr);
+
+                _free(signedPtr);
             };
 
             const failedHandler = (event) =>
@@ -246,7 +256,9 @@ const tonConnectBridge = {
                 const failedData = JSON.stringify(event.detail);
                 const failedPtr = tonConnect.allocString(failedData);
 
-                this.sendDataToUnity('vi', errorCallback, [failedPtr]);
+                {{{ makeDynCall('vi', 'errorCallback') }}}(failedPtr);
+
+                _free(failedPtr);
             };
 
             window.addEventListener('ton-connect-ui-transaction-signed', signedHandler);
@@ -335,7 +347,9 @@ const tonConnectBridge = {
             {
                 const errorMessage = tonConnect.allocString("SDK is not initialized");
 
-                this.sendDataToUnity('vi', callback, [errorMessage]);
+                {{{ makeDynCall('vi', 'callback') }}}(errorMessage);
+
+                _free(errorMessage);
 
                 return;
             }
@@ -379,7 +393,9 @@ const tonConnectBridge = {
 
                     console.error(`[Uniton Connect] No BOC returned from assets transaction`);
 
-                    this.sendDataToUnity('vi', callback, [emptyPtr]);
+                    {{{ makeDynCall('vi', 'callback') }}}(emptyPtr);
+
+                    _free(emptyPtr);
 
                     return;
                 }
@@ -392,13 +408,17 @@ const tonConnectBridge = {
                 console.log(`[Uniton Connect] Parsed assets transaction `+
                     `hash: ${JSON.stringify(hashBase64)}`);
 
-                this.sendDataToUnity('vi', callback, [hashPtr]);
+                {{{ makeDynCall('vi', 'callback') }}}(hashPtr);
+
+                _free(hashPtr);
             }
             catch (error)
             {
                 const errorPtr = tonConnect.allocString("");
             
-                this.sendDataToUnity('vi', callback, [errorPtr]);
+                {{{ makeDynCall('vi', 'callback') }}}(errorPtr);
+
+                _free(errorPtr);
             }
         },
 
@@ -409,7 +429,9 @@ const tonConnectBridge = {
             {
                 const nullPtr = tonConnect.allocString("null");
 
-                this.sendDataToUnity('vi', callback, [nullPtr]);
+               {{{ makeDynCall('vi', 'callback') }}}(nullPtr);
+
+                _free(nullPtr);
 
                 return;
             }
@@ -437,7 +459,9 @@ const tonConnectBridge = {
 
                     console.error(`[Uniton Connect] No BOC returned from toncoin transaction`);
 
-                    this.sendDataToUnity('vi', callback, [emptyPtr]);
+                    {{{ makeDynCall('vi', 'callback') }}}(emptyPtr);
+
+                    _free(emptyPtr);
 
                     return;
                 }
@@ -450,13 +474,17 @@ const tonConnectBridge = {
                 console.log(`[Uniton Connect] Parsed toncoin transaction `+
                     `hash: ${JSON.stringify(hashBase64)}`);
 
-                this.sendDataToUnity('vi', callback, [hashPtr]);
+                {{{ makeDynCall('vi', 'callback') }}}(hashPtr);
+
+                _free(hashPtr);
             }
             catch (error)
             {
                 const errorPtr = tonConnect.allocString("");
 
-                this.sendDataToUnity('vi', callback, [errorPtr]);
+                {{{ makeDynCall('vi', 'callback') }}}(errorPtr);
+
+                _free(errorPtr);
             }
         },
 
@@ -485,7 +513,9 @@ const tonConnectBridge = {
 
             const addressPtr = tonConnect.allocString(bouceableAddress);
 
-            this.sendDataToUnity('vi', valueClaimed, [addressPtr]);
+            {{{ makeDynCall('vi', 'valueClaimed') }}}(addressPtr);
+
+            _free(addressPtr);
         },
 
         toNonBounceable: function(address, valueClaimed)
@@ -503,7 +533,9 @@ const tonConnectBridge = {
 
             const addressPtr = tonConnect.allocString(nonBouceableAddress);
 
-            this.sendDataToUnity('vi', valueClaimed, [addressPtr]);
+            {{{ makeDynCall('vi', 'valueClaimed') }}}(addressPtr);
+
+            _free(addressPtr);
         },
 
         toHex: function(address, valueClaimed)
@@ -521,7 +553,9 @@ const tonConnectBridge = {
 
             const addressPtr = tonConnect.allocString(hexAddress);
 
-            this.sendDataToUnity('vi', valueClaimed, [addressPtr]);
+            {{{ makeDynCall('vi', 'valueClaimed') }}}(addressPtr);
+
+            _free(addressPtr);
         },
 
         isUserFriendly: function(address)
