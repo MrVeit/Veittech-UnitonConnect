@@ -1,4 +1,7 @@
 const tonConnectBridge = {
+
+    // Class definition
+
     $tonConnect: {
         allocString: function (stringData)
         {
@@ -6,8 +9,6 @@ const tonConnectBridge = {
 
             if (typeof allocate === 'undefined')
             {
-                console.log(`[UNITON CONNECT] Detected Unity version 2023+`);
-
                 const length = lengthBytesUTF8(stringData) + 1;
 
                 ptr = _malloc(length);
@@ -20,11 +21,37 @@ const tonConnectBridge = {
             return allocate(intArrayFromString(stringData), 'i8', ALLOC_NORMAL);
         },
 
+        sendDataToUnity: function(callId, callback, dataPtr)
+        {
+            if (typeof wasmTable !== 'undefined')
+            {
+                wasmTable.get(callback).apply(null, dataPtr);
+
+                return;
+            }
+
+            if (typeof dynCall !== 'undefined')
+            {
+                dynCall(callId, callback, dataPtr);
+            }
+            else
+            {
+                return;
+            }
+
+            if (callId === 'v')
+            {
+                return;
+            }
+
+            _free(dataPtr);   
+        },
+
         isAvailableTonConnect: function()
         {
             if (!window.tonConnectUI)
             {
-                console.error(`[UNITON CONNECT] Ton Connect UI is not initialized`);
+                console.error(`[Uniton Connect] Ton Connect UI is not initialized`);
 
                 return false;
             }
@@ -36,7 +63,7 @@ const tonConnectBridge = {
         {
             if (!window.tonWeb)
             {
-                console.error(`[UNITON CONNECT] Library 'Ton Web' is not exist`);
+                console.error(`[Uniton Connect] Library 'Ton Web' is not exist`);
 
                 return false;
             }
@@ -79,12 +106,12 @@ const tonConnectBridge = {
 
             if (!tonConnect.isAvailableTonConnect())
             {
-                dynCall('vi', callback, [0]);
+                this.sendDataToUnity('vi', callback, [0]);
 
                 return;
             }
 
-            dynCall('vi', callback, [1]);
+            this.sendDataToUnity('vi', callback, [1]);
         },
         
         initTonWeb: function()
@@ -98,11 +125,11 @@ const tonConnectBridge = {
             {
                 await window.tonConnectUI.openModal();
 
-                dynCall('vi', callback, [1]);
+                this.sendDataToUnity('vi', callback, [1]);
             }
             catch (error)
             {
-                dynCall('vi', callback, [0]);
+                this.sendDataToUnity('vi', callback, [0]);
             }
         },
 
@@ -112,11 +139,11 @@ const tonConnectBridge = {
             {
                 window.tonConnectUI.closeModal();
 
-                dynCall('vi', callback, [1]);
+                this.sendDataToUnity('vi', callback, [1]);
             }
             catch (error)
             {
-                dynCall('vi', callback, [0]);
+                this.sendDataToUnity('vi', callback, [0]);
             }
         },
 
@@ -128,17 +155,13 @@ const tonConnectBridge = {
 
                 const statusPtr = tonConnect.allocString("200");
 
-                dynCall('vi', callback, [statusPtr]);
-
-                _free(statusPtr);
+                this.sendDataToUnity('vi', callback, [statusPtr]);
             }
             catch (error)
             {
                 const statusPtr = tonConnect.allocString("500");
 
-                dynCall('vi', callback, [statusPtr]);
-
-                _free(statusPtr);
+                this.sendDataToUnity('vi', callback, [statusPtr]);
             }
         },
 
@@ -157,21 +180,17 @@ const tonConnectBridge = {
                     const walletInfo = JSON.stringify(window.tonConnectUI.account);
                     const walletPtr = tonConnect.allocString(walletInfo);
 
-                    console.log(`[UNITON CONNECT] Parsed account: ` +
+                    console.log(`[Uniton Connect] Parsed account: ` +
                         `${JSON.stringify(window.tonConnectUI.account)}`);
 
-                    dynCall('vi', callback, [walletPtr]);
-
-                    _free(walletPtr);
+                    this.sendDataToUnity('vi', callback, [walletPtr]);
 
                     return;
                 }
 
                 const statusPtr = tonConnect.allocString("CONNECT_FAILED");
 
-                dynCall('vi', callback, [statusPtr]);
-
-                _free(statusPtr);
+                this.sendDataToUnity('vi', callback, [statusPtr]);
             });
         },
 
@@ -189,7 +208,7 @@ const tonConnectBridge = {
         {
             if (!tonConnect.isInitialized())
             {
-                dynCall('vi', callback, [0]);
+                this.sendDataToUnity('vi', callback, [0]);
 
                 return;
             }
@@ -198,12 +217,12 @@ const tonConnectBridge = {
             {
                 if (restored)
                 {
-                    dynCall('vi', callback, [1]);
+                    this.sendDataToUnity('vi', callback, [1]);
 
                     return;
                 }
 
-                dynCall('vi', callback, [0]);
+                this.sendDataToUnity('vi', callback, [0]);
             });
         },
 
@@ -212,26 +231,22 @@ const tonConnectBridge = {
         {
             const signedHandler = (event) =>
             {
-                console.log(`[UNITON CONNECT] Transaction signed:`, event.detail);
+                console.log(`[Uniton Connect] Transaction signed:`, event.detail);
 
                 const signedData = JSON.stringify(event.detail);
                 const signedPtr = tonConnect.allocString(signedData);
 
-                dynCall('vi', successCallback, [signedPtr]);
-
-                _free(signedPtr);
+                this.sendDataToUnity('vi', successCallback, [signedPtr]);
             };
 
             const failedHandler = (event) =>
             {
-                console.warn(`[UNITON CONNECT] Transaction signing failed:`, event.detail);
+                console.warn(`[Uniton Connect] Transaction signing failed:`, event.detail);
 
                 const failedData = JSON.stringify(event.detail);
                 const failedPtr = tonConnect.allocString(failedData);
 
-                dynCall('vi', errorCallback, [failedPtr]);
-
-                _free(failedPtr);
+                this.sendDataToUnity('vi', errorCallback, [failedPtr]);
             };
 
             window.addEventListener('ton-connect-ui-transaction-signed', signedHandler);
@@ -240,7 +255,7 @@ const tonConnectBridge = {
             window._tonConnectTransactionSignedHandler = signedHandler;
             window._tonConnectTransactionFailedHandler = failedHandler;
 
-            console.log('[UNITON CONNECT] Subscribed to transaction events');
+            console.log('[Uniton Connect] Subscribed to transaction events');
         },
 
         unsubscribeToTransactionEvents: function()
@@ -252,7 +267,7 @@ const tonConnectBridge = {
                 
                 delete window._tonConnectTransactionSignedHandler;
 
-                console.log(`[UNITON CONNECT] Unsubscribed from transaction-signed event`);
+                console.log(`[Uniton Connect] Unsubscribed from 'transaction-signed' event`);
             }
 
             if (window._tonConnectTransactionFailedHandler)
@@ -262,7 +277,7 @@ const tonConnectBridge = {
 
                 delete window._tonConnectTransactionSignedHandler;
 
-                console.log(`[UNITON CONNECT] Unsubsribed from transaction-signing-failed event`);
+                console.log(`[Uniton Connect] Unsubsribed from 'transaction-signing-failed' event`);
             }
         },
 
@@ -275,14 +290,17 @@ const tonConnectBridge = {
 
             if (!message || message === "CLEAR")
             {
-                transactionData = {
+                transactionData =
+                {
                     validUntil: Math.floor(Date.now() / 1000) + 60,
-                    messages: [
-                    {  
-                        address: recipientAddress, 
-                        amount: nanoInTon
-                    }
-                ]};
+                    messages:
+                    [
+                        {  
+                            address: recipientAddress, 
+                            amount: nanoInTon
+                        }
+                    ]
+                };
 
                 return transactionData;
             }
@@ -294,15 +312,18 @@ const tonConnectBridge = {
                 
             let payload = tonWeb.utils.bytesToBase64(await cellBuilder.toBoc());
 
-            transactionData = {
+            transactionData =
+            {
                 validUntil: Math.floor(Date.now() / 1000) + 60,
-                messages: [
-                {  
-                    address: recipientAddress, 
-                    amount: nanoInTon,
-                    payload: payload
-                }
-            ]};
+                messages:
+                [
+                    {  
+                        address: recipientAddress, 
+                        amount: nanoInTon,
+                        payload: payload
+                    },
+                ]
+            };
 
             return transactionData;
         },
@@ -314,9 +335,7 @@ const tonConnectBridge = {
             {
                 const errorMessage = tonConnect.allocString("SDK is not initialized");
 
-                dynCall('vi', callback, [errorMessage]);
-
-                _free(errorMessage);
+                this.sendDataToUnity('vi', callback, [errorMessage]);
 
                 return;
             }
@@ -327,22 +346,25 @@ const tonConnectBridge = {
             const gasFee = UTF8ToString(gasFeeAmount);
             const transactionPayload = UTF8ToString(payload);
 
-            console.log(`[UNITON CONNECT] Parsed assets transaction `+
+            console.log(`[Uniton Connect] Parsed assets transaction `+
                 `payload: ${transactionPayload}`);
 
             try
             {
-                transactionData = {
+                transactionData =
+                {
                     validUntil: Math.floor(Date.now() / 1000) + 360,
-                    messages: [
-                    {  
-                        address: senderOrNftAddress, 
-                        amount: gasFee,
-                        payload: transactionPayload
-                    }
-                ]};
+                    messages:
+                    [
+                        {  
+                            address: senderOrNftAddress, 
+                            amount: gasFee,
+                            payload: transactionPayload
+                        }
+                    ]
+                };
 
-                console.log(`[UNITON CONNECT] Parsed assets transaction `+
+                console.log(`[Uniton Connect] Parsed assets transaction `+
                     `data: ${JSON.stringify(transactionData)}`);
 
                 const result = await window.tonConnectUI.sendTransaction(transactionData, 
@@ -355,11 +377,9 @@ const tonConnectBridge = {
                 {
                     const emptyPtr = tonConnect.allocString("EMPTY_BOC");
 
-                    console.error(`[UNITON CONNECT] No BOC returned from assets transaction`);
+                    console.error(`[Uniton Connect] No BOC returned from assets transaction`);
 
-                    dynCall('vi', callback, [emptyPtr]);
-
-                    _free(emptyPtr);
+                    this.sendDataToUnity('vi', callback, [emptyPtr]);
 
                     return;
                 }
@@ -369,20 +389,16 @@ const tonConnectBridge = {
                 const hashBase64 = await tonConnect.convertBocToHashBase64(claimedBoc);
                 const hashPtr = tonConnect.allocString(hashBase64);
 
-                console.log(`[UNITON CONNECT] Parsed assets transaction `+
+                console.log(`[Uniton Connect] Parsed assets transaction `+
                     `hash: ${JSON.stringify(hashBase64)}`);
 
-                dynCall('vi', callback, [hashPtr]);
-
-                _free(hashPtr);
+                this.sendDataToUnity('vi', callback, [hashPtr]);
             }
             catch (error)
             {
                 const errorPtr = tonConnect.allocString("");
             
-                dynCall('vi', callback, [errorPtr]);
-
-                _free(errorPtr);
+                this.sendDataToUnity('vi', callback, [errorPtr]);
             }
         },
 
@@ -393,9 +409,7 @@ const tonConnectBridge = {
             {
                 const nullPtr = tonConnect.allocString("null");
 
-                dynCall('vi', callback, [nullPtr]);
-
-                _free(nullPtr);
+                this.sendDataToUnity('vi', callback, [nullPtr]);
 
                 return;
             }
@@ -421,11 +435,9 @@ const tonConnectBridge = {
                 {
                     const emptyPtr = tonConnect.allocString("EMPTY_BOC");
 
-                    console.error(`[UNITON CONNECT] No BOC returned from toncoin transaction`);
+                    console.error(`[Uniton Connect] No BOC returned from toncoin transaction`);
 
-                    dynCall('vi', callback, [emptyPtr]);
-
-                    _free(emptyPtr);
+                    this.sendDataToUnity('vi', callback, [emptyPtr]);
 
                     return;
                 }
@@ -435,20 +447,16 @@ const tonConnectBridge = {
                 const hashBase64 = await tonConnect.convertBocToHashBase64(claimedBoc);
                 const hashPtr = tonConnect.allocString(hashBase64);
 
-                console.log(`[UNITON CONNECT] Parsed toncoin transaction `+
+                console.log(`[Uniton Connect] Parsed toncoin transaction `+
                     `hash: ${JSON.stringify(hashBase64)}`);
 
-                dynCall('vi', callback, [hashPtr]);
-
-                _free(hashPtr);
+                this.sendDataToUnity('vi', callback, [hashPtr]);
             }
             catch (error)
             {
                 const errorPtr = tonConnect.allocString("");
-            
-                dynCall('vi', callback, [errorPtr]);
 
-                _free(errorPtr);
+                this.sendDataToUnity('vi', callback, [errorPtr]);
             }
         },
 
@@ -472,14 +480,12 @@ const tonConnectBridge = {
             const parsedAddress = tonConnect.parseAddress(address);
             const bouceableAddress = parsedAddress.toString(true, true, true, false);
 
-            console.log(`[UNITON CONNECT] Address ${parsedAddress} converted `+
+            console.log(`[Uniton Connect] Address ${parsedAddress} converted `+
                 `to bounceable format: ${bouceableAddress}`);
 
             const addressPtr = tonConnect.allocString(bouceableAddress);
 
-            dynCall('vi', valueClaimed, [addressPtr]);
-
-            _free(addressPtr);
+            this.sendDataToUnity('vi', valueClaimed, [addressPtr]);
         },
 
         toNonBounceable: function(address, valueClaimed)
@@ -492,14 +498,12 @@ const tonConnectBridge = {
             const parsedAddress = tonConnect.parseAddress(address);
             const nonBouceableAddress = parsedAddress.toString(true, true, false, false);
 
-            console.log(`[UNITON CONNECT] Address ${parsedAddress} converted to `+
+            console.log(`[Uniton Connect] Address ${parsedAddress} converted to `+
                 `non bounceable format: ${nonBouceableAddress}`);
 
             const addressPtr = tonConnect.allocString(nonBouceableAddress);
 
-            dynCall('vi', valueClaimed, [addressPtr]);
-
-            _free(addressPtr);
+            this.sendDataToUnity('vi', valueClaimed, [addressPtr]);
         },
 
         toHex: function(address, valueClaimed)
@@ -512,14 +516,12 @@ const tonConnectBridge = {
             const parsedAddress = tonConnect.parseAddress(address);
             const hexAddress = parsedAddress.toString(false);
 
-            console.log(`[UNITON CONNECT] Address ${parsedAddress} `+
+            console.log(`[Uniton Connect] Address ${parsedAddress} `+
                 `converted to hex/raw format: ${hexAddress}`);
 
             const addressPtr = tonConnect.allocString(hexAddress);
 
-            dynCall('vi', valueClaimed, [addressPtr]);
-
-            _free(addressPtr);
+            this.sendDataToUnity('vi', valueClaimed, [addressPtr]);
         },
 
         isUserFriendly: function(address)
