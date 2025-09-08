@@ -61,7 +61,7 @@ window.addEventListener("load", function ()
     streamingAssetsUrl: "StreamingAssets",
     companyName: "Veittech",
     productName: "Uniton Connect",
-    productVersion: "0.5.1",
+    productVersion: "0.5.5",
     showBanner: unityShowBanner,
   };
 
