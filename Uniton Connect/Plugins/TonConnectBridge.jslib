@@ -160,6 +160,11 @@ const tonConnectBridge = {
 
         subscribeToStatusChanged: function(callback)
         {
+            if (!tonConnect.isInitialized())
+            {
+                return;
+            }
+
             window.unsubscribeFromStatusChange = window.
                 tonConnectUI.onStatusChange((wallet) =>
             {
@@ -200,11 +205,6 @@ const tonConnectBridge = {
 
         subscribeToModalState: function(modalStateCallback)
         {
-            if (!tonConnect.isInitialized())
-            {
-                return;
-            }
-
             window.unsubsribeToModalState = window.tonConnectUI.onModalStateChange((state) =>
             {
                 if (state)
