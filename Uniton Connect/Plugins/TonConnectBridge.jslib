@@ -145,11 +145,6 @@ const tonConnectBridge = {
 
         getModalState: function()
         {
-            if (!tonConnect.isInitialized())
-            {
-                return "";
-            }
-
             const stateEntity = window.tonConnectUI.modalState;
             const state =
             {
@@ -160,16 +155,11 @@ const tonConnectBridge = {
             console.log(`[Uniton Connect] Current modal `+
                 `state: ${JSON.stringify(state)}`);
 
-            return JSON.stringify(state);
+            return JSON.stringify(state) || "";
         },
 
         subscribeToStatusChanged: function(callback)
         {
-            if (!tonConnect.isInitialized())
-            {
-                return;
-            }
-
             window.unsubscribeFromStatusChange = window.
                 tonConnectUI.onStatusChange((wallet) =>
             {
