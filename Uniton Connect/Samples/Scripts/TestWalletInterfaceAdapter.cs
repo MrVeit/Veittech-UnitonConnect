@@ -6,6 +6,7 @@ using UnitonConnect.Core.Data;
 using UnitonConnect.Core.Utils;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.DeFi;
+using UnitonConnect.Core.Common;
 
 namespace UnitonConnect.Core.Demo
 {
@@ -24,6 +25,8 @@ namespace UnitonConnect.Core.Demo
 
         private UserAssets.NFT _nftModule;
         private UserAssets.Jetton _jettonModule;
+
+        private WalletModal _walletModal;
 
         private string _latestTransactionHash;
 
@@ -64,6 +67,8 @@ namespace UnitonConnect.Core.Demo
 
             _unitonSDK.OnTonTransactionConfirmed -= TonTransactionConfirmed;
 
+            _unitonSDK.Modal.OnStateChanged -= ModalStateChanged;
+
             if (_nftModule == null)
             {
                 return;
@@ -82,6 +87,11 @@ namespace UnitonConnect.Core.Demo
 
             _jettonModule.OnTransactionSended -= JettonTransactionSended;
             _jettonModule.OnTransactionSendFailed -= JettonTransactionSendFailed;
+        }
+
+        private void ModalStateChanged(ModalStatusTypes state)
+        {
+            Debug.Log($"Claimed current modal state '{state}'");
         }
 
         private void Start()
@@ -184,6 +194,9 @@ namespace UnitonConnect.Core.Demo
 
             _nftModule = _unitonSDK.Assets.Nft;
             _jettonModule = _unitonSDK.Assets.Jettons;
+            _walletModal = _unitonSDK.Modal;
+
+            _walletModal.OnStateChanged += ModalStateChanged;
 
             _nftModule.OnNftCollectionsClaimed += NftCollectionsLoaded;
             _nftModule.OnTargetNftCollectionClaimed += TargetNftCollectionLoaded;

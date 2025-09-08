@@ -33,7 +33,13 @@ namespace UnitonConnect.Core
         private static extern void SubscribeToStatusChange(Action<string> onWalletConnected);
 
         [DllImport("__Internal")]
-        private static extern void UnSubscribeToStatusChange();
+        private static extern void UnSubscribeFromStatusChange();
+
+        [DllImport("__Internal")]
+        private static extern void SubscribeToModalState(Action<string> onModalStateChanged);
+
+        [DllImport("__Internal")]
+        private static extern void UnsubscribeFromModalState();
 
         [DllImport("__Internal")]
         private static extern void SubscribeToRestoreConnection(Action<int> onConnectionRestored);
@@ -43,7 +49,7 @@ namespace UnitonConnect.Core
             Action<string> onTransactionSigned, Action<string> onTransactionSignFailed);
 
         [DllImport("__Internal")]
-        private static extern void UnSubscribeToTransactionEvents();
+        private static extern void UnSubscribeFromTransactionEvents();
 
         [DllImport("__Internal")]
         private static extern bool IsUserFriendlyAddress(string address);
@@ -97,6 +103,25 @@ namespace UnitonConnect.Core
 
             UnitonConnectLogger.LogError($"Failed to initialize " +
                 $"Uniton Connect sdk, something wrong...");
+        }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnModalStateChange(string stateEntity)
+        {
+            if (string.IsNullOrEmpty(stateEntity))
+            {
+                UnitonConnectLogger.LogWarning("Modal state not exist, something wrong...");
+
+                return;
+            }
+
+            UnitonConnectLogger.Log($"Current modal state: {stateEntity}");
+
+            var state = JsonConvert.DeserializeObject<ModalStateData>(stateEntity);
+
+            OnModalStateChanged?.Invoke(state);
+
+            OnModalStateChanged = null;
         }
 
         [MonoPInvokeCallback(typeof(Action<int>))]
@@ -362,6 +387,8 @@ namespace UnitonConnect.Core
         private static Action<bool> OnModalWindowOpened;
         private static Action<bool> OnModalWindowClosed;
 
+        private static Action<ModalStateData> OnModalStateChanged;
+
         private static Action<bool> OnWalletDisconnected;
         private static Action<bool> OnWalletConnectionRestored;
 
@@ -381,15 +408,19 @@ namespace UnitonConnect.Core
 
         internal static void UnSubscribe()
         {
-            UnSubscribeToStatusChange();
-            UnSubscribeToTransactionEvents();
+            UnSubscribeFromStatusChange();
+            UnSubscribeFromTransactionEvents();
+            UnsubscribeFromModalState();
         }
 
-        internal static void Init(string manifestUrl, 
-            Action<bool> sdkInitialized, Action<WalletConfig> walletConnectionDetected,
-            Action<string> walletConnectionDetectFailed, Action<bool> connectionRestored)
+        internal static void Init(
+            string manifestUrl, Action<bool> sdkInitialized,
+            Action<WalletConfig> walletConnectionDetected,
+            Action<string> walletConnectionDetectFailed,
+            Action<bool> connectionRestored)
         {
             OnInitialized = sdkInitialized;
+
             OnWalletConnectionRestored = connectionRestored;
             OnWalletSuccessfullyConnected = walletConnectionDetected;
             OnWalletConnectFailed = walletConnectionDetectFailed;
@@ -399,6 +430,14 @@ namespace UnitonConnect.Core
 
             SubscribeToRestoreConnection(OnWalletConnectionRestore);
             SubscribeToStatusChange(OnWalletConnect);
+        }
+
+        internal static void InitModalState(
+            Action<ModalStateData> modalInitialized)
+        {
+            OnModalStateChanged = modalInitialized;
+
+            SubscribeToModalState(OnModalStateChange);
         }
 
         internal static void Connect(
@@ -423,6 +462,17 @@ namespace UnitonConnect.Core
         internal static ModalStateData GetCurrentModalState()
         {
             var currentState = GetModalState();
+
+            if (string.IsNullOrEmpty(currentState))
+            {
+                UnitonConnectLogger.LogWarning("Modal entity state not found");
+
+                return null;
+            }
+
+            var stateEntity = JsonConvert.DeserializeObject<ModalStateData>(currentState);
+
+            UnitonConnectLogger.Log($"Loaded current modal state: {stateEntity.Status}");
 
             return JsonConvert.DeserializeObject<ModalStateData>(currentState);
         }
@@ -593,12 +643,7 @@ namespace UnitonConnect.Core
 
         private static bool IsSuccess(int statusCode)
         {
-            if (statusCode == 1)
-            {
-                return true;
-            }
-
-            return false;
+            return statusCode == 1;
         }
     }
 }

@@ -150,10 +150,11 @@ const tonConnectBridge = {
                 return "";
             }
 
-            const stateEntity = window.tonConnectUI?.modalState;
-            const state = {
-                status: stateEntity?.status,
-                closeReason: stateEntity?.closeReason || "",
+            const stateEntity = window.tonConnectUI.modalState;
+            const state =
+            {
+                status: stateEntity.status,
+                closeReason: stateEntity.closeReason || "",
             };
 
             console.log(`[Uniton Connect] Current modal `+
@@ -207,20 +208,18 @@ const tonConnectBridge = {
             }
         },
 
-        subscribeToModalState: function(
-            modalStateCallback, errorCallback)
+        subscribeToModalState: function(modalStateCallback)
         {
             if (!tonConnect.isInitialized())
             {
                 return;
             }
 
-            window.unsubsribeToModalState = window.
-                tonConnectUI.onModalStateChange((state) =>
+            window.unsubsribeToModalState = window.tonConnectUI.onModalStateChange((state) =>
             {
                 if (state)
                 {
-                    const statePtr = this.tonConnect.allocString(state);
+                    const statePtr = tonConnect.allocString(state);
 
                     {{{ makeDynCall('vi', 'modalStateCallback') }}}(statePtr);
 
@@ -232,12 +231,12 @@ const tonConnectBridge = {
                     return;
                 }
 
-                const stateErrorPtr = ton.allocString("UKNOWN_ERROR");
+                const stateErrorPtr = tonConnect.allocString("UKNOWN_ERROR");
 
-                {{{ makeDynCall('vi', 'errorCallback') }}}(stateErrorPtr);
+                {{{ makeDynCall('vi', 'modalStateCallback') }}}(stateErrorPtr);
 
                 _free(stateErrorPtr);
-            })
+            });
         },
 
         unsubscribeFromModalState: function()
@@ -659,11 +658,9 @@ const tonConnectBridge = {
         tonConnect.getModalState();
     },
 
-    SubscribeToModalState: function(
-        successCallback, errorCallback)
+    SubscribeToModalState: function(callback)
     {
-        tonConnect.subscribeToModalState(
-            successCallback, errorCallback);
+        tonConnect.subscribeToModalState(callback);
     },
 
     UnsubscribeFromModalState: function()

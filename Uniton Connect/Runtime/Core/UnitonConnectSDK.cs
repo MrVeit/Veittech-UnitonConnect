@@ -61,6 +61,7 @@ namespace UnitonConnect.Core
 
         public UserWallet Wallet { get; private set; }
         public UserAssets Assets { get; private set; }
+        public WalletModal Modal { get; private set; }
 
         public decimal TonBalance { get; private set; }
 
@@ -163,9 +164,8 @@ namespace UnitonConnect.Core
 
             if (IsSupporedPlatform())
             {
-                TonConnectBridge.Init(dAppManifestLink,
-                    OnInitialize, OnConnect, 
-                    OnConnectFail, OnConnectRestore);
+                TonConnectBridge.Init(dAppManifestLink, OnInitialize,
+                    OnConnect, OnConnectFail, OnConnectRestore);
             }
 
             UnitonConnectLogger.Log("Native SDK successfully initialized");
@@ -284,8 +284,8 @@ namespace UnitonConnect.Core
             UnitonConnectLogger.Log($"Created a request to send a TON" +
                     $" to the recipient: {recipientAddress} in amount {amount}");
 
-            TonConnectBridge.SendTon(recipientAddress,
-                amount, message, OnSendingTonFinish, OnSendingTonFail);
+            TonConnectBridge.SendTon(recipientAddress, amount,
+                message, OnSendingTonFinish, OnSendingTonFail);
         }
 
         private void CreateInstance()
@@ -367,6 +367,13 @@ namespace UnitonConnect.Core
         private void OnInitialize(bool isSuccess)
         {
             OnInitiliazed?.Invoke(isSuccess);
+
+            if (Modal != null)
+            {
+                return;
+            }
+
+            Modal = new WalletModal();
         }
 
         private void OnConnect(WalletConfig walletConfig)
