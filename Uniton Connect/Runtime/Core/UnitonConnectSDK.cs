@@ -366,14 +366,9 @@ namespace UnitonConnect.Core
 
         private void OnInitialize(bool isSuccess)
         {
-            OnInitiliazed?.Invoke(isSuccess);
-
-            if (Modal != null)
-            {
-                return;
-            }
-
             Modal = new WalletModal();
+
+            OnInitiliazed?.Invoke(isSuccess);
         }
 
         private void OnConnect(WalletConfig walletConfig)
