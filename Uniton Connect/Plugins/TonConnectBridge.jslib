@@ -21,32 +21,6 @@ const tonConnectBridge = {
             return allocate(intArrayFromString(stringData), 'i8', ALLOC_NORMAL);
         },
 
-        sendDataToUnity: function(callId, callback, dataPtr)
-        {
-            if (typeof wasmTable !== 'undefined')
-            {
-                wasmTable.get(callback).apply(null, dataPtr);
-
-                return;
-            }
-
-            if (typeof dynCall !== 'undefined')
-            {
-                dynCall(callId, callback, dataPtr);
-            }
-            else
-            {
-                return;
-            }
-
-            if (callId === 'v')
-            {
-                return;
-            }
-
-            _free(dataPtr);   
-        },
-
         isAvailableTonConnect: function()
         {
             if (!window.tonConnectUI)
@@ -169,6 +143,25 @@ const tonConnectBridge = {
             }
         },
 
+        getModalState: function()
+        {
+            if (!tonConnect.isInitialized())
+            {
+                return "";
+            }
+
+            const stateEntity = window.tonConnectUI?.modalState;
+            const state = {
+                status: stateEntity?.status,
+                closeReason: stateEntity?.closeReason || "",
+            };
+
+            console.log(`[Uniton Connect] Current modal `+
+                `state: ${JSON.stringify(state)}`);
+
+            return JSON.stringify(state);
+        },
+
         subscribeToStatusChanged: function(callback)
         {
             if (!tonConnect.isInitialized())
@@ -176,8 +169,8 @@ const tonConnectBridge = {
                 return;
             }
 
-            window.unsubscribeToStatusChange = window
-                .tonConnectUI.onStatusChange((wallet) =>
+            window.unsubscribeFromStatusChange = window.
+                tonConnectUI.onStatusChange((wallet) =>
             {
                 if (wallet)
                 {
@@ -202,13 +195,60 @@ const tonConnectBridge = {
             });
         },
 
-        unsubscribeToStatusChanged: function()
+        unsubscribeFromStatusChanged: function()
         {
-            if (window.unsubscribeToStatusChange)
+            if (window.unsubscribeFromStatusChange)
             {
-                window.unsubscribeToStatusChange();
+                window.unsubscribeFromStatusChange();
 
-                window.unsubscribeToStatusChange = null;
+                window.unsubscribeFromStatusChange = null;
+
+                console.log(`[Uniton Connect] Unsubscribed from 'wallet-status-changed' event`);
+            }
+        },
+
+        subscribeToModalState: function(
+            modalStateCallback, errorCallback)
+        {
+            if (!tonConnect.isInitialized())
+            {
+                return;
+            }
+
+            window.unsubsribeToModalState = window.
+                tonConnectUI.onModalStateChange((state) =>
+            {
+                if (state)
+                {
+                    const statePtr = this.tonConnect.allocString(state);
+
+                    {{{ makeDynCall('vi', 'modalStateCallback') }}}(statePtr);
+
+                    console.log(`[Uniton Connect] Subscribed to 'modal-state-changed' `+
+                        `event, status: ${JSON.stringify(state)}`);
+
+                    _free(statePtr);
+
+                    return;
+                }
+
+                const stateErrorPtr = ton.allocString("UKNOWN_ERROR");
+
+                {{{ makeDynCall('vi', 'errorCallback') }}}(stateErrorPtr);
+
+                _free(stateErrorPtr);
+            })
+        },
+
+        unsubscribeFromModalState: function()
+        {
+            if (window.unsubsribeFromModalState)
+            {
+                window.unsubsribeFromModalState();
+
+                window.unsubsribeFromModalState = null;
+
+                console.log(`[Uniton Connect] Unsubscribed from 'modal-state-changed' event`);
             }
         },
 
@@ -270,7 +310,7 @@ const tonConnectBridge = {
             console.log('[Uniton Connect] Subscribed to transaction events');
         },
 
-        unsubscribeToTransactionEvents: function()
+        unsubscribeFromTransactionEvents: function()
         {
             if (window._tonConnectTransactionSignedHandler)
             {
@@ -340,8 +380,8 @@ const tonConnectBridge = {
             return transactionData;
         },
 
-        sendAsssetsTransaction: async function(
-            itemAddress, gasFeeAmount, payload, callback)
+        sendAsssetsTransaction: async function(itemAddress,
+            gasFeeAmount, payload, callback)
         {
             if (!tonConnect.isInitialized())
             {
@@ -422,8 +462,8 @@ const tonConnectBridge = {
             }
         },
 
-        sendTonTransaction: async function(
-            nanoInTon, recipientAddress, message, callback) 
+        sendTonTransaction: async function(nanoInTon,
+            recipientAddress, message, callback) 
         {
             if (!tonConnect.isInitialized()) 
             {
@@ -614,14 +654,31 @@ const tonConnectBridge = {
         tonConnect.disconnect(callback);
     },
 
+    GetModalState: function()
+    {
+        tonConnect.getModalState();
+    },
+
+    SubscribeToModalState: function(
+        successCallback, errorCallback)
+    {
+        tonConnect.subscribeToModalState(
+            successCallback, errorCallback);
+    },
+
+    UnsubscribeFromModalState: function()
+    {
+        tonConnect.unsubscribeFromModalState();
+    },
+
     SubscribeToStatusChange: function(callback)
     {
         tonConnect.subscribeToStatusChanged(callback);
     },
 
-    UnSubscribeToStatusChange: function() 
+    UnSubscribeFromStatusChange: function() 
     {
-        tonConnect.unsubscribeToStatusChanged();
+        tonConnect.unsubscribeFromStatusChanged();
     },
 
     SubscribeToRestoreConnection: function(callback)
@@ -629,15 +686,16 @@ const tonConnectBridge = {
         tonConnect.subscribeToRestoreConnection(callback);
     },
 
-    SubscribeToTransactionEvents: function(successCallback, errorCallback)
+    SubscribeToTransactionEvents: function(
+        successCallback, errorCallback)
     {
         tonConnect.subscribeToTransactionEvents(
             successCallback, errorCallback);
     },
 
-    UnSubscribeToTransactionEvents: function()
+    UnSubscribeFromTransactionEvents: function()
     {
-        tonConnect.unsubscribeToTransactionEvents();
+        tonConnect.unsubscribeFromTransactionEvents();
     },
 
     SendTonTransaction: function(
@@ -647,15 +705,15 @@ const tonConnectBridge = {
             recipientAddress, "CLEAR", callback);
     },
 
-    SendTonTransactionWithMessage: function(
-        nanoInTon, recipientAddress, message, callback)
+    SendTonTransactionWithMessage: function(nanoInTon,
+        recipientAddress, message, callback)
     {
         tonConnect.sendTonTransaction(nanoInTon,
             recipientAddress, message, callback);
     },
 
-    SendTransactionWithPayload: function(
-        targetAddress, gasFee, payload, callback)
+    SendTransactionWithPayload: function(targetAddress,
+        gasFee, payload, callback)
     {
         tonConnect.sendAsssetsTransaction(
             targetAddress, gasFee, payload, callback);

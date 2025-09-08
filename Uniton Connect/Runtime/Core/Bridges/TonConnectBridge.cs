@@ -27,6 +27,9 @@ namespace UnitonConnect.Core
         private static extern void Disconnect(Action<string> onWalletDisconnected);
 
         [DllImport("__Internal")]
+        private static extern string GetModalState();
+
+        [DllImport("__Internal")]
         private static extern void SubscribeToStatusChange(Action<string> onWalletConnected);
 
         [DllImport("__Internal")]
@@ -68,12 +71,14 @@ namespace UnitonConnect.Core
             string recipientAddress, Action<string> onTransactionSended);
 
         [DllImport("__Internal")]
-        private static extern void SendTonTransactionWithMessage(string nanoTons,
-            string recipientAddress, string message, Action<string> onTransactionSended);
+        private static extern void SendTonTransactionWithMessage(
+            string nanoTons, string recipientAddress,
+            string message, Action<string> onTransactionSended);
 
         [DllImport("__Internal")]
-        private static extern void SendTransactionWithPayload(string jettonMassterOrNftAddress, 
-            string gasFee, string payload, Action<string> transactionSended);
+        private static extern void SendTransactionWithPayload(
+            string jettonMassterOrNftAddress, string gasFee,
+            string payload, Action<string> transactionSended);
 
         #endregion
 
@@ -413,6 +418,13 @@ namespace UnitonConnect.Core
             OnWalletDisconnected = walletDisconnected;
 
             Disconnect(OnWalletDisconnect);
+        }
+
+        internal static ModalStateData GetCurrentModalState()
+        {
+            var currentState = GetModalState();
+
+            return JsonConvert.DeserializeObject<ModalStateData>(currentState);
         }
 
         internal static void SendTon(string recipientAddress, 
