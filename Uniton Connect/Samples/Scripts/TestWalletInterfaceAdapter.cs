@@ -196,6 +196,8 @@ namespace UnitonConnect.Core.Demo
             _jettonModule = _unitonSDK.Assets.Jettons;
             _walletModal = _unitonSDK.Modal;
 
+            Debug.LogWarning($"Loaded current modal state: {_walletModal.GetStatus()}");
+
             _walletModal.OnStateChanged += ModalStateChanged;
 
             _nftModule.OnNftCollectionsClaimed += NftCollectionsLoaded;

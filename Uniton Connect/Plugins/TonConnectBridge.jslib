@@ -173,7 +173,7 @@ const tonConnectBridge = {
                     const walletInfo = JSON.stringify(window.tonConnectUI.account);
                     const walletPtr = tonConnect.allocString(walletInfo);
 
-                    console.log(`[Uniton Connect] Parsed account: ${walletInfo}`);
+                    console.log(`[Uniton Connect] Parsed wallet account: ${walletInfo}`);
     
                     {{{ makeDynCall('vi', 'callback') }}}(walletPtr);
 
@@ -207,10 +207,11 @@ const tonConnectBridge = {
             window.unsubsribeToModalState = window.
                 tonConnectUI.onModalStateChange((state) =>
             {
-                const statePtr = tonConnect.allocString(state);
+                const stateInfo = JSON.stringify(state);
+                const statePtr = tonConnect.allocString(stateInfo);
 
-                console.log(`[Uniton Connect] Listen 'modal-state-changed' `+
-                    `event, status: ${JSON.stringify(state)}, ptr: ${statePtr}`);
+                console.log(`[Uniton Connect] Claimed 'modal-state-changed' `+
+                    `event data, status: ${stateInfo}, ptr: ${statePtr}`);
 
                 {{{ makeDynCall('vi', 'modalStateCallback') }}}(statePtr);
 
