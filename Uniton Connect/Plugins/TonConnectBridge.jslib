@@ -173,8 +173,7 @@ const tonConnectBridge = {
                     const walletInfo = JSON.stringify(window.tonConnectUI.account);
                     const walletPtr = tonConnect.allocString(walletInfo);
 
-                    console.log(`[Uniton Connect] Parsed account: ` +
-                        `${JSON.stringify(window.tonConnectUI.account)}`);
+                    console.log(`[Uniton Connect] Parsed account: ${walletInfo}`);
     
                     {{{ makeDynCall('vi', 'callback') }}}(walletPtr);
 
@@ -205,27 +204,18 @@ const tonConnectBridge = {
 
         subscribeToModalState: function(modalStateCallback)
         {
-            window.unsubsribeToModalState = window.tonConnectUI.onModalStateChange((state) =>
+            window.unsubsribeToModalState = window.
+                tonConnectUI.onModalStateChange((state) =>
             {
-                if (state)
-                {
-                    const statePtr = tonConnect.allocString(state);
+                const statePtr = tonConnect.allocString(state);
 
-                    {{{ makeDynCall('vi', 'modalStateCallback') }}}(statePtr);
+                console.log(`[Uniton Connect] Listen 'modal-state-changed' `+
+                    `event, status: ${JSON.stringify(state)}, ptr: ${statePtr}`);
 
-                    console.log(`[Uniton Connect] Listen 'modal-state-changed' `+
-                        `event, status: ${JSON.stringify(state)}`);
+                {{{ makeDynCall('vi', 'modalStateCallback') }}}(statePtr);
 
-                    _free(statePtr);
+                _free(statePtr);
 
-                    return;
-                }
-
-                const stateErrorPtr = tonConnect.allocString("UKNOWN_ERROR");
-
-                {{{ makeDynCall('vi', 'modalStateCallback') }}}(stateErrorPtr);
-
-                _free(stateErrorPtr);
             });
         },
 
