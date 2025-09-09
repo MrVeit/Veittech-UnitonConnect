@@ -1,12 +1,12 @@
 namespace UnitonConnect.Core.Common
 {
-    public sealed class WalletModal: IUnitonConenctModalCallbacks
+    public sealed class WalletModal: IUnitonConnectModalCallbacks
     {
         public ModalStatusTypes Status { get; private set; }
         public string? CloseReason { get; private set; }
 
-        public event IUnitonConenctModalCallbacks.OnStateChange OnStateChanged;
-        public event IUnitonConenctModalCallbacks.OnStateClaim OnStateClaimed;
+        public event IUnitonConnectModalCallbacks.OnStateChange OnStateChanged;
+        public event IUnitonConnectModalCallbacks.OnStateClaim OnStateClaimed;
 
         public WalletModal()
         {
@@ -24,6 +24,9 @@ namespace UnitonConnect.Core.Common
             });
         }
 
+        /// <summary>
+        /// Loads the current status of the wallet connection modal window
+        /// </summary>
         public void LoadStatus()
         {
             TonConnectBridge.LoadModalState((state) =>

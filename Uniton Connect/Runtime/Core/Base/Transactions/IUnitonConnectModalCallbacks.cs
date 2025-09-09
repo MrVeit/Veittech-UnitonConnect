@@ -1,6 +1,6 @@
 namespace UnitonConnect.Core.Common
 {
-    public interface IUnitonConenctModalCallbacks
+    public interface IUnitonConnectModalCallbacks
     {
         delegate void OnStateChange(ModalStatusTypes state);
         delegate void OnStateClaim(ModalStatusTypes state);

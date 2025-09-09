@@ -143,6 +143,49 @@ const tonConnectBridge = {
             }
         },
 
+        signData: async function(textData, callback)
+        {
+            if (!tonConnect.isInitialized())
+            {
+                const errorPtr = tonConnect.allocString("NOT_INITIALIZED");
+            
+                {{{ makeDynCall('vi', 'callback') }}}(errorPtr);
+
+                _free(errorPtr);
+
+                return;
+            }
+
+            try
+            {
+                const message = UTF8ToString(textData);
+
+                const signedEntity = await window.tonConnectUI.signData(message);
+                const signedData = JSON.stringify(signedEntity);
+
+                console.log(`[Uniton Connect] Wallet message signed, result: ${signedData}`);
+
+                const signPtr = tonConnect.allocString(signedData);
+
+                {{{ makeDynCall('vi', 'callback') }}}(signPtr);
+
+                _free(signPtr);
+            }
+            catch (error)
+            {
+                const errorMessage = error.message || error;
+
+                console.error(`Failed to sign wallet data `+
+                    `'${textData}', reason: ${errorMessage}`);
+
+                const errorPtr = tonConnect.allocString(errorMessage);
+
+                {{{ makeDynCall('vi', 'callback') }}}(errorPtr);
+
+                _free(errorPtr);
+            }
+        },
+
         getModalState: function(valueClaimed)
         {
             const stateEntity = window.tonConnectUI.modalState;
@@ -633,11 +676,6 @@ const tonConnectBridge = {
         tonConnect.disconnect(callback);
     },
 
-    GetModalState: function(callback)
-    {
-        tonConnect.getModalState(callback);
-    },
-
     SubscribeToModalState: function(callback)
     {
         tonConnect.subscribeToModalState(callback);
@@ -696,19 +734,29 @@ const tonConnectBridge = {
             targetAddress, gasFee, payload, callback);
     },
 
+    SignData: function(message, callback)
+    {
+        tonConnect.signData(message, callback);
+    },
+
+    GetModalState: function(callback)
+    {
+        tonConnect.getModalState(callback);
+    },
+
     ToBounceableAddress: function(address, valueClaimed)
     {
-        return tonConnect.toBounceable(address, valueClaimed);
+        tonConnect.toBounceable(address, valueClaimed);
     },
 
     ToNonBounceableAddress: function(address, valueClaimed)
     {
-        return tonConnect.toNonBounceable(address, valueClaimed);
+        tonConnect.toNonBounceable(address, valueClaimed);
     },
 
     ToHexAddress: function(address, valueClaimed)
     {
-        return tonConnect.toHex(address, valueClaimed);
+        tonConnect.toHex(address, valueClaimed);
     },
 
     IsUserFriendlyAddress: function(address)

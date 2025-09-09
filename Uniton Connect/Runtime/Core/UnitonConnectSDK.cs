@@ -50,7 +50,7 @@ namespace UnitonConnect.Core
         [Tooltip("Turn it off if you want to do your own cdk initialization in your scripts")]
         [SerializeField, Space] private bool _initializeOnAwake;
         [Tooltip("Delay before requesting in blockchain to retrieve data about the sent transaction")]
-        [SerializeField, Space, Range(15f, 500f)] private float _confirmDelay = 15f;
+        [SerializeField, Space, Range(10f, 500f)] private float _confirmDelay = 10f;
         [Tooltip("List of available tokens for transactions/reading balances and more")]
         [SerializeField, Space] private JettonConfigsStorage _jettonStorage;
 
@@ -121,6 +121,21 @@ namespace UnitonConnect.Core
         /// </summary>
         public event IUnitonConnectTonCallbacks.OnTonBalanceClaim OnTonBalanceClaimed;
 
+        /// <summary>
+        /// Callback to receive the result of signing a message from the wallet
+        /// </summary>
+        public event IUnitonConnectWalletCallbacks.OnWalletMessageSign OnWalletMessageSigned;
+
+        /// <summary>
+        /// Callback about unsuccessful signing of a message in the wallet under one of the reasons
+        /// </summary>
+        public event IUnitonConnectWalletCallbacks.OnWalletMessageSignFail OnWalletMessageSignFailed;
+
+        /// <summary>
+        /// Callback about the received verification status of the wallet payload after signing the message
+        /// </summary>
+        public event IUnitonConnectWalletCallbacks.OnWalletMessageVerify OnWalletMessageVerified;
+
         private void Awake()
         {
             CreateInstance();
@@ -137,7 +152,7 @@ namespace UnitonConnect.Core
         {
             if (IsSupporedPlatform())
             {
-                TonConnectBridge.UnSubscribe();
+                TonConnectBridge.Dispose();
             }
         }
 
@@ -276,7 +291,8 @@ namespace UnitonConnect.Core
 
             if (WalletConnectUtils.IsAddressesMatch(recipientToHex))
             {
-                UnitonConnectLogger.LogWarning("Transaction canceled because the recipient and sender addresses match");
+                UnitonConnectLogger.LogWarning("Transaction canceled because "+
+                    "the recipient and sender addresses match");
 
                 return;
             }
@@ -286,6 +302,49 @@ namespace UnitonConnect.Core
 
             TonConnectBridge.SendTon(recipientAddress, amount,
                 message, OnSendingTonFinish, OnSendingTonFail);
+        }
+
+        /// <summary>
+        /// Signs a message on the connected wallet to verify that it is actually connected to the dApp.
+        /// </summary>
+        public void SignData(SignMessageData message)
+        {
+            if (!IsSupporedPlatform())
+            {
+                return;
+            }
+
+            if (!_isInitialized)
+            {
+                UnitonConnectLogger.LogWarning("Sdk is not initialized, try again later");
+
+                return;
+            }
+
+            if (!_isWalletConnected)
+            {
+                UnitonConnectLogger.LogWarning("Wallet is not connected, do so and try again later");
+
+                return;
+            }
+
+            TonConnectBridge.SignWalletMessage(
+                message, (signedPayload) =>
+            {
+                UnitonConnectLogger.Log($"Wallet message successfully signed, " +
+                    $"message: {message}, signed payload: {signedPayload}");
+
+                if (signedPayload == null)
+                {
+                    UnitonConnectLogger.LogError("Failed to sign wallet message, something wrong...");
+
+                    OnWalletMessageSignFailed?.Invoke("Failed sign");
+
+                    return;
+                }
+
+                OnWalletMessageSigned?.Invoke(signedPayload);
+            });
         }
 
         private void CreateInstance()
@@ -303,7 +362,8 @@ namespace UnitonConnect.Core
 
                 if (_instance != null)
                 {
-                    UnitonConnectLogger.LogWarning($"Another instance is detected on the scene, running delete...");
+                    UnitonConnectLogger.LogWarning($"Another instance is detected "+
+                        "on the scene, running delete...");
 
                     Destroy(gameObject);
                 }

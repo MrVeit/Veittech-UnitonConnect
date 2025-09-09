@@ -86,6 +86,10 @@ namespace UnitonConnect.Core
             string jettonMassterOrNftAddress, string gasFee,
             string payload, Action<string> transactionSended);
 
+        [DllImport("__Internal")]
+        private static extern void SignData(
+            string message, Action<string> messageSigned);
+
         #endregion
 
         #region NATIVE_CALLBACKS
@@ -394,6 +398,27 @@ namespace UnitonConnect.Core
             UnitonConnectLogger.LogError("Failed to convert address " +
                 "to target format, something wrong...");
         }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnWalletMessageSign(string signedPayload)
+        {
+            UnitonConnectLogger.Log($"Claimed signed "+
+                $"message payload: {signedPayload}");
+
+            if (string.IsNullOrEmpty(signedPayload))
+            {
+                UnitonConnectLogger.LogWarning("Failed to sign "+
+                    "wallet message, something wrong...");
+
+                return;
+            }
+
+            var payload = JsonConvert.DeserializeObject<SignedMessageData>(signedPayload);
+
+            OnWalletMessageSigned?.Invoke(payload);
+
+            OnWalletMessageSigned = null;
+        }
         #endregion
 
         private static readonly string SUCCESSFUL_DISCONNECT = "200";
@@ -426,14 +451,7 @@ namespace UnitonConnect.Core
 
         private static Action<string> OnAddressParsed;
 
-        internal static void UnSubscribe()
-        {
-            UnSubscribeFromStatusChange();
-            UnSubscribeFromTransactionEvents();
-            UnsubscribeFromModalState();
-
-            OnModalStateChanged = null;
-        }
+        private static Action<SignedMessageData> OnWalletMessageSigned;
 
         internal static void Init(
             string manifestUrl, Action<bool> sdkInitialized,
@@ -452,6 +470,15 @@ namespace UnitonConnect.Core
 
             SubscribeToRestoreConnection(OnWalletConnectionRestore);
             SubscribeToStatusChange(OnWalletConnect);
+        }
+
+        internal static void Dispose()
+        {
+            UnSubscribeFromStatusChange();
+            UnSubscribeFromTransactionEvents();
+            UnsubscribeFromModalState();
+
+            OnModalStateChanged = null;
         }
 
         internal static void Connect(
@@ -508,6 +535,18 @@ namespace UnitonConnect.Core
         {
             SendNftByParams(nftItemAddress, gasFee, payload,
                 transactionSended, transactionSendFailed);
+        }
+
+        internal static void SignWalletMessage(SignMessageData message,
+            Action<SignedMessageData> messageSigned)
+        {
+            OnWalletMessageSigned = messageSigned;
+
+            var signMessage = JsonConvert.SerializeObject(message);
+
+            UnitonConnectLogger.Log($"Wallet message for sign: '{signMessage}'");
+
+            SignData(signMessage, OnWalletMessageSign);
         }
 
         internal sealed class Utils

@@ -1,7 +1,6 @@
 using UnityEngine;
-using UnitonConnect.Core.Demo;
 
-namespace UnitonConnect.Core.Data
+namespace UnitonConnect.Core.Demo
 {
     public sealed class TestDisconnectButton : TestBaseButton
     {
