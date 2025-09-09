@@ -25,7 +25,12 @@ namespace UnitonConnect.Core.Common
 
         public ModalStatusTypes GetStatus()
         {
-            return TonConnectBridge.GetCurrentModalState().Status;
+            var state = TonConnectBridge.GetCurrentModalState();
+
+            Status = state.Status;
+            CloseReason = state.CloseReason;
+
+            return Status;
         }
     }
 }

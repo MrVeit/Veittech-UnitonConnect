@@ -213,7 +213,7 @@ const tonConnectBridge = {
 
                     {{{ makeDynCall('vi', 'modalStateCallback') }}}(statePtr);
 
-                    console.log(`[Uniton Connect] Subscribed to 'modal-state-changed' `+
+                    console.log(`[Uniton Connect] Listen 'modal-state-changed' `+
                         `event, status: ${JSON.stringify(state)}`);
 
                     _free(statePtr);

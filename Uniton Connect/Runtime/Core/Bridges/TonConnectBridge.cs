@@ -108,14 +108,12 @@ namespace UnitonConnect.Core
         [MonoPInvokeCallback(typeof(Action<string>))]
         private static void OnModalStateChange(string stateEntity)
         {
+            UnitonConnectLogger.Log($"Current modal state: {stateEntity}");
+
             if (string.IsNullOrEmpty(stateEntity))
             {
                 UnitonConnectLogger.LogWarning("Modal state not exist, something wrong...");
-
-                return;
             }
-
-            UnitonConnectLogger.Log($"Current modal state: {stateEntity}");
 
             var state = JsonConvert.DeserializeObject<ModalStateData>(stateEntity);
 
