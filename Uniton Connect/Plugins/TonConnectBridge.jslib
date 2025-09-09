@@ -146,8 +146,8 @@ const tonConnectBridge = {
         getModalState: function(valueClaimed)
         {
             const stateEntity = window.tonConnectUI.modalState;
-            const state = JSON.stringify(stateEntity);
             
+            const state = JSON.stringify(stateEntity);
             const statePtr = tonConnect.allocString(state);
 
             console.log(`[Uniton Connect] Current modal state: ${state}`);
@@ -203,14 +203,14 @@ const tonConnectBridge = {
 
         subscribeToModalState: function(modalStateCallback)
         {
-            window.unsubsribeToModalState = window.
+            window.unsubsribeFromModalState = window.
                 tonConnectUI.onModalStateChange((state) =>
             {
                 const stateInfo = JSON.stringify(state);
                 const statePtr = tonConnect.allocString(stateInfo);
 
                 console.log(`[Uniton Connect] Claimed 'modal-state-changed' `+
-                    `event data, status: ${stateInfo}, ptr: ${statePtr}`);
+                    `event data, status: ${stateInfo}`);
 
                 {{{ makeDynCall('vi', 'modalStateCallback') }}}(statePtr);
 

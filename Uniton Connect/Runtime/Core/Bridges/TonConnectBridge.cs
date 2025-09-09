@@ -121,8 +121,6 @@ namespace UnitonConnect.Core
             var state = JsonConvert.DeserializeObject<ModalStateData>(stateEntity);
 
             OnModalStateChanged?.Invoke(state);
-
-            OnModalStateChanged = null;
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
@@ -433,6 +431,8 @@ namespace UnitonConnect.Core
             UnSubscribeFromStatusChange();
             UnSubscribeFromTransactionEvents();
             UnsubscribeFromModalState();
+
+            OnModalStateChanged = null;
         }
 
         internal static void Init(
@@ -489,9 +489,8 @@ namespace UnitonConnect.Core
             GetModalState(OnCurrentModalStateClaim);
         }
 
-        internal static void SendTon(string recipientAddress, 
-            decimal tonAmount, string message, Action<string> transactionSended,
-            Action<string> transactionSendFailed)
+        internal static void SendTon(string recipientAddress, decimal tonAmount,
+            string message, Action<string> transactionSended, Action<string> transactionSendFailed)
         {
             SendTonByParams(recipientAddress, tonAmount, 
                 message, transactionSended, transactionSendFailed);
@@ -522,7 +521,8 @@ namespace UnitonConnect.Core
                         var message = "Address to check the format against " +
                             "the 'User Friendly' type must not be empty or equal to null";
 
-                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                        throw new NullReferenceException(
+                            $"{UnitonConnectLogger.PREFIX} {message}");
                     }
 
                     return IsUserFriendlyAddress(address);
@@ -535,7 +535,8 @@ namespace UnitonConnect.Core
                         var message = "Address to check the format against " +
                             "the 'Bounceable' type must not be empty or equal to null";
 
-                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                        throw new NullReferenceException(
+                            $"{UnitonConnectLogger.PREFIX} {message}");
                     }
 
                     return IsBounceableAddress(address);
@@ -548,7 +549,8 @@ namespace UnitonConnect.Core
                         var message = "Address to check the format against " +
                             "the 'Test Only' type must not be empty or equal to null";
 
-                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                        throw new NullReferenceException(
+                            $"{UnitonConnectLogger.PREFIX} {message}");
                     }
 
                     return IsTestnetAddress(address);
@@ -562,8 +564,11 @@ namespace UnitonConnect.Core
                         var message = "Address to convert to 'Bounceable' " +
                             "format must not be empty or equal to null";
 
-                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                        throw new NullReferenceException(
+                            $"{UnitonConnectLogger.PREFIX} {message}");
                     }
+
+                    OnAddressParsed = addressConverted;
 
                     ToBounceableAddress(address, OnAddressParse);
                 }
@@ -576,7 +581,8 @@ namespace UnitonConnect.Core
                         var message = "Address to convert to 'Non Bounceable' " +
                             "format must not be empty or equal to null";
 
-                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                        throw new NullReferenceException(
+                            $"{UnitonConnectLogger.PREFIX} {message}");
                     }
 
                     OnAddressParsed = addressConverted;
@@ -592,7 +598,8 @@ namespace UnitonConnect.Core
                         var message = "Address to convert to 'Hex/Raw' " +
                             "format must not be empty or equal to null";
 
-                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                        throw new NullReferenceException(
+                            $"{UnitonConnectLogger.PREFIX} {message}");
                     }
 
                     OnAddressParsed = addressConverted;
