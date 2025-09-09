@@ -89,11 +89,6 @@ namespace UnitonConnect.Core.Demo
             _jettonModule.OnTransactionSendFailed -= JettonTransactionSendFailed;
         }
 
-        private void ModalStateChanged(ModalStatusTypes state)
-        {
-            Debug.Log($"Claimed current modal state '{state}'");
-        }
-
         private void Start()
         {
             _unitonSDK.Initialize();
@@ -196,8 +191,7 @@ namespace UnitonConnect.Core.Demo
             _jettonModule = _unitonSDK.Assets.Jettons;
             _walletModal = _unitonSDK.Modal;
 
-            Debug.LogWarning($"Loaded current modal state: {_walletModal.GetStatus()}");
-
+            _walletModal.OnStateClaimed += ModalStateClaimed;
             _walletModal.OnStateChanged += ModalStateChanged;
 
             _nftModule.OnNftCollectionsClaimed += NftCollectionsLoaded;
@@ -208,6 +202,8 @@ namespace UnitonConnect.Core.Demo
 
             _jettonModule.OnTransactionSended += JettonTransactionSended;
             _jettonModule.OnTransactionSendFailed += JettonTransactionSendFailed;
+
+            _walletModal.LoadStatus();
         }
 
         private void WalletConnectionFinished(WalletConfig wallet)
@@ -349,6 +345,16 @@ namespace UnitonConnect.Core.Demo
         {
             _debugMessage.text = $"Failed to send NFT item" +
                 $" with address: {nftItemAddress}, reason: {errorMessage}";
+        }
+
+        private void ModalStateChanged(ModalStatusTypes state)
+        {
+            Debug.Log($"Claimed changed modal state '{state}'");
+        }
+
+        private void ModalStateClaimed(ModalStatusTypes state)
+        {
+            Debug.Log($"Claimed current modal state '{state}'");
         }
     }
 }

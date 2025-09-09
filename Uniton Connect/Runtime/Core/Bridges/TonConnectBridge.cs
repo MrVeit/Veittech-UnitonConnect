@@ -27,7 +27,7 @@ namespace UnitonConnect.Core
         private static extern void Disconnect(Action<string> onWalletDisconnected);
 
         [DllImport("__Internal")]
-        private static extern string GetModalState();
+        private static extern string GetModalState(Action<string> onStateClaimed);
 
         [DllImport("__Internal")]
         private static extern void SubscribeToStatusChange(Action<string> onWalletConnected);
@@ -108,18 +108,41 @@ namespace UnitonConnect.Core
         [MonoPInvokeCallback(typeof(Action<string>))]
         private static void OnModalStateChange(string stateEntity)
         {
-            UnitonConnectLogger.Log($"Current modal state: {stateEntity}");
-
             if (string.IsNullOrEmpty(stateEntity))
             {
-                UnitonConnectLogger.LogWarning("Modal state not exist, something wrong...");
+                UnitonConnectLogger.LogWarning("Modal state "+
+                    "not exist, something wrong...");
+
+                return;
             }
+
+            UnitonConnectLogger.Log($"Current modal state: {stateEntity}");
 
             var state = JsonConvert.DeserializeObject<ModalStateData>(stateEntity);
 
             OnModalStateChanged?.Invoke(state);
 
             OnModalStateChanged = null;
+        }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnCurrentModalStateClaim(string stateEntity)
+        {
+            if (string.IsNullOrEmpty(stateEntity))
+            {
+                UnitonConnectLogger.LogWarning("Modal state "+
+                    "claim failed, something wrong...");
+
+                return;
+            }
+
+            UnitonConnectLogger.Log($"Current modal state: {stateEntity}");
+
+            var state = JsonConvert.DeserializeObject<ModalStateData>(stateEntity);
+
+            OnModalStateClaimed?.Invoke(state);
+
+            OnModalStateClaimed = null;
         }
 
         [MonoPInvokeCallback(typeof(Action<int>))]
@@ -385,6 +408,7 @@ namespace UnitonConnect.Core
         private static Action<bool> OnModalWindowOpened;
         private static Action<bool> OnModalWindowClosed;
 
+        private static Action<ModalStateData> OnModalStateClaimed;
         private static Action<ModalStateData> OnModalStateChanged;
 
         private static Action<bool> OnWalletDisconnected;
@@ -430,14 +454,6 @@ namespace UnitonConnect.Core
             SubscribeToStatusChange(OnWalletConnect);
         }
 
-        internal static void InitModalState(
-            Action<ModalStateData> modalInitialized)
-        {
-            OnModalStateChanged = modalInitialized;
-
-            SubscribeToModalState(OnModalStateChange);
-        }
-
         internal static void Connect(
             Action<WalletConfig> walletConnected,
             Action<string> walletConnectFailed)
@@ -457,22 +473,20 @@ namespace UnitonConnect.Core
             Disconnect(OnWalletDisconnect);
         }
 
-        internal static ModalStateData GetCurrentModalState()
+        internal static void InitModalState(
+            Action<ModalStateData> modalInitialized)
         {
-            var currentState = GetModalState();
+            OnModalStateChanged = modalInitialized;
 
-            if (string.IsNullOrEmpty(currentState))
-            {
-                UnitonConnectLogger.LogWarning("Modal entity state not found");
+            SubscribeToModalState(OnModalStateChange);
+        }
 
-                return null;
-            }
+        internal static void LoadModalState(
+            Action<ModalStateData> modalStateChanged)
+        {
+            OnModalStateClaimed = modalStateChanged;
 
-            var stateEntity = JsonConvert.DeserializeObject<ModalStateData>(currentState);
-
-            UnitonConnectLogger.Log($"Loaded current modal state: {stateEntity.Status}");
-
-            return JsonConvert.DeserializeObject<ModalStateData>(currentState);
+            GetModalState(OnCurrentModalStateClaim);
         }
 
         internal static void SendTon(string recipientAddress, 

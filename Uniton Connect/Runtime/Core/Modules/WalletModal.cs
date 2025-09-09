@@ -6,6 +6,7 @@ namespace UnitonConnect.Core.Common
         public string? CloseReason { get; private set; }
 
         public event IUnitonConenctModalCallbacks.OnStateChange OnStateChanged;
+        public event IUnitonConenctModalCallbacks.OnStateClaim OnStateClaimed;
 
         public WalletModal()
         {
@@ -23,14 +24,15 @@ namespace UnitonConnect.Core.Common
             });
         }
 
-        public ModalStatusTypes GetStatus()
+        public void LoadStatus()
         {
-            var state = TonConnectBridge.GetCurrentModalState();
+            TonConnectBridge.LoadModalState((state) =>
+            {
+                Status = state.Status;
+                CloseReason = state.CloseReason;
 
-            Status = state.Status;
-            CloseReason = state.CloseReason;
-
-            return Status;
+                OnStateClaimed?.Invoke(Status);
+            });
         }
     }
 }

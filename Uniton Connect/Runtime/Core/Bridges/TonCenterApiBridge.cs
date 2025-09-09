@@ -14,8 +14,9 @@ namespace UnitonConnect.ThirdParty
     {
         internal sealed class Jetton
         {
-            internal static IEnumerator GetJettonWalletByOwner(string tonAddress,
-                string jettonMasterAddress, Action<LoadedJettonWalletData> jettonWalletsLoaded)
+            internal static IEnumerator GetJettonWalletByOwner(
+                string tonAddress, string jettonMasterAddress,
+                Action<LoadedJettonWalletData> jettonWalletsLoaded)
             {
                 var dAppData = ProjectStorageConsts.GetRuntimeAppStorage();
 
