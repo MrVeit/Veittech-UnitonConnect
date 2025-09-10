@@ -5,8 +5,13 @@ namespace UnitonConnect.Core.Data
 {
     public sealed class SignMessageData
     {
+        public SignMessageData(SignWalletDataTypes type)
+        {
+            Type = $"{type}";
+        }
+
         [JsonProperty("type")]
-        public string Type { get; set; }
+        public readonly string Type;
 
         [JsonProperty("text")]
         public string? Text { get; set; }

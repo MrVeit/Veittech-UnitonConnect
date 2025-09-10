@@ -12,9 +12,9 @@ namespace UnitonConnect.Core.Demo
         {
             var sdk = _interfaceAdapter.UnitonSDK;
 
-            var message = new SignMessageData()
+            var message = new SignMessageData(
+                SignWalletDataTypes.text)
             {
-                Type = SignWalletDataTypes.text,
                 Text = "Message from Uniton Connect",
                 From = sdk.Wallet.ToHex()
             };
