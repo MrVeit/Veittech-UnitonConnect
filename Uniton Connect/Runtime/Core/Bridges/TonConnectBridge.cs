@@ -413,7 +413,8 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            var payload = JsonConvert.DeserializeObject<SignedMessageData>(signedPayload);
+            var payload = JsonConvert.DeserializeObject<
+                SignedMessageData>(signedPayload);
 
             OnWalletMessageSigned?.Invoke(payload);
 

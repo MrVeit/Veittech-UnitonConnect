@@ -237,10 +237,8 @@ const tonConnectBridge = {
             }
             catch (error)
             {
-                const errorMessage = error.message || error;
-
                 console.error(`Failed to sign wallet data `+
-                    `'${message}', reason: ${errorMessage}`);
+                    `'${JSON.stringify(message)}', reason: ${error}`);
 
                 const errorPtr = tonConnect.allocString(errorMessage);
 
