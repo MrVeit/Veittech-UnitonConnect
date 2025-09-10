@@ -156,7 +156,7 @@ const tonConnectBridge = {
                 return;
             }
 
-            const message = UTF8ToString(textData);
+            var message = UTF8ToString(textData);
 
             console.log(`[Uniton Connect] Parsed wallet message for sign: ${message}`);
 
@@ -164,7 +164,7 @@ const tonConnectBridge = {
 
             try
             {
-                signData = JSON.parse(message);
+                message = JSON.parse(message);
             }
             catch (error)
             {
