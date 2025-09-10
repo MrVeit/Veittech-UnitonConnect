@@ -158,9 +158,27 @@ const tonConnectBridge = {
 
             const message = UTF8ToString(textData);
 
-            console.log(`Parsed wallet message for sign: ${message}`);
+            console.log(`[Uniton Connect] Parsed wallet message for sign: ${message}`);
 
-            let signData;
+            let signData = null;
+
+            try
+            {
+                signData = JSON.parse(message);
+            }
+            catch (error)
+            {
+                var errorPtr = tonConnect.allocString("INVALID_JSON");
+
+                console.error(`[Uniton Connect] Failed to parse sign `+
+                    `message object, reasonn: ${error}`);
+
+                {{{ makeDynCall('vi', 'callback') }}}(errorPtr);
+
+                _free(errorPtr);
+
+                return;
+            }
 
             if (message.type === "text")
             {
@@ -189,6 +207,17 @@ const tonConnectBridge = {
                     network: message.network,
                     from: message.from
                 }
+            }
+
+            if (!signData)
+            {
+                var invalidTypePtr = tonConnect.allocString("UNSUPPORTED_SIGN_TYPE");
+
+                {{{ makeDynCall('vi', 'callback') }}}(invalidTypePtr);
+
+                _free(invalidTypePtr);
+
+                return;
             }
 
             try
