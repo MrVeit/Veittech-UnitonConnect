@@ -166,7 +166,7 @@ const tonConnectBridge = {
             {
                 signData = {
                     type: "text",
-                    text: message.next,
+                    text: message.text,
                     network: message.network,
                     from: message.from
                 }
@@ -193,6 +193,8 @@ const tonConnectBridge = {
 
             try
             {
+                console.log(`Final wallet message for sign: ${JSON.stringify(signData)}`);
+
                 const signedEntity = await window.tonConnectUI.signData(signData);
                 const signedData = JSON.stringify(signedEntity);
 
