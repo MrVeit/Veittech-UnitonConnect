@@ -156,11 +156,44 @@ const tonConnectBridge = {
                 return;
             }
 
+            const message = UTF8ToString(textData);
+
+            console.log(`Parsed wallet message for sign: ${message}`);
+
+            let signData;
+
+            if (message.type === "text")
+            {
+                signData = {
+                    type: "text",
+                    text: message.next,
+                    network: message.network,
+                    from: message.from
+                }
+            }
+            else if (message.type === "binary")
+            {
+                signData = {
+                    type: "binary",
+                    bytes: message.bytes,
+                    network: message.network,
+                    from: message.from
+                }
+            }
+            else if (message.type === "cell")
+            {
+                signData = {
+                    type: "cell",
+                    schema: message.schema,
+                    cell: message.cell,
+                    network: message.network,
+                    from: message.from
+                }
+            }
+
             try
             {
-                const message = UTF8ToString(textData);
-
-                const signedEntity = await window.tonConnectUI.signData(message);
+                const signedEntity = await window.tonConnectUI.signData(signData);
                 const signedData = JSON.stringify(signedEntity);
 
                 console.log(`[Uniton Connect] Wallet message signed, result: ${signedData}`);
@@ -176,7 +209,7 @@ const tonConnectBridge = {
                 const errorMessage = error.message || error;
 
                 console.error(`Failed to sign wallet data `+
-                    `'${textData}', reason: ${errorMessage}`);
+                    `'${message}', reason: ${errorMessage}`);
 
                 const errorPtr = tonConnect.allocString(errorMessage);
 
