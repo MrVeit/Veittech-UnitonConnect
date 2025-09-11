@@ -332,11 +332,8 @@ namespace UnitonConnect.Core
             TonConnectBridge.SignWalletMessage(
                 message, (signedPayload) =>
             {
-                var messageData = JsonConvert.SerializeObject(message);
-                var payloadData = JsonConvert.SerializeObject(signedPayload);
-
                 UnitonConnectLogger.Log($"Wallet message successfully signed, " +
-                    $"message: {messageData}, signed payload: {payloadData}");
+                    $"message: {message.Type}, signed payload: {signedPayload.Signature}");
 
                 OnWalletMessageSigned?.Invoke(signedPayload);
             },
