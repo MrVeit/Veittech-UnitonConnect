@@ -33,7 +33,7 @@ namespace UnitonConnect.Core
         private static extern void SubscribeToStatusChange(Action<string> onWalletConnected);
 
         [DllImport("__Internal")]
-        private static extern void UnSubscribeFromStatusChange();
+        private static extern void UnsubscribeFromStatusChange();
 
         [DllImport("__Internal")]
         private static extern void SubscribeToModalState(Action<string> onModalStateChanged);
@@ -49,7 +49,14 @@ namespace UnitonConnect.Core
             Action<string> onTransactionSigned, Action<string> onTransactionSignFailed);
 
         [DllImport("__Internal")]
-        private static extern void UnSubscribeFromTransactionEvents();
+        private static extern void UnsubscribeFromTransactionEvents();
+
+        [DllImport("__Internal")]
+        private static extern void SubscribeToWalletMessageSigned(
+            Action<string> onWalletMessageSigned, Action<string> onWalletMessageSignFailed);
+
+        [DllImport("__Internal")]
+        private static extern void UnsubscribeFromWalletMessageSigned();
 
         [DllImport("__Internal")]
         private static extern bool IsUserFriendlyAddress(string address);
@@ -486,9 +493,10 @@ namespace UnitonConnect.Core
 
         internal static void Dispose()
         {
-            UnSubscribeFromStatusChange();
-            UnSubscribeFromTransactionEvents();
+            UnsubscribeFromStatusChange();
+            UnsubscribeFromTransactionEvents();
             UnsubscribeFromModalState();
+            UnsubscribeFromTransactionEvents();
 
             OnModalStateChanged = null;
         }
@@ -557,9 +565,11 @@ namespace UnitonConnect.Core
 
             var signMessage = JsonConvert.SerializeObject(message);
 
+            SubscribeToWalletMessageSigned(OnWalletMessageSign, OnWalletMessageSignFail);
+
             UnitonConnectLogger.Log($"Wallet message for sign: '{signMessage}'");
 
-            SignData(signMessage, OnWalletMessageSign, OnWalletMessageSignFail);
+            SignData(signMessage, (t) => { }, (e) => { });
         }
 
         internal sealed class Utils

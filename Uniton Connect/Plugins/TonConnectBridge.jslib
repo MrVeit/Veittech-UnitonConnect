@@ -238,9 +238,9 @@ const tonConnectBridge = {
             }
             catch (error)
             {
-                const errorDescription = UTF8ToString(error);
+                const errorDescription = error.message || error;
 
-                console.error(`Failed to sign wallet data, reason: ${error} || ${errorDescription}`);
+                console.error(`Failed to sign wallet data, reason: ${errorDescription}`);
 
                 const errorPtr = tonConnect.allocString(errorDescription);
 
@@ -365,9 +365,11 @@ const tonConnectBridge = {
         {
             const signedHandler = (event) =>
             {
-                console.log(`[Uniton Connect] Transaction signed:`, event.detail);
+                const data = event.detail;
 
-                const signedData = JSON.stringify(event.detail);
+                console.log(`[Uniton Connect] Transaction signed:`, data);
+
+                const signedData = JSON.stringify(data);
                 const signedPtr = tonConnect.allocString(signedData);
 
                 {{{ makeDynCall('vi', 'successCallback') }}}(signedPtr);
@@ -377,9 +379,11 @@ const tonConnectBridge = {
 
             const failedHandler = (event) =>
             {
-                console.warn(`[Uniton Connect] Transaction signing failed:`, event.detail);
+                const data = event.detail;
 
-                const failedData = JSON.stringify(event.detail);
+                console.warn(`[Uniton Connect] Transaction signing failed:`, data);
+
+                const failedData = JSON.stringify(data);
                 const failedPtr = tonConnect.allocString(failedData);
 
                 {{{ makeDynCall('vi', 'errorCallback') }}}(failedPtr);
@@ -416,6 +420,74 @@ const tonConnectBridge = {
                 delete window._tonConnectTransactionSignedHandler;
 
                 console.log(`[Uniton Connect] Unsubsribed from 'transaction-signing-failed' event`);
+            }
+        },
+
+        subscribeToWalletMessageSigned: function(
+            successSign, failedSign)
+        {
+            if (!tonConnect.isInitialized())
+            {
+                return;
+            }
+
+            const signedHandler = (event) =>
+            {
+                const data = event.detail;
+                
+                console.log(`[Uniton Connect] Wallet message signed`, data);
+
+                const signedData = JSON.stringify(data);
+                const signedPtr = tonConnect.allocString(signedData);
+
+                {{{ makeDynCall('vi', 'successSign') }}}(signedPtr);
+
+                _free(signedPtr);
+            };
+
+            const failedHandler = (event) =>
+            {
+                const data = event.detail;
+
+                console.warn(`[Uniton Connect] Failed to sign wallet message`, data);
+
+                const failedData = JSON.stringify(data);
+                const failedPtr = tonConnect.allocString(failedData);
+
+                {{{ makeDynCall('vi', 'failedSign') }}}(failedPtr);
+
+                _free(failedPtr);
+            };
+
+            window.addEventListener('ton-connect-ui-sign-data-request-completed', signedHandler);
+            window.addEventListener('ton-connect-ui-sign-data-request-failed', failedHandler);
+
+            window._tonConnectMessageSignedHandler = signedHandler;
+            window._tonConnectMessageSignFailedHandler = failedHandler;
+
+            console.log('[Uniton Connect] Subscribed to message sign events');
+        },
+
+        unsubscribeFromWalletMessageSigned: function()
+        {
+            if (window._tonConnectMessageSignedHandler)
+            {
+                window.removeEventListener('ton-connect-ui-sign-data-request-completed',
+                    window._tonConnectMessageSignedHandler);
+                
+                delete window._tonConnectMessageSignedHandler;
+
+                console.log(`[Uniton Connect] Unsubscribed from 'wallet-message-signed' event`);
+            }
+
+            if (window._tonConnectMessageSignFailedHandler)
+            {
+                window.removeEventListener('ton-connect-ui-sign-data-request-failed',
+                    window._tonConnectMessageSignFailedHandler);
+
+                delete window._tonConnectMessageSignFailedHandler;
+
+                console.log(`[Uniton Connect] Unsubsribed from 'wallet-message-sign-failed' event`);
             }
         },
 
@@ -755,7 +827,7 @@ const tonConnectBridge = {
         tonConnect.subscribeToStatusChanged(callback);
     },
 
-    UnSubscribeFromStatusChange: function() 
+    UnsubscribeFromStatusChange: function() 
     {
         tonConnect.unsubscribeFromStatusChanged();
     },
@@ -772,9 +844,21 @@ const tonConnectBridge = {
             successCallback, errorCallback);
     },
 
-    UnSubscribeFromTransactionEvents: function()
+    UnsubscribeFromTransactionEvents: function()
     {
         tonConnect.unsubscribeFromTransactionEvents();
+    },
+
+    SubscribeToWalletMessageSigned: function(
+        successCallback, errorCallback)
+    {
+        tonConnect.subscribeToWalletMessageSigned(
+            successCallback, errorCallback);
+    },
+
+    UnsubscribeFromWalletMessageSigned: function()
+    {
+        tonConnect.unsubscribeFromWalletMessageSigned();
     },
 
     SendTonTransaction: function(
