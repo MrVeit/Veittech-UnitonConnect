@@ -437,6 +437,39 @@ namespace UnitonConnect.Core
             OnWalletMessageSignFailed?.Invoke(errorMessage);
         }
 
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnTestWalletMessageSign(string signedPayload)
+        {
+            UnitonConnectLogger.Log($"Claimed signed " +
+                $"message payload: {signedPayload}");
+
+            if (string.IsNullOrEmpty(signedPayload))
+            {
+                UnitonConnectLogger.LogWarning("Failed to sign " +
+                    "wallet message, something wrong...");
+
+                return;
+            }
+
+            var payload = JsonConvert.DeserializeObject<
+                SignedMessageData>(signedPayload);
+
+            OnWalletMessageSigned?.Invoke(payload);
+
+            OnWalletMessageSigned = null;
+        }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnTestWalletMessageSignFail(string errorMessage)
+        {
+            UnitonConnectLogger.LogWarning($"Failed to sign message " +
+                $"in wallet, reason: {errorMessage}");
+
+            OnWalletMessageSignFailed?.Invoke(errorMessage);
+        }
+
+
         #endregion
 
         private static readonly string SUCCESSFUL_DISCONNECT = "200";
@@ -565,11 +598,11 @@ namespace UnitonConnect.Core
 
             var signMessage = JsonConvert.SerializeObject(message);
 
-            SubscribeToWalletMessageSigned(OnWalletMessageSign, OnWalletMessageSignFail);
+            SubscribeToWalletMessageSigned(OnTestWalletMessageSign, OnTestWalletMessageSignFail);
 
             UnitonConnectLogger.Log($"Wallet message for sign: '{signMessage}'");
 
-            SignData(signMessage, (t) => { }, (e) => { });
+            SignData(signMessage, OnWalletMessageSign, OnWalletMessageSignFail);
         }
 
         internal sealed class Utils
