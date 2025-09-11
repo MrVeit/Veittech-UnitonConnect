@@ -94,8 +94,8 @@ namespace UnitonConnect.Core
             string payload, Action<string> transactionSended);
 
         [DllImport("__Internal")]
-        private static extern void SignData(string message,
-            Action<string> messageSigned, Action<string> messageSignFailed);
+        private static extern void SignData(
+            string message, Action<string> messageSignFailed);
 
         #endregion
 
@@ -435,41 +435,9 @@ namespace UnitonConnect.Core
                 $"in wallet, reason: {errorMessage}");
 
             OnWalletMessageSignFailed?.Invoke(errorMessage);
+
+            OnWalletMessageSignFailed = null;
         }
-
-
-        [MonoPInvokeCallback(typeof(Action<string>))]
-        private static void OnTestWalletMessageSign(string signedPayload)
-        {
-            UnitonConnectLogger.Log($"Claimed signed " +
-                $"message payload: {signedPayload}");
-
-            if (string.IsNullOrEmpty(signedPayload))
-            {
-                UnitonConnectLogger.LogWarning("Failed to sign " +
-                    "wallet message, something wrong...");
-
-                return;
-            }
-
-            var payload = JsonConvert.DeserializeObject<
-                SignedMessageData>(signedPayload);
-
-            OnWalletMessageSigned?.Invoke(payload);
-
-            OnWalletMessageSigned = null;
-        }
-
-        [MonoPInvokeCallback(typeof(Action<string>))]
-        private static void OnTestWalletMessageSignFail(string errorMessage)
-        {
-            UnitonConnectLogger.LogWarning($"Failed to sign message " +
-                $"in wallet, reason: {errorMessage}");
-
-            OnWalletMessageSignFailed?.Invoke(errorMessage);
-        }
-
-
         #endregion
 
         private static readonly string SUCCESSFUL_DISCONNECT = "200";
@@ -598,11 +566,11 @@ namespace UnitonConnect.Core
 
             var signMessage = JsonConvert.SerializeObject(message);
 
-            SubscribeToWalletMessageSigned(OnTestWalletMessageSign, OnTestWalletMessageSignFail);
+            SubscribeToWalletMessageSigned(OnWalletMessageSign, OnWalletMessageSignFail);
 
             UnitonConnectLogger.Log($"Wallet message for sign: '{signMessage}'");
 
-            SignData(signMessage, OnWalletMessageSign, OnWalletMessageSignFail);
+            SignData(signMessage, OnWalletMessageSignFail);
         }
 
         internal sealed class Utils

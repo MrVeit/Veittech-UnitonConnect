@@ -8,6 +8,7 @@ using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.DeFi;
 using UnitonConnect.ThirdParty;
 using UnitonConnect.Editor.Common;
+using Newtonsoft.Json;
 
 namespace UnitonConnect.Core
 {
@@ -331,8 +332,11 @@ namespace UnitonConnect.Core
             TonConnectBridge.SignWalletMessage(
                 message, (signedPayload) =>
             {
+                var messageData = JsonConvert.SerializeObject(message);
+                var payloadData = JsonConvert.SerializeObject(signedPayload);
+
                 UnitonConnectLogger.Log($"Wallet message successfully signed, " +
-                    $"message: {message}, signed payload: {signedPayload}");
+                    $"message: {messageData}, signed payload: {payloadData}");
 
                 OnWalletMessageSigned?.Invoke(signedPayload);
             },

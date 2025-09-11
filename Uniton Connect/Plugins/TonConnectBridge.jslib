@@ -143,8 +143,7 @@ const tonConnectBridge = {
             }
         },
 
-        signData: async function(textData,
-            messageSigned, messageSignFailed)
+        signData: async function(textData, messageSignFailed)
         {
             if (!tonConnect.isInitialized())
             {
@@ -229,12 +228,6 @@ const tonConnectBridge = {
                 const signedData = JSON.stringify(signedEntity);
 
                 console.log(`[Uniton Connect] Wallet message signed, result: ${signedData}`);
-
-                const signPtr = tonConnect.allocString(signedData);
-
-                {{{ makeDynCall('vi', 'messageSigned') }}}(signPtr);
-
-                _free(signPtr);
             }
             catch (error)
             {
@@ -433,7 +426,7 @@ const tonConnectBridge = {
 
             const signedHandler = (event) =>
             {
-                const data = event.detail;
+                const data = event.detail.signed_data;
                 
                 console.log(`[Uniton Connect] Wallet message signed`, data);
 
@@ -882,11 +875,9 @@ const tonConnectBridge = {
             targetAddress, gasFee, payload, callback);
     },
 
-    SignData: function(message,
-        messageSigned, messageSignFailed)
+    SignData: function(message, messageSignFailed)
     {
-        tonConnect.signData(message,
-            messageSigned, messageSignFailed);
+        tonConnect.signData(message, messageSignFailed);
     },
 
     GetModalState: function(callback)
