@@ -87,8 +87,8 @@ namespace UnitonConnect.Core
             string payload, Action<string> transactionSended);
 
         [DllImport("__Internal")]
-        private static extern void SignData(
-            string message, Action<string> messageSigned);
+        private static extern void SignData(string message,
+            Action<string> messageSigned, Action<string> messageSignFailed);
 
         #endregion
 
@@ -420,6 +420,16 @@ namespace UnitonConnect.Core
 
             OnWalletMessageSigned = null;
         }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnWalletMessageSignFail(string errorMessage)
+        {
+            UnitonConnectLogger.LogWarning($"Failed to sign message "+
+                "in wallet, reason: {errorMessage}");
+
+            OnWalletMessageSignFailed?.Invoke(errorMessage);
+        }
+
         #endregion
 
         private static readonly string SUCCESSFUL_DISCONNECT = "200";
@@ -453,6 +463,7 @@ namespace UnitonConnect.Core
         private static Action<string> OnAddressParsed;
 
         private static Action<SignedMessageData> OnWalletMessageSigned;
+        private static Action<string> OnWalletMessageSignFailed;
 
         internal static void Init(
             string manifestUrl, Action<bool> sdkInitialized,
@@ -539,15 +550,16 @@ namespace UnitonConnect.Core
         }
 
         internal static void SignWalletMessage(SignMessageData message,
-            Action<SignedMessageData> messageSigned)
+            Action<SignedMessageData> messageSigned, Action<string> messageSignFailed)
         {
             OnWalletMessageSigned = messageSigned;
+            OnWalletMessageSignFailed = messageSignFailed;
 
             var signMessage = JsonConvert.SerializeObject(message);
 
             UnitonConnectLogger.Log($"Wallet message for sign: '{signMessage}'");
 
-            SignData(signMessage, OnWalletMessageSign);
+            SignData(signMessage, OnWalletMessageSign, OnWalletMessageSignFail);
         }
 
         internal sealed class Utils

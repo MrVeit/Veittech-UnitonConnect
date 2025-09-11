@@ -334,16 +334,13 @@ namespace UnitonConnect.Core
                 UnitonConnectLogger.Log($"Wallet message successfully signed, " +
                     $"message: {message}, signed payload: {signedPayload}");
 
-                if (signedPayload == null)
-                {
-                    UnitonConnectLogger.LogError("Failed to sign wallet message, something wrong...");
-
-                    OnWalletMessageSignFailed?.Invoke("Failed sign");
-
-                    return;
-                }
-
                 OnWalletMessageSigned?.Invoke(signedPayload);
+            },
+            (error) =>
+            {
+                UnitonConnectLogger.LogError($"Failed to sign wallet message, reason: {error}");
+
+                OnWalletMessageSignFailed?.Invoke(error);
             });
         }
 

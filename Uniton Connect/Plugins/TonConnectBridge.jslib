@@ -143,13 +143,14 @@ const tonConnectBridge = {
             }
         },
 
-        signData: async function(textData, callback)
+        signData: async function(textData,
+            messageSigned, messageSignFailed)
         {
             if (!tonConnect.isInitialized())
             {
                 const errorPtr = tonConnect.allocString("NOT_INITIALIZED");
             
-                {{{ makeDynCall('vi', 'callback') }}}(errorPtr);
+                {{{ makeDynCall('vi', 'messageSignFailed') }}}(errorPtr);
 
                 _free(errorPtr);
 
@@ -173,7 +174,7 @@ const tonConnectBridge = {
                 console.error(`[Uniton Connect] Failed to parse sign `+
                     `message object, reasonn: ${error}`);
 
-                {{{ makeDynCall('vi', 'callback') }}}(errorPtr);
+                {{{ makeDynCall('vi', 'messageSignFailed') }}}(errorPtr);
 
                 _free(errorPtr);
 
@@ -231,7 +232,7 @@ const tonConnectBridge = {
 
                 const signPtr = tonConnect.allocString(signedData);
 
-                {{{ makeDynCall('vi', 'callback') }}}(signPtr);
+                {{{ makeDynCall('vi', 'messageSigned') }}}(signPtr);
 
                 _free(signPtr);
             }
@@ -240,9 +241,9 @@ const tonConnectBridge = {
                 console.error(`Failed to sign wallet data `+
                     `'${JSON.stringify(message)}', reason: ${error}`);
 
-                const errorPtr = tonConnect.allocString(errorMessage);
+                const errorPtr = tonConnect.allocString(error);
 
-                {{{ makeDynCall('vi', 'callback') }}}(errorPtr);
+                {{{ makeDynCall('vi', 'messageSignFailed') }}}(errorPtr);
 
                 _free(errorPtr);
             }
@@ -796,9 +797,11 @@ const tonConnectBridge = {
             targetAddress, gasFee, payload, callback);
     },
 
-    SignData: function(message, callback)
+    SignData: function(message,
+        messageSigned, messageSignFailed)
     {
-        tonConnect.signData(message, callback);
+        tonConnect.signData(message,
+            messageSigned, messageSignFailed);
     },
 
     GetModalState: function(callback)
