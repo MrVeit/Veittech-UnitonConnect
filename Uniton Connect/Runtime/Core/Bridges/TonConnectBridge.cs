@@ -424,8 +424,8 @@ namespace UnitonConnect.Core
         [MonoPInvokeCallback(typeof(Action<string>))]
         private static void OnWalletMessageSignFail(string errorMessage)
         {
-            UnitonConnectLogger.LogWarning($"Failed to sign message "+
-                "in wallet, reason: {errorMessage}");
+            UnitonConnectLogger.LogWarning($"Failed to sign message " +
+                $"in wallet, reason: {errorMessage}");
 
             OnWalletMessageSignFailed?.Invoke(errorMessage);
         }

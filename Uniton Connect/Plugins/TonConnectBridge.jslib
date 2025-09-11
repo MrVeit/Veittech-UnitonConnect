@@ -214,7 +214,7 @@ const tonConnectBridge = {
             {
                 var invalidTypePtr = tonConnect.allocString("UNSUPPORTED_SIGN_TYPE");
 
-                {{{ makeDynCall('vi', 'callback') }}}(invalidTypePtr);
+                {{{ makeDynCall('vi', 'messageSignFailed') }}}(invalidTypePtr);
 
                 _free(invalidTypePtr);
 
@@ -238,10 +238,11 @@ const tonConnectBridge = {
             }
             catch (error)
             {
-                console.error(`Failed to sign wallet data `+
-                    `'${JSON.stringify(message)}', reason: ${error}`);
+                const errorDescription = UTF8ToString(error);
 
-                const errorPtr = tonConnect.allocString(error);
+                console.error(`Failed to sign wallet data, reason: ${error} || ${errorDescription}`);
+
+                const errorPtr = tonConnect.allocString(errorDescription);
 
                 {{{ makeDynCall('vi', 'messageSignFailed') }}}(errorPtr);
 
