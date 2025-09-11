@@ -11,7 +11,7 @@ namespace UnitonConnect.Core.Data
         }
 
         [JsonProperty("type")]
-        public readonly string Type;
+        public string Type { get; set; }
 
         [JsonProperty("text")]
         public string? Text { get; set; }

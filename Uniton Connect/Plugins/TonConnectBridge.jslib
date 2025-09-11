@@ -220,13 +220,15 @@ const tonConnectBridge = {
                 return;
             }
 
-            try
-            {
-                console.log(`Final wallet message for sign: ${JSON.stringify(signData)}`);
+            console.log(`Final wallet message for sign: ${JSON.stringify(signData)}`);
 
-                await window.tonConnectUI.signData(signData);
-            }
-            catch (error)
+            window.tonConnectUI.signData(signData).then((payload) =>
+            {
+                const signedPayload = JSON.stringify(payload);
+
+                console.log(`[Uniton Connect] Wallet message successfully sign: ${signedPayload}`)
+            })
+            .catch((error) =>
             {
                 const errorDescription = error.message || error;
 
@@ -237,7 +239,7 @@ const tonConnectBridge = {
                 {{{ makeDynCall('vi', 'messageSignFailed') }}}(errorPtr);
 
                 _free(errorPtr);
-            }
+            });
         },
 
         getModalState: function(valueClaimed)

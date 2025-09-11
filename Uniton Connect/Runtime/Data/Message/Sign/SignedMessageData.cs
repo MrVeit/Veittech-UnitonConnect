@@ -17,6 +17,6 @@ namespace UnitonConnect.Core.Data
         public string AppDomain { get; set; }
 
         [JsonProperty("payload")]
-        public object Payload { get; set; }
+        public SignMessageData Payload { get; set; }
     }
 }
