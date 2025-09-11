@@ -8,7 +8,6 @@ using UnitonConnect.Core.Utils.Debugging;
 using UnitonConnect.DeFi;
 using UnitonConnect.ThirdParty;
 using UnitonConnect.Editor.Common;
-using Newtonsoft.Json;
 
 namespace UnitonConnect.Core
 {

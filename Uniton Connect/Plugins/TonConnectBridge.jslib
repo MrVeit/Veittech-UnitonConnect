@@ -69,6 +69,72 @@ const tonConnectBridge = {
             return parsedAddress;
         },
 
+        parseSignMessageSignature: function(
+            walletMessage, messageSignFailed)
+        {
+            let messageEntity = null;
+
+            try
+            {
+                messageEntity = JSON.parse(walletMessage);
+            }
+            catch (error)
+            {
+                var errorPtr = tonConnect.allocString("INVALID_JSON");
+
+                console.error(`[Uniton Connect] Failed to parse sign `+
+                    `message object, reasonn: ${error}`);
+
+                {{{ makeDynCall('vi', 'messageSignFailed') }}}(errorPtr);
+
+                _free(errorPtr);
+
+                return;
+            }
+
+            const signTypes =
+            {
+                text:
+                {
+                    type: "text",
+                    text: messageEntity.text,
+                    network: messageEntity.network,
+                    from: messageEntity.from
+                },
+                binary:
+                {
+                    type: "binary",
+                    bytes: messageEntity.bytes,
+                    network: messageEntity.network,
+                    from: messageEntity.from
+                },
+                cell:
+                {
+                    type: "cell",
+                    schema: messageEntity.schema,
+                    cell: messageEntity.cell,
+                    network: messageEntity.network,
+                    from: messageEntity.from
+                }
+            };
+
+            const currentType = messageEntity.type;
+            const targetSignature = signTypes[currentType];
+
+            if (!targetSignature)
+            {
+                var invalidTypePtr = tonConnect.allocString("UNSUPPORTED_SIGN_TYPE");
+
+                {{{ makeDynCall('vi', 'messageSignFailed') }}}(invalidTypePtr);
+
+                _free(invalidTypePtr);
+
+                return null;
+            }
+
+            return targetSignature;
+        },
+
         init: function(manifestUrl, callback)
         {
             const url = UTF8ToString(manifestUrl);
@@ -156,67 +222,14 @@ const tonConnectBridge = {
                 return;
             }
 
-            var message = UTF8ToString(textData);
+            const message = UTF8ToString(textData);
 
             console.log(`[Uniton Connect] Parsed wallet message for sign: ${message}`);
 
-            let signData = null;
-
-            try
-            {
-                message = JSON.parse(message);
-            }
-            catch (error)
-            {
-                var errorPtr = tonConnect.allocString("INVALID_JSON");
-
-                console.error(`[Uniton Connect] Failed to parse sign `+
-                    `message object, reasonn: ${error}`);
-
-                {{{ makeDynCall('vi', 'messageSignFailed') }}}(errorPtr);
-
-                _free(errorPtr);
-
-                return;
-            }
-
-            if (message.type === "text")
-            {
-                signData = {
-                    type: "text",
-                    text: message.text,
-                    network: message.network,
-                    from: message.from
-                }
-            }
-            else if (message.type === "binary")
-            {
-                signData = {
-                    type: "binary",
-                    bytes: message.bytes,
-                    network: message.network,
-                    from: message.from
-                }
-            }
-            else if (message.type === "cell")
-            {
-                signData = {
-                    type: "cell",
-                    schema: message.schema,
-                    cell: message.cell,
-                    network: message.network,
-                    from: message.from
-                }
-            }
+            const signData = tonConnect.parseSignMessageSignature(message, messageSignFailed);
 
             if (!signData)
             {
-                var invalidTypePtr = tonConnect.allocString("UNSUPPORTED_SIGN_TYPE");
-
-                {{{ makeDynCall('vi', 'messageSignFailed') }}}(invalidTypePtr);
-
-                _free(invalidTypePtr);
-
                 return;
             }
 
