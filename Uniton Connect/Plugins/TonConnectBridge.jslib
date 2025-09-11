@@ -224,10 +224,7 @@ const tonConnectBridge = {
             {
                 console.log(`Final wallet message for sign: ${JSON.stringify(signData)}`);
 
-                const signedEntity = await window.tonConnectUI.signData(signData);
-                const signedData = JSON.stringify(signedEntity);
-
-                console.log(`[Uniton Connect] Wallet message signed, result: ${signedData}`);
+                await window.tonConnectUI.signData(signData);
             }
             catch (error)
             {
