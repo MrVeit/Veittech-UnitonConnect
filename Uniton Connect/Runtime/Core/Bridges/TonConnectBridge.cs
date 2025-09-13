@@ -27,10 +27,19 @@ namespace UnitonConnect.Core
         private static extern void Disconnect(Action<string> onWalletDisconnected);
 
         [DllImport("__Internal")]
+        private static extern string GetModalState(Action<string> onStateClaimed);
+
+        [DllImport("__Internal")]
         private static extern void SubscribeToStatusChange(Action<string> onWalletConnected);
 
         [DllImport("__Internal")]
-        private static extern void UnSubscribeToStatusChange();
+        private static extern void UnsubscribeFromStatusChange();
+
+        [DllImport("__Internal")]
+        private static extern void SubscribeToModalState(Action<string> onModalStateChanged);
+
+        [DllImport("__Internal")]
+        private static extern void UnsubscribeFromModalState();
 
         [DllImport("__Internal")]
         private static extern void SubscribeToRestoreConnection(Action<int> onConnectionRestored);
@@ -40,7 +49,14 @@ namespace UnitonConnect.Core
             Action<string> onTransactionSigned, Action<string> onTransactionSignFailed);
 
         [DllImport("__Internal")]
-        private static extern void UnSubscribeToTransactionEvents();
+        private static extern void UnsubscribeFromTransactionEvents();
+
+        [DllImport("__Internal")]
+        private static extern void SubscribeToWalletMessageSigned(
+            Action<string> onWalletMessageSigned, Action<string> onWalletMessageSignFailed);
+
+        [DllImport("__Internal")]
+        private static extern void UnsubscribeFromWalletMessageSigned();
 
         [DllImport("__Internal")]
         private static extern bool IsUserFriendlyAddress(string address);
@@ -68,12 +84,18 @@ namespace UnitonConnect.Core
             string recipientAddress, Action<string> onTransactionSended);
 
         [DllImport("__Internal")]
-        private static extern void SendTonTransactionWithMessage(string nanoTons,
-            string recipientAddress, string message, Action<string> onTransactionSended);
+        private static extern void SendTonTransactionWithMessage(
+            string nanoTons, string recipientAddress,
+            string message, Action<string> onTransactionSended);
 
         [DllImport("__Internal")]
-        private static extern void SendTransactionWithPayload(string jettonMassterOrNftAddress, 
-            string gasFee, string payload, Action<string> transactionSended);
+        private static extern void SendTransactionWithPayload(
+            string jettonMassterOrNftAddress, string gasFee,
+            string payload, Action<string> transactionSended);
+
+        [DllImport("__Internal")]
+        private static extern void SignData(
+            string message, Action<string> messageSignFailed);
 
         #endregion
 
@@ -92,6 +114,44 @@ namespace UnitonConnect.Core
 
             UnitonConnectLogger.LogError($"Failed to initialize " +
                 $"Uniton Connect sdk, something wrong...");
+        }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnModalStateChange(string stateEntity)
+        {
+            if (string.IsNullOrEmpty(stateEntity))
+            {
+                UnitonConnectLogger.LogWarning("Modal state "+
+                    "not exist, something wrong...");
+
+                return;
+            }
+
+            UnitonConnectLogger.Log($"Current modal state: {stateEntity}");
+
+            var state = JsonConvert.DeserializeObject<ModalStateData>(stateEntity);
+
+            OnModalStateChanged?.Invoke(state);
+        }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnCurrentModalStateClaim(string stateEntity)
+        {
+            if (string.IsNullOrEmpty(stateEntity))
+            {
+                UnitonConnectLogger.LogWarning("Modal state "+
+                    "claim failed, something wrong...");
+
+                return;
+            }
+
+            UnitonConnectLogger.Log($"Current modal state: {stateEntity}");
+
+            var state = JsonConvert.DeserializeObject<ModalStateData>(stateEntity);
+
+            OnModalStateClaimed?.Invoke(state);
+
+            OnModalStateClaimed = null;
         }
 
         [MonoPInvokeCallback(typeof(Action<int>))]
@@ -345,6 +405,35 @@ namespace UnitonConnect.Core
             UnitonConnectLogger.LogError("Failed to convert address " +
                 "to target format, something wrong...");
         }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnWalletMessageSign(string signedPayload)
+        {
+            UnitonConnectLogger.Log($"Claimed signed "+
+                $"message payload: {signedPayload}");
+
+            if (string.IsNullOrEmpty(signedPayload))
+            {
+                UnitonConnectLogger.LogWarning("Failed to sign "+
+                    "wallet message, something wrong...");
+
+                return;
+            }
+
+            var payload = JsonConvert.DeserializeObject<
+                SignedMessageData>(signedPayload);
+
+            OnWalletMessageSigned?.Invoke(payload);
+        }
+
+        [MonoPInvokeCallback(typeof(Action<string>))]
+        private static void OnWalletMessageSignFail(string errorMessage)
+        {
+            UnitonConnectLogger.LogWarning($"Failed to sign message " +
+                $"in wallet, reason: {errorMessage}");
+
+            OnWalletMessageSignFailed?.Invoke(errorMessage); 
+        }
         #endregion
 
         private static readonly string SUCCESSFUL_DISCONNECT = "200";
@@ -356,6 +445,9 @@ namespace UnitonConnect.Core
 
         private static Action<bool> OnModalWindowOpened;
         private static Action<bool> OnModalWindowClosed;
+
+        private static Action<ModalStateData> OnModalStateClaimed;
+        private static Action<ModalStateData> OnModalStateChanged;
 
         private static Action<bool> OnWalletDisconnected;
         private static Action<bool> OnWalletConnectionRestored;
@@ -374,17 +466,17 @@ namespace UnitonConnect.Core
 
         private static Action<string> OnAddressParsed;
 
-        internal static void UnSubscribe()
-        {
-            UnSubscribeToStatusChange();
-            UnSubscribeToTransactionEvents();
-        }
+        private static Action<SignedMessageData> OnWalletMessageSigned;
+        private static Action<string> OnWalletMessageSignFailed;
 
-        internal static void Init(string manifestUrl, 
-            Action<bool> sdkInitialized, Action<WalletConfig> walletConnectionDetected,
-            Action<string> walletConnectionDetectFailed, Action<bool> connectionRestored)
+        internal static void Init(
+            string manifestUrl, Action<bool> sdkInitialized,
+            Action<WalletConfig> walletConnectionDetected,
+            Action<string> walletConnectionDetectFailed,
+            Action<bool> connectionRestored)
         {
             OnInitialized = sdkInitialized;
+
             OnWalletConnectionRestored = connectionRestored;
             OnWalletSuccessfullyConnected = walletConnectionDetected;
             OnWalletConnectFailed = walletConnectionDetectFailed;
@@ -394,6 +486,16 @@ namespace UnitonConnect.Core
 
             SubscribeToRestoreConnection(OnWalletConnectionRestore);
             SubscribeToStatusChange(OnWalletConnect);
+        }
+
+        internal static void Dispose()
+        {
+            UnsubscribeFromStatusChange();
+            UnsubscribeFromTransactionEvents();
+            UnsubscribeFromModalState();
+            UnsubscribeFromTransactionEvents();
+
+            OnModalStateChanged = null;
         }
 
         internal static void Connect(
@@ -415,9 +517,24 @@ namespace UnitonConnect.Core
             Disconnect(OnWalletDisconnect);
         }
 
-        internal static void SendTon(string recipientAddress, 
-            decimal tonAmount, string message, Action<string> transactionSended,
-            Action<string> transactionSendFailed)
+        internal static void InitModalState(
+            Action<ModalStateData> modalInitialized)
+        {
+            OnModalStateChanged = modalInitialized;
+
+            SubscribeToModalState(OnModalStateChange);
+        }
+
+        internal static void LoadModalState(
+            Action<ModalStateData> modalStateChanged)
+        {
+            OnModalStateClaimed = modalStateChanged;
+
+            GetModalState(OnCurrentModalStateClaim);
+        }
+
+        internal static void SendTon(string recipientAddress, decimal tonAmount,
+            string message, Action<string> transactionSended, Action<string> transactionSendFailed)
         {
             SendTonByParams(recipientAddress, tonAmount, 
                 message, transactionSended, transactionSendFailed);
@@ -437,6 +554,21 @@ namespace UnitonConnect.Core
                 transactionSended, transactionSendFailed);
         }
 
+        internal static void SignWalletMessage(SignMessageData message,
+            Action<SignedMessageData> messageSigned, Action<string> messageSignFailed)
+        {
+            OnWalletMessageSigned = messageSigned;
+            OnWalletMessageSignFailed = messageSignFailed;
+
+            var signMessage = JsonConvert.SerializeObject(message);
+
+            SubscribeToWalletMessageSigned(OnWalletMessageSign, OnWalletMessageSignFail);
+
+            UnitonConnectLogger.Log($"Wallet message for sign: '{signMessage}'");
+
+            SignData(signMessage, OnWalletMessageSignFail);
+        }
+
         internal sealed class Utils
         {
             internal sealed class Address
@@ -448,7 +580,8 @@ namespace UnitonConnect.Core
                         var message = "Address to check the format against " +
                             "the 'User Friendly' type must not be empty or equal to null";
 
-                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                        throw new NullReferenceException(
+                            $"{UnitonConnectLogger.PREFIX} {message}");
                     }
 
                     return IsUserFriendlyAddress(address);
@@ -461,7 +594,8 @@ namespace UnitonConnect.Core
                         var message = "Address to check the format against " +
                             "the 'Bounceable' type must not be empty or equal to null";
 
-                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                        throw new NullReferenceException(
+                            $"{UnitonConnectLogger.PREFIX} {message}");
                     }
 
                     return IsBounceableAddress(address);
@@ -474,7 +608,8 @@ namespace UnitonConnect.Core
                         var message = "Address to check the format against " +
                             "the 'Test Only' type must not be empty or equal to null";
 
-                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                        throw new NullReferenceException(
+                            $"{UnitonConnectLogger.PREFIX} {message}");
                     }
 
                     return IsTestnetAddress(address);
@@ -488,8 +623,11 @@ namespace UnitonConnect.Core
                         var message = "Address to convert to 'Bounceable' " +
                             "format must not be empty or equal to null";
 
-                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                        throw new NullReferenceException(
+                            $"{UnitonConnectLogger.PREFIX} {message}");
                     }
+
+                    OnAddressParsed = addressConverted;
 
                     ToBounceableAddress(address, OnAddressParse);
                 }
@@ -502,7 +640,8 @@ namespace UnitonConnect.Core
                         var message = "Address to convert to 'Non Bounceable' " +
                             "format must not be empty or equal to null";
 
-                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                        throw new NullReferenceException(
+                            $"{UnitonConnectLogger.PREFIX} {message}");
                     }
 
                     OnAddressParsed = addressConverted;
@@ -518,7 +657,8 @@ namespace UnitonConnect.Core
                         var message = "Address to convert to 'Hex/Raw' " +
                             "format must not be empty or equal to null";
 
-                        throw new NullReferenceException($"{UnitonConnectLogger.PREFIX} {message}");
+                        throw new NullReferenceException(
+                            $"{UnitonConnectLogger.PREFIX} {message}");
                     }
 
                     OnAddressParsed = addressConverted;
@@ -581,12 +721,7 @@ namespace UnitonConnect.Core
 
         private static bool IsSuccess(int statusCode)
         {
-            if (statusCode == 1)
-            {
-                return true;
-            }
-
-            return false;
+            return statusCode == 1;
         }
     }
 }

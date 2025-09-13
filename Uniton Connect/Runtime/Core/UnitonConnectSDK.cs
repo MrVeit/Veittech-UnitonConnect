@@ -50,7 +50,7 @@ namespace UnitonConnect.Core
         [Tooltip("Turn it off if you want to do your own cdk initialization in your scripts")]
         [SerializeField, Space] private bool _initializeOnAwake;
         [Tooltip("Delay before requesting in blockchain to retrieve data about the sent transaction")]
-        [SerializeField, Space, Range(15f, 500f)] private float _confirmDelay = 15f;
+        [SerializeField, Space, Range(10f, 500f)] private float _confirmDelay = 10f;
         [Tooltip("List of available tokens for transactions/reading balances and more")]
         [SerializeField, Space] private JettonConfigsStorage _jettonStorage;
 
@@ -61,6 +61,10 @@ namespace UnitonConnect.Core
 
         public UserWallet Wallet { get; private set; }
         public UserAssets Assets { get; private set; }
+        public WalletModal Modal { get; private set; }
+
+        public SignMessageData LastMessageForSign { get; private set; }
+        public SignedMessageData LastSignedMessage { get; private set; }
 
         public decimal TonBalance { get; private set; }
 
@@ -120,6 +124,21 @@ namespace UnitonConnect.Core
         /// </summary>
         public event IUnitonConnectTonCallbacks.OnTonBalanceClaim OnTonBalanceClaimed;
 
+        /// <summary>
+        /// Callback to receive the result of signing a message from the wallet
+        /// </summary>
+        public event IUnitonConnectWalletCallbacks.OnWalletMessageSign OnWalletMessageSigned;
+
+        /// <summary>
+        /// Callback about unsuccessful signing of a message in the wallet under one of the reasons
+        /// </summary>
+        public event IUnitonConnectWalletCallbacks.OnWalletMessageSignFail OnWalletMessageSignFailed;
+
+        /// <summary>
+        /// Callback about the received verification status of the wallet payload after signing the message
+        /// </summary>
+        public event IUnitonConnectWalletCallbacks.OnWalletMessageVerify OnWalletMessageVerified;
+
         private void Awake()
         {
             CreateInstance();
@@ -136,7 +155,7 @@ namespace UnitonConnect.Core
         {
             if (IsSupporedPlatform())
             {
-                TonConnectBridge.UnSubscribe();
+                TonConnectBridge.Dispose();
             }
         }
 
@@ -163,9 +182,8 @@ namespace UnitonConnect.Core
 
             if (IsSupporedPlatform())
             {
-                TonConnectBridge.Init(dAppManifestLink,
-                    OnInitialize, OnConnect, 
-                    OnConnectFail, OnConnectRestore);
+                TonConnectBridge.Init(dAppManifestLink, OnInitialize,
+                    OnConnect, OnConnectFail, OnConnectRestore);
             }
 
             UnitonConnectLogger.Log("Native SDK successfully initialized");
@@ -276,16 +294,45 @@ namespace UnitonConnect.Core
 
             if (WalletConnectUtils.IsAddressesMatch(recipientToHex))
             {
-                UnitonConnectLogger.LogWarning("Transaction canceled because the recipient and sender addresses match");
+                UnitonConnectLogger.LogWarning("Transaction canceled because "+
+                    "the recipient and sender addresses match");
 
                 return;
             }
 
             UnitonConnectLogger.Log($"Created a request to send a TON" +
-                    $" to the recipient: {recipientAddress} in amount {amount}");
+                $" to the recipient: {recipientAddress} in amount {amount}");
 
-            TonConnectBridge.SendTon(recipientAddress,
-                amount, message, OnSendingTonFinish, OnSendingTonFail);
+            TonConnectBridge.SendTon(recipientAddress, amount,
+                message, OnSendingTonFinish, OnSendingTonFail);
+        }
+
+        /// <summary>
+        /// Signs a message on the connected wallet to verify that it is actually connected to the dApp.
+        /// </summary>
+        public void SignData(SignMessageData message)
+        {
+            if (!IsSupporedPlatform())
+            {
+                return;
+            }
+
+            if (!_isInitialized)
+            {
+                UnitonConnectLogger.LogWarning("Sdk is not initialized, try again later");
+
+                return;
+            }
+
+            if (!_isWalletConnected)
+            {
+                UnitonConnectLogger.LogWarning("Wallet is not connected, do so and try again later");
+
+                return;
+            }
+
+            TonConnectBridge.SignWalletMessage(message,
+                OnWalletMessageSign, OnWalletMessageSigFail);
         }
 
         private void CreateInstance()
@@ -303,11 +350,44 @@ namespace UnitonConnect.Core
 
                 if (_instance != null)
                 {
-                    UnitonConnectLogger.LogWarning($"Another instance is detected on the scene, running delete...");
+                    UnitonConnectLogger.LogWarning($"Another instance is "+
+                        "detected on the scene, running delete...");
 
                     Destroy(gameObject);
                 }
             }
+        }
+
+        private IEnumerator VerifySignedPayload(
+            SignedMessageData signedPayload)
+        {
+            var signedMessagePayload = new MessagePayloadVerificationData()
+            {
+                Signature = signedPayload.Signature,
+                Timestamp = signedPayload.Timestamp,
+                AppDomain = signedPayload.AppDomain,
+                MessagePayload = signedPayload.Payload,
+                WalletAddress = signedPayload.Address,
+                WalletPublicKey = Wallet.PublicKey,
+                WalletStateInit = Wallet.StateInit
+            };
+
+            yield return TonCenterApiBridge.VerifySignedPayload(
+                signedMessagePayload, (verifyStatus) =>
+            {
+                if (verifyStatus == null)
+                {
+                    UnitonConnectLogger.LogWarning("Signed message " +
+                        "verification process failed");
+
+                    OnWalletMessageVerified?.Invoke(false);
+                }
+
+                UnitonConnectLogger.Log($"Signed message verification process " +
+                    $"finished with result: {verifyStatus.IsVerified}");
+
+                OnWalletMessageVerified?.Invoke(verifyStatus.IsVerified);
+            });
         }
 
         private IEnumerator ConfirmTonTransaction(
@@ -317,7 +397,7 @@ namespace UnitonConnect.Core
             {
                 if (_confirmDelay <= 0)
                 {
-                    _confirmDelay = 15f;
+                    _confirmDelay = 10f;
                 }
 
                 UnitonConnectLogger.LogWarning($"Enabled a delay of {_confirmDelay} " +
@@ -366,6 +446,8 @@ namespace UnitonConnect.Core
 
         private void OnInitialize(bool isSuccess)
         {
+            Modal = new WalletModal();
+
             OnInitiliazed?.Invoke(isSuccess);
         }
 
@@ -429,6 +511,26 @@ namespace UnitonConnect.Core
         private void OnSendingTonConfirm(SuccessTransactionData transactionData)
         {
             OnTonTransactionConfirmed?.Invoke(transactionData);
+        }
+
+        private void OnWalletMessageSign(SignedMessageData signedPayload)
+        {
+            LastMessageForSign = signedPayload.Payload;
+            LastSignedMessage = signedPayload;
+
+            UnitonConnectLogger.Log($"Wallet message successfully signed, message: "+
+                $"{LastMessageForSign.Type}, signed payload: {signedPayload.Signature}");
+
+            OnWalletMessageSigned?.Invoke(signedPayload);
+
+            StartCoroutine(VerifySignedPayload(LastSignedMessage));
+        }
+
+        private void OnWalletMessageSigFail(string error)
+        {
+            UnitonConnectLogger.LogError($"Failed to sign wallet message, reason: {error}");
+
+            OnWalletMessageSignFailed?.Invoke(error);
         }
     }
 }

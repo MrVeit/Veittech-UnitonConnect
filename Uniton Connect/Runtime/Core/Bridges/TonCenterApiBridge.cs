@@ -1,4 +1,5 @@
 using System;
+using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.Networking;
@@ -14,8 +15,9 @@ namespace UnitonConnect.ThirdParty
     {
         internal sealed class Jetton
         {
-            internal static IEnumerator GetJettonWalletByOwner(string tonAddress,
-                string jettonMasterAddress, Action<LoadedJettonWalletData> jettonWalletsLoaded)
+            internal static IEnumerator GetJettonWalletByOwner(
+                string tonAddress, string jettonMasterAddress,
+                Action<LoadedJettonWalletData> jettonWalletsLoaded)
             {
                 var dAppData = ProjectStorageConsts.GetRuntimeAppStorage();
 
@@ -137,19 +139,85 @@ namespace UnitonConnect.ThirdParty
                 }
             }
 
-            internal static string GetJettonWalletUlr(string apiUrl,
+            private static string GetJettonWalletUlr(string apiUrl,
                 string tonAddress, string jettonMaster)
             {
                 return $"{apiUrl}/api/uniton-connect/v1/account/{tonAddress}/" +
                     $"assets/jetton/{jettonMaster}/limit/1/offset/0/wallet";
             }
 
-            internal static string GetLastJettonTransactionsUrl(string apiUrl,
+            private static string GetLastJettonTransactionsUrl(string apiUrl,
                 string ownerAddress, string directionTag, int limit, int offset)
             {
                 return $"{apiUrl}/api/uniton-connect/v1/account/{ownerAddress}/" +
                     $"assets/jetton/transactions/{directionTag}/limit/{limit}/offset/{offset}";
             }
+        }
+
+        internal static IEnumerator VerifySignedPayload(
+            MessagePayloadVerificationData payload,
+            Action<VerifiedMessagePayloadData> payloadVerified)
+        {
+            var dAppData = ProjectStorageConsts.GetRuntimeAppStorage();
+
+            var apiUrl = dAppData.Data.ServerApiLink;
+
+            if (string.IsNullOrEmpty(apiUrl))
+            {
+                UnitonConnectLogger.LogError("Uniton Connect backend is not connected, " +
+                    "the operation of downloading the last successful token transactions is not available");
+
+                payloadVerified?.Invoke(null);
+
+                yield break;
+            }
+
+            var jsonData = JsonConvert.SerializeObject(payload);
+            var targetUrl = GetSignedDataVerifyUrl(apiUrl);
+
+            UnitonConnectLogger.Log($"Signed message payload for verify: {jsonData}");
+
+            using (UnityWebRequest request = new(targetUrl, UnityWebRequest.kHttpVerbPUT))
+            {
+                var bodyRaw = Encoding.UTF8.GetBytes(jsonData);
+
+                request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+                request.downloadHandler = new DownloadHandlerBuffer();
+
+                WebRequestUtils.SetRequestHeader(request,
+                    WebRequestUtils.HEADER_CONTENT_TYPE,
+                    WebRequestUtils.HEADER_VALUE_CONTENT_TYPE_JSON
+                );
+
+                yield return request.SendWebRequest();
+
+                var responseResult = request.downloadHandler.text;
+
+                if (request.result != WebRequestUtils.SUCCESS)
+                {
+                    var errorData = JsonConvert.DeserializeObject<
+                        ServerResponseData>(responseResult);
+
+                    UnitonConnectLogger.LogError($"Failed to verify signed "+
+                        "wallet message, reason: {errorData.Message}");
+
+                    payloadVerified?.Invoke(null);
+
+                    yield break;
+                }
+
+                var loadedResult = JsonConvert.DeserializeObject<
+                    VerifiedMessagePayloadData>(responseResult);
+
+                payloadVerified?.Invoke(loadedResult);
+
+                yield break;
+            }
+        }
+
+        private static string GetSignedDataVerifyUrl(string apiUrl)
+        {
+            return $"{apiUrl}/api/uniton-connect/v1/account/sign-data/payload/verify";
         }
     }
 }

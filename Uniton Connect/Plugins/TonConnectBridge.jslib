@@ -21,32 +21,6 @@ const tonConnectBridge = {
             return allocate(intArrayFromString(stringData), 'i8', ALLOC_NORMAL);
         },
 
-        sendDataToUnity: function(callId, callback, dataPtr)
-        {
-            if (typeof wasmTable !== 'undefined')
-            {
-                wasmTable.get(callback).apply(null, dataPtr);
-
-                return;
-            }
-
-            if (typeof dynCall !== 'undefined')
-            {
-                dynCall(callId, callback, dataPtr);
-            }
-            else
-            {
-                return;
-            }
-
-            if (callId === 'v')
-            {
-                return;
-            }
-
-            _free(dataPtr);   
-        },
-
         isAvailableTonConnect: function()
         {
             if (!window.tonConnectUI)
@@ -93,6 +67,72 @@ const tonConnectBridge = {
             const parsedAddress = new window.tonWeb.utils.Address(correctAddress);
 
             return parsedAddress;
+        },
+
+        parseSignMessageSignature: function(
+            walletMessage, messageSignFailed)
+        {
+            let messageEntity = null;
+
+            try
+            {
+                messageEntity = JSON.parse(walletMessage);
+            }
+            catch (error)
+            {
+                var errorPtr = tonConnect.allocString("INVALID_JSON");
+
+                console.error(`[Uniton Connect] Failed to parse sign `+
+                    `message object, reasonn: ${error}`);
+
+                {{{ makeDynCall('vi', 'messageSignFailed') }}}(errorPtr);
+
+                _free(errorPtr);
+
+                return;
+            }
+
+            const signTypes =
+            {
+                text:
+                {
+                    type: "text",
+                    text: messageEntity.text,
+                    network: messageEntity.network,
+                    from: messageEntity.from
+                },
+                binary:
+                {
+                    type: "binary",
+                    bytes: messageEntity.bytes,
+                    network: messageEntity.network,
+                    from: messageEntity.from
+                },
+                cell:
+                {
+                    type: "cell",
+                    schema: messageEntity.schema,
+                    cell: messageEntity.cell,
+                    network: messageEntity.network,
+                    from: messageEntity.from
+                }
+            };
+
+            const currentType = messageEntity.type;
+            const targetSignature = signTypes[currentType];
+
+            if (!targetSignature)
+            {
+                var invalidTypePtr = tonConnect.allocString("UNSUPPORTED_SIGN_TYPE");
+
+                {{{ makeDynCall('vi', 'messageSignFailed') }}}(invalidTypePtr);
+
+                _free(invalidTypePtr);
+
+                return null;
+            }
+
+            return targetSignature;
         },
 
         init: function(manifestUrl, callback)
@@ -169,6 +209,68 @@ const tonConnectBridge = {
             }
         },
 
+        signData: async function(textData, messageSignFailed)
+        {
+            if (!tonConnect.isInitialized())
+            {
+                const errorPtr = tonConnect.allocString("NOT_INITIALIZED");
+            
+                {{{ makeDynCall('vi', 'messageSignFailed') }}}(errorPtr);
+
+                _free(errorPtr);
+
+                return;
+            }
+
+            const message = UTF8ToString(textData);
+
+            console.log(`[Uniton Connect] Parsed wallet message for sign: ${message}`);
+
+            const signData = tonConnect.parseSignMessageSignature(message, messageSignFailed);
+
+            if (!signData)
+            {
+                return;
+            }
+
+            console.log(`Final wallet message for sign: ${JSON.stringify(signData)}`);
+
+            try
+            {
+                const payload = await window.tonConnectUI.signData(signData);
+
+                const signedPayload = JSON.stringify(payload);
+
+                console.log(`[Uniton Connect] Wallet message successfully sign, payload: ${signedPayload}`)
+            }
+            catch (error)
+            {
+                const errorDescription = error.message || error;
+
+                console.error(`Failed to sign wallet data, reason: ${errorDescription}`);
+
+                const errorPtr = tonConnect.allocString(errorDescription);
+
+                {{{ makeDynCall('vi', 'messageSignFailed') }}}(errorPtr);
+
+                _free(errorPtr);
+            }
+        },
+
+        getModalState: function(valueClaimed)
+        {
+            const stateEntity = window.tonConnectUI.modalState;
+            
+            const state = JSON.stringify(stateEntity);
+            const statePtr = tonConnect.allocString(state);
+
+            console.log(`[Uniton Connect] Current modal state: ${state}`);
+
+            {{{ makeDynCall('vi', 'valueClaimed') }}}(statePtr);
+
+            _free(statePtr);
+        },
+
         subscribeToStatusChanged: function(callback)
         {
             if (!tonConnect.isInitialized())
@@ -176,16 +278,15 @@ const tonConnectBridge = {
                 return;
             }
 
-            window.unsubscribeToStatusChange = window
-                .tonConnectUI.onStatusChange((wallet) =>
+            window.unsubscribeFromStatusChange = window.
+                tonConnectUI.onStatusChange((wallet) =>
             {
                 if (wallet)
                 {
                     const walletInfo = JSON.stringify(window.tonConnectUI.account);
                     const walletPtr = tonConnect.allocString(walletInfo);
 
-                    console.log(`[Uniton Connect] Parsed account: ` +
-                        `${JSON.stringify(window.tonConnectUI.account)}`);
+                    console.log(`[Uniton Connect] Parsed wallet account: ${walletInfo}`);
     
                     {{{ makeDynCall('vi', 'callback') }}}(walletPtr);
 
@@ -202,13 +303,45 @@ const tonConnectBridge = {
             });
         },
 
-        unsubscribeToStatusChanged: function()
+        unsubscribeFromStatusChanged: function()
         {
-            if (window.unsubscribeToStatusChange)
+            if (window.unsubscribeFromStatusChange)
             {
-                window.unsubscribeToStatusChange();
+                window.unsubscribeFromStatusChange();
 
-                window.unsubscribeToStatusChange = null;
+                window.unsubscribeFromStatusChange = null;
+
+                console.log(`[Uniton Connect] Unsubscribed from 'wallet-status-changed' event`);
+            }
+        },
+
+        subscribeToModalState: function(modalStateCallback)
+        {
+            window.unsubsribeFromModalState = window.
+                tonConnectUI.onModalStateChange((state) =>
+            {
+                const stateInfo = JSON.stringify(state);
+                const statePtr = tonConnect.allocString(stateInfo);
+
+                console.log(`[Uniton Connect] Claimed 'modal-state-changed' `+
+                    `event data, status: ${stateInfo}`);
+
+                {{{ makeDynCall('vi', 'modalStateCallback') }}}(statePtr);
+
+                _free(statePtr);
+
+            });
+        },
+
+        unsubscribeFromModalState: function()
+        {
+            if (window.unsubsribeFromModalState)
+            {
+                window.unsubsribeFromModalState();
+
+                window.unsubsribeFromModalState = null;
+
+                console.log(`[Uniton Connect] Unsubscribed from 'modal-state-changed' event`);
             }
         },
 
@@ -239,9 +372,11 @@ const tonConnectBridge = {
         {
             const signedHandler = (event) =>
             {
-                console.log(`[Uniton Connect] Transaction signed:`, event.detail);
+                const data = event.detail;
 
-                const signedData = JSON.stringify(event.detail);
+                console.log(`[Uniton Connect] Transaction signed:`, data);
+
+                const signedData = JSON.stringify(data);
                 const signedPtr = tonConnect.allocString(signedData);
 
                 {{{ makeDynCall('vi', 'successCallback') }}}(signedPtr);
@@ -251,9 +386,11 @@ const tonConnectBridge = {
 
             const failedHandler = (event) =>
             {
-                console.warn(`[Uniton Connect] Transaction signing failed:`, event.detail);
+                const data = event.detail;
 
-                const failedData = JSON.stringify(event.detail);
+                console.warn(`[Uniton Connect] Transaction signing failed:`, data);
+
+                const failedData = JSON.stringify(data);
                 const failedPtr = tonConnect.allocString(failedData);
 
                 {{{ makeDynCall('vi', 'errorCallback') }}}(failedPtr);
@@ -270,7 +407,7 @@ const tonConnectBridge = {
             console.log('[Uniton Connect] Subscribed to transaction events');
         },
 
-        unsubscribeToTransactionEvents: function()
+        unsubscribeFromTransactionEvents: function()
         {
             if (window._tonConnectTransactionSignedHandler)
             {
@@ -290,6 +427,74 @@ const tonConnectBridge = {
                 delete window._tonConnectTransactionSignedHandler;
 
                 console.log(`[Uniton Connect] Unsubsribed from 'transaction-signing-failed' event`);
+            }
+        },
+
+        subscribeToWalletMessageSigned: function(
+            successSign, failedSign)
+        {
+            if (!tonConnect.isInitialized())
+            {
+                return;
+            }
+
+            const signedHandler = (event) =>
+            {
+                const data = event.detail.signed_data;
+                
+                console.log(`[Uniton Connect] Wallet message signed`, data);
+
+                const signedData = JSON.stringify(data);
+                const signedPtr = tonConnect.allocString(signedData);
+
+                {{{ makeDynCall('vi', 'successSign') }}}(signedPtr);
+
+                _free(signedPtr);
+            };
+
+            const failedHandler = (event) =>
+            {
+                const data = event.detail;
+
+                console.warn(`[Uniton Connect] Failed to sign wallet message`, data);
+
+                const failedData = JSON.stringify(data);
+                const failedPtr = tonConnect.allocString(failedData);
+
+                {{{ makeDynCall('vi', 'failedSign') }}}(failedPtr);
+
+                _free(failedPtr);
+            };
+
+            window.addEventListener('ton-connect-ui-sign-data-request-completed', signedHandler);
+            window.addEventListener('ton-connect-ui-sign-data-request-failed', failedHandler);
+
+            window._tonConnectMessageSignedHandler = signedHandler;
+            window._tonConnectMessageSignFailedHandler = failedHandler;
+
+            console.log('[Uniton Connect] Subscribed to message sign events');
+        },
+
+        unsubscribeFromWalletMessageSigned: function()
+        {
+            if (window._tonConnectMessageSignedHandler)
+            {
+                window.removeEventListener('ton-connect-ui-sign-data-request-completed',
+                    window._tonConnectMessageSignedHandler);
+                
+                delete window._tonConnectMessageSignedHandler;
+
+                console.log(`[Uniton Connect] Unsubscribed from 'wallet-message-signed' event`);
+            }
+
+            if (window._tonConnectMessageSignFailedHandler)
+            {
+                window.removeEventListener('ton-connect-ui-sign-data-request-failed',
+                    window._tonConnectMessageSignFailedHandler);
+
+                delete window._tonConnectMessageSignFailedHandler;
+
+                console.log(`[Uniton Connect] Unsubsribed from 'wallet-message-sign-failed' event`);
             }
         },
 
@@ -340,8 +545,8 @@ const tonConnectBridge = {
             return transactionData;
         },
 
-        sendAsssetsTransaction: async function(
-            itemAddress, gasFeeAmount, payload, callback)
+        sendAsssetsTransaction: async function(itemAddress,
+            gasFeeAmount, payload, callback)
         {
             if (!tonConnect.isInitialized())
             {
@@ -422,8 +627,8 @@ const tonConnectBridge = {
             }
         },
 
-        sendTonTransaction: async function(
-            nanoInTon, recipientAddress, message, callback) 
+        sendTonTransaction: async function(nanoInTon,
+            recipientAddress, message, callback) 
         {
             if (!tonConnect.isInitialized()) 
             {
@@ -614,14 +819,24 @@ const tonConnectBridge = {
         tonConnect.disconnect(callback);
     },
 
+    SubscribeToModalState: function(callback)
+    {
+        tonConnect.subscribeToModalState(callback);
+    },
+
+    UnsubscribeFromModalState: function()
+    {
+        tonConnect.unsubscribeFromModalState();
+    },
+
     SubscribeToStatusChange: function(callback)
     {
         tonConnect.subscribeToStatusChanged(callback);
     },
 
-    UnSubscribeToStatusChange: function() 
+    UnsubscribeFromStatusChange: function() 
     {
-        tonConnect.unsubscribeToStatusChanged();
+        tonConnect.unsubscribeFromStatusChanged();
     },
 
     SubscribeToRestoreConnection: function(callback)
@@ -629,15 +844,28 @@ const tonConnectBridge = {
         tonConnect.subscribeToRestoreConnection(callback);
     },
 
-    SubscribeToTransactionEvents: function(successCallback, errorCallback)
+    SubscribeToTransactionEvents: function(
+        successCallback, errorCallback)
     {
         tonConnect.subscribeToTransactionEvents(
             successCallback, errorCallback);
     },
 
-    UnSubscribeToTransactionEvents: function()
+    UnsubscribeFromTransactionEvents: function()
     {
-        tonConnect.unsubscribeToTransactionEvents();
+        tonConnect.unsubscribeFromTransactionEvents();
+    },
+
+    SubscribeToWalletMessageSigned: function(
+        successCallback, errorCallback)
+    {
+        tonConnect.subscribeToWalletMessageSigned(
+            successCallback, errorCallback);
+    },
+
+    UnsubscribeFromWalletMessageSigned: function()
+    {
+        tonConnect.unsubscribeFromWalletMessageSigned();
     },
 
     SendTonTransaction: function(
@@ -647,33 +875,43 @@ const tonConnectBridge = {
             recipientAddress, "CLEAR", callback);
     },
 
-    SendTonTransactionWithMessage: function(
-        nanoInTon, recipientAddress, message, callback)
+    SendTonTransactionWithMessage: function(nanoInTon,
+        recipientAddress, message, callback)
     {
         tonConnect.sendTonTransaction(nanoInTon,
             recipientAddress, message, callback);
     },
 
-    SendTransactionWithPayload: function(
-        targetAddress, gasFee, payload, callback)
+    SendTransactionWithPayload: function(targetAddress,
+        gasFee, payload, callback)
     {
         tonConnect.sendAsssetsTransaction(
             targetAddress, gasFee, payload, callback);
     },
 
+    SignData: function(message, messageSignFailed)
+    {
+        tonConnect.signData(message, messageSignFailed);
+    },
+
+    GetModalState: function(callback)
+    {
+        tonConnect.getModalState(callback);
+    },
+
     ToBounceableAddress: function(address, valueClaimed)
     {
-        return tonConnect.toBounceable(address, valueClaimed);
+        tonConnect.toBounceable(address, valueClaimed);
     },
 
     ToNonBounceableAddress: function(address, valueClaimed)
     {
-        return tonConnect.toNonBounceable(address, valueClaimed);
+        tonConnect.toNonBounceable(address, valueClaimed);
     },
 
     ToHexAddress: function(address, valueClaimed)
     {
-        return tonConnect.toHex(address, valueClaimed);
+        tonConnect.toHex(address, valueClaimed);
     },
 
     IsUserFriendlyAddress: function(address)

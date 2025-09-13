@@ -26,6 +26,8 @@ This reflects the functionality already added to the library as well as that pla
 - [x] Sending Toncoin between wallets,
 - [x] Sending Jettons between wallets,
 - [x] Sending NFT items between wallets,
+- [x] Signing message with payload in wallets,
+- [x] Verifying the payload of a signed message,
 - [ ] Swapping Jettons to Toncoin and reverse,
 - [ ] Burning NFT items on a wallet,
 - [ ] Loading last successful transactions with Toncoin,
@@ -109,16 +111,18 @@ You can test the SDK without installation on a demo app [in your browser](https:
 
 # SDK Interaction Types & Available Features
 
-|                Features                  | Client-Side  | Client+Server-Side |
-| ---------------------------------------- | :----------: | :----------------: |
-| **Connecting TON Wallets**               | ✔️          | ✔️                 |
-| **Reading Toncoin balance**              | ✔️          | ✔️                 |
-| **Reading Jettons balance**              | ❌          | ✔️                 |
-| **Reading NFT collections**              | ❌          | ✔️                 |
-| **Sending Toncoin between wallets**      | ✔️          | ✔️                 |
-| **Sending Jettons between wallets**      | ❌          | ✔️                 |
-| **Sending NFTs between wallets**         | ❌          | ✔️                 |
-| **Loading Jettons transactions history** | ❌          | ✔️                 |
+|                Features                       | Client-Side  | Client+Server-Side |
+| --------------------------------------------- | :----------: | :----------------: |
+| **Connecting TON Wallets**                    | ✔️          | ✔️                 |
+| **Reading Toncoin balance**                   | ✔️          | ✔️                 |
+| **Reading Jettons balance**                   | ❌          | ✔️                 |
+| **Reading NFT collections**                   | ❌          | ✔️                 |
+| **Sending Toncoin between wallets**           | ✔️          | ✔️                 |
+| **Sending Jettons between wallets**           | ❌          | ✔️                 |
+| **Sending NFTs between wallets**              | ❌          | ✔️                 |
+| **Loading Jettons transactions history**      | ❌          | ✔️                 |
+| **Signing message with payload**              | ✔️          | ✔️                 |
+| **Verifying the payload of a signed message** | ❌          | ✔️                 |
 
 <sub>✔️ Supported</sub> &nbsp; <sub>❌ Not Supported</sub> &nbsp; <sub>⚠️ In progress</sub>
 
@@ -915,6 +919,178 @@ _jettonWallet.GetLastTransactions(TransactionTypes.Received, 10,
 
 **IMPORTANT:** The `QueryId` property is unique and is generated each time a payload is created for a transaction token. Thus, in addition to additional data in the form of `transaction hash`, `attached message`, it is also possible to check the successful sending status by it too.
 
+### Sign data in wallet
+
+Starting with `version 0.5.5`, the feature **to sign messages** within a connected wallet has been added.
+This functionality allows you to **verify the authenticity** of the wallet connection to your dApp, similar to the `TonProof` function.
+
+Below is an example of how to use this option:
+
+```c#
+public sealed class SignWalletMessageExample: MonoBehaviour
+{
+    [SerializeField, Space] private Button _signButton;
+
+    private UnitonConnectSDK _unitonConnect;
+
+    private void OnDestroy()
+    {
+        _unitonConnect.OnWalletMessageSigned -= WalletMessageSigned;
+        _unitonConnect.OnWalletMessageSignFailed -= WalletMessageSignFailed;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _signButton.onClick.AddListener(Sign);
+
+        _unitonConnect.OnWalletMessageSigned += WalletMessageSigned;
+        _unitonConnect.OnWalletMessageSignFailed += WalletMessageSignFailed;
+    }
+
+    private void Sign()
+    {
+        // with readable text in the wallet
+        var message = new SignMessageData(
+            SignWalletDataTypes.text)
+        {
+            Text = "Message from Uniton Connect",
+            From = _unitonConnect.Wallet.ToHex()
+        };
+
+        // with binary data (the wallet will display a warning about unknown content)
+        var message = new SignMessageData(
+            SignWalletDataTypes.bytes)
+        {
+            Bytes = "1Z/SGh+3HFMKlVHSkN91DpcCzT4C5jzHT3sA/24C5A==",
+            From = _unitonConnect.Wallet.ToHex()
+        };
+
+        // with blockchain data in the form of a TL-B scheme (the wallet can display the data scheme if it is valid)
+        var message = new SignMessageData(
+            SignWalletDataTypes.cell)
+        {
+            Schema = "transfer#0f8a7ea5 query_id:uint64 amount:(VarUInteger 16) destination:MsgAddress response_destination:MsgAddress custom_payload:(Maybe ^Cell) forward_ton_amount:(VarUInteger 16) forward_payload:(Either Cell ^Cell) = InternalMsgBody;",
+            Cell = "te6ccgEBAQEAVwAAqg+KfqVUbeTvKqB4h0AcnDgIAZucsOi6TLrfP6FcuPKEeTI6oB3fF/NBjyqtdov/KtutACCLqvfmyV9kH+Pyo5lcsrJzJDzjBJK6fd+ZnbFQe4+XggI=",
+            From = _unitonConnect.Wallet.ToHex()
+        };
+
+        _unitonConnect.SignData(message);
+    }
+
+    private void WalletMessageSigned(
+        SignedMessageData payload)
+    {
+        Debug.Log($"Wallet message successfully signed, " +
+            $"payload: {JsonConvert.SerializeObject(payload)}"");
+    }
+
+    private void WalletMessageSignFailed()
+    {
+        Debug.LogError($"Failed to sign wallet message, reason: '{errorMessage}'");
+    }
+}
+```
+
+After the message is successfully signed, a request will be sent to verify the signature and the validity of the data signature in it.
+
+You can subscribe to the `OnWalletMessageVerified` event and get the signature status if you need it:
+
+```c#
+private void Start()
+{
+    _unitonSDK.OnWalletMessageVerified += WalletMessagePayloadVerified;
+}
+
+private void WalletMessagePayloadVerified(bool isVerified)
+{
+    Debug.Log($"Signed wallet message verified with status '{isSuccess}'");
+}
+```
+
+### Modal state
+
+Starting with `version 0.5.5`, a feature **for loading the state** of the SDK modal window has been added.
+
+```c#
+public sealed class LoadModalStateExample: MonoBehaviour
+{
+    [SerializeField, Space] private Button _loadButton;
+
+    private UnitonConnectSDK _unitonConnect;
+
+    private WalletModal _walletModal;
+
+    private void OnDestroy()
+    {
+        _unitonSDK.OnInitiliazed -= SdkInitialized;
+
+        _walletModal.OnStateClaimed -= ModalStateClaimed;
+        _walletModal.OnStateChanged -= ModalStateChanged;
+    }
+
+    private void Start()
+    {
+        _unitonConnect = UnitonConnectSDK.Instance;
+
+        _loadButton.onClick.AddListener(LoadState);
+
+        _unitonSDK.OnInitiliazed += SdkInitialized;
+    }
+
+    private void LoadState()
+    {
+        _walletModal.LoadStatus();
+    }
+
+    private void SdkInitialized(bool isSuccess)
+    {
+        if (!isSuccess)
+        {
+            return;
+        }
+
+        _walletModal = _unitonConnect.Modal;
+
+        _walletModal.OnStateClaimed += ModalStateClaimed;
+        _walletModal.OnStateChanged += ModalStateChanged;
+    }
+
+    private void ModalStateClaimed(ModalStatusTypes state)
+    {
+        Debug.Log("Loaded current modal state '{state}'");
+    }
+
+    private void ModalStateChanged(ModalStatusTypes state)
+    {
+        Debug.Log($"Loaded changed modal state '{state}'");
+    }
+}
+```
+
+P.S: In addition to getting the current state of the modal window, 
+you can subscribe to the `OnStateChanged` event and receive **the current state** if it has changed.
+
+# Update guidline
+
+**Problem:**
+I added a new version of `Uniton Connect` to my project and did **not delete** the previous files. 
+The project refuses to build and crashes with an error. What should I do? :c
+
+**Solution:**
+When updating the library from a previous version to the current one, 
+**DELETE THE PREVIOUS** sdk files to avoid **build issues** or other conflicts between versions.
+
+**Problem:**
+I updated the library to the latest version, but I'm getting errors when compiling 
+the project related to non-existent methods in `TonConnectBridge.jslib`. What should I do? :c
+
+**Solution:**
+First, make sure you have the `Uniton Connect` build template selected in `Build Settings -> Player Settings -> Resolution and Presentation -> WebGL Template`.
+Once you have selected it and tried building again, everything will work without any problems!
+If you are using your own **CUSTOM BUILD** template, compare the versions of the native libraries used to run `Uniton Connect` and make changes if they differ.
+
 # Build
 
 In order to create a project, you must first configure several settings in the `Player Settings` window:
@@ -953,11 +1129,13 @@ PORT=3000
 
 TON_API_KEY="YOUR-TON-API-KEY"
 TON_CENTER_API_KEY="YOUR-TON-CENTER-API-KEY"
+APP_DOMAIN="YOUR-APP-DOMAIN-IN-MANIFEST"
 ```
 
 - The `PORT` variable is a free port that the api server will listen on to receive requests and send responses to the unity client,
 - The `TON_API_KEY` variable is the api key that will be used by the sdk client to send requests `to the Ton Api`. To get it, you need to log in via telegram [on their dashboard](https://tonconsole.com/) and then enter it here,
 - The `TON_CENTER_API_KEY` variable is an api key, which is also used to send requests, but now `in Ton Center V3`, due to the unavailability of some features in the first provider. To get it, you need to enter [their official bot](https://t.me/toncenter) via telegram.
+- The `APP_DOMAIN` variable is the domain name where your application is deployed. It is required **to verify the data signature** after signing inside the wallet. As an example, the library's demo application specifies `mrveit.github.io`.
 
 Now you can run the `backend locally`, for full access to `all SDK features`.
 To do this, open a terminal in the code editor in which you opened the project and enter the following command:

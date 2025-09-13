@@ -262,7 +262,7 @@ namespace UnitonConnect.ThirdParty
 
                     WebRequestUtils.SetRequestHeader(request,
                         WebRequestUtils.HEADER_CONTENT_TYPE,
-                        WebRequestUtils.HEADER_VALUNE_CONTENT_TYPE_JSON);
+                        WebRequestUtils.HEADER_VALUE_CONTENT_TYPE_JSON);
 
                     yield return request.SendWebRequest();
 
@@ -405,7 +405,7 @@ namespace UnitonConnect.ThirdParty
 
                     WebRequestUtils.SetRequestHeader(request,
                         WebRequestUtils.HEADER_CONTENT_TYPE,
-                        WebRequestUtils.HEADER_VALUNE_CONTENT_TYPE_JSON);
+                        WebRequestUtils.HEADER_VALUE_CONTENT_TYPE_JSON);
 
                     yield return request.SendWebRequest();
 

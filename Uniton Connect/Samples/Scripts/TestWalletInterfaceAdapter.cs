@@ -1,8 +1,9 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Newtonsoft.Json;
 using UnitonConnect.Core.Data;
+using UnitonConnect.Core.Common;
 using UnitonConnect.Core.Utils;
 using UnitonConnect.Runtime.Data;
 using UnitonConnect.DeFi;
@@ -15,6 +16,7 @@ namespace UnitonConnect.Core.Demo
         [SerializeField] private TextMeshProUGUI _shortWalletAddress;
         [SerializeField, Space] private Button _connectButton;
         [SerializeField] private Button _disconnectButton;
+        [SerializeField] private Button _signWalletButton;
         [SerializeField] private Button _sendTransactionButton;
         [SerializeField] private Button _sendJettonTransactionButton;
         [SerializeField] private Button _openNftCollectionButton;
@@ -24,6 +26,8 @@ namespace UnitonConnect.Core.Demo
 
         private UserAssets.NFT _nftModule;
         private UserAssets.Jetton _jettonModule;
+
+        private WalletModal _walletModal;
 
         private string _latestTransactionHash;
 
@@ -42,6 +46,10 @@ namespace UnitonConnect.Core.Demo
 
             _unitonSDK.OnWalletConnectRestored += WalletConnectionRestored;
             _unitonSDK.OnWalletDisconnected += WalletDisconnected;
+
+            _unitonSDK.OnWalletMessageSigned += WalletMessageSigned;
+            _unitonSDK.OnWalletMessageSignFailed += WalletMessageSignFailed;
+            _unitonSDK.OnWalletMessageVerified += WalletMessagePayloadVerified;
 
             _unitonSDK.OnTonTransactionSended += TonTransactionSended;
             _unitonSDK.OnTonTransactionSendFailed += TonTransactionSendFailed;
@@ -63,6 +71,16 @@ namespace UnitonConnect.Core.Demo
             _unitonSDK.OnTonTransactionSendFailed -= TonTransactionSendFailed;
 
             _unitonSDK.OnTonTransactionConfirmed -= TonTransactionConfirmed;
+
+            _unitonSDK.OnWalletMessageSigned -= WalletMessageSigned;
+            _unitonSDK.OnWalletMessageSignFailed -= WalletMessageSignFailed;
+            _unitonSDK.OnWalletMessageVerified -= WalletMessagePayloadVerified;
+
+            if (_walletModal != null)
+            {
+                _walletModal.OnStateClaimed -= ModalStateClaimed;
+                _walletModal.OnStateChanged -= ModalStateChanged;
+            }
 
             if (_nftModule == null)
             {
@@ -91,6 +109,7 @@ namespace UnitonConnect.Core.Demo
             if (!_unitonSDK.IsWalletConnected)
             {
                 _disconnectButton.interactable = false;
+                _signWalletButton.interactable = false;
                 _sendTransactionButton.interactable = false;
                 _sendJettonTransactionButton.interactable = false;
                 _openNftCollectionButton.interactable = false;
@@ -184,6 +203,10 @@ namespace UnitonConnect.Core.Demo
 
             _nftModule = _unitonSDK.Assets.Nft;
             _jettonModule = _unitonSDK.Assets.Jettons;
+            _walletModal = _unitonSDK.Modal;
+
+            _walletModal.OnStateClaimed += ModalStateClaimed;
+            _walletModal.OnStateChanged += ModalStateChanged;
 
             _nftModule.OnNftCollectionsClaimed += NftCollectionsLoaded;
             _nftModule.OnTargetNftCollectionClaimed += TargetNftCollectionLoaded;
@@ -193,6 +216,8 @@ namespace UnitonConnect.Core.Demo
 
             _jettonModule.OnTransactionSended += JettonTransactionSended;
             _jettonModule.OnTransactionSendFailed += JettonTransactionSendFailed;
+
+            _walletModal.LoadStatus();
         }
 
         private void WalletConnectionFinished(WalletConfig wallet)
@@ -218,6 +243,7 @@ namespace UnitonConnect.Core.Demo
 
                 _connectButton.interactable = false;
                 _disconnectButton.interactable = true;
+                _signWalletButton.interactable = true;
                 _sendTransactionButton.interactable = true;
                 _sendJettonTransactionButton.interactable = true;
                 _openNftCollectionButton.interactable = true;
@@ -230,6 +256,7 @@ namespace UnitonConnect.Core.Demo
                 $"the wallet due to the following reason: {message}");
 
             _connectButton.interactable = true;
+            _signWalletButton.interactable = false;
             _disconnectButton.interactable = false;
             _sendTransactionButton.interactable = false;
             _sendJettonTransactionButton.interactable = false;
@@ -250,6 +277,7 @@ namespace UnitonConnect.Core.Demo
             }
 
             _connectButton.interactable = false;
+            _signWalletButton.interactable = true;
             _disconnectButton.interactable = true;
             _sendTransactionButton.interactable = true;
             _sendJettonTransactionButton.interactable = true;
@@ -268,6 +296,7 @@ namespace UnitonConnect.Core.Demo
             _nftCollectionPanel.RemoveNftCollectionStorage(true);
 
             _connectButton.interactable = true;
+            _signWalletButton.interactable = false;
             _disconnectButton.interactable = false;
             _sendTransactionButton.interactable = false;
             _sendJettonTransactionButton.interactable = false;
@@ -286,7 +315,8 @@ namespace UnitonConnect.Core.Demo
 
         private void TargetNftCollectionLoaded(NftCollectionData nftCollection)
         {
-            Debug.Log($"Loaded target nft collection with name: {nftCollection.Items[0].Collection.Name}");
+            Debug.Log($"Loaded target nft collection with name: "+
+                $"{nftCollection.Items[0].Collection.Name}");
         }
 
         private void TonTransactionSended(string transactionHash)
@@ -296,7 +326,8 @@ namespace UnitonConnect.Core.Demo
             Debug.Log($"Latest transaction hash parsed: {_latestTransactionHash}");
         }
 
-        private void TonTransactionConfirmed(SuccessTransactionData transactionData)
+        private void TonTransactionConfirmed(
+            SuccessTransactionData transactionData)
         {
             PrintSuccessTransactionData("TON", transactionData);
         }
@@ -334,6 +365,59 @@ namespace UnitonConnect.Core.Demo
         {
             _debugMessage.text = $"Failed to send NFT item" +
                 $" with address: {nftItemAddress}, reason: {errorMessage}";
+        }
+
+        private void ModalStateChanged(ModalStatusTypes state)
+        {
+            Debug.Log($"Claimed changed modal state '{state}'");
+
+            ModalClosed(state);
+        }
+
+        private void ModalStateClaimed(ModalStatusTypes state)
+        {
+            Debug.Log($"Claimed current modal state '{state}'");
+
+            ModalClosed(state);
+        }
+
+        private void WalletMessageSigned(SignedMessageData payload)
+        {
+            var message = $"Wallet message successfully signed, " +
+                $"payload: {JsonConvert.SerializeObject(payload)}";
+
+            Debug.Log(message);
+
+            _debugMessage.text = message;
+        }
+
+        private void WalletMessageSignFailed(string errorMessage)
+        {
+            var message = $"Failed to sign wallet message, reason: '{errorMessage}'";
+
+            Debug.LogError(message);
+
+            _debugMessage.text = errorMessage;
+        }
+
+        private void WalletMessagePayloadVerified(bool isSuccess)
+        {
+            var message = $"Signed wallet message verified with status: {isSuccess}";
+
+            Debug.Log(message);
+
+            _debugMessage.text = message;
+        }
+
+        private void ModalClosed(ModalStatusTypes state)
+        {
+            if (state == ModalStatusTypes.opened)
+            {
+                return;
+            }
+
+            Debug.LogWarning($"Last modal state '{_walletModal.Status}', " +
+                $"close reason: {_walletModal.CloseReason}");
         }
     }
 }
