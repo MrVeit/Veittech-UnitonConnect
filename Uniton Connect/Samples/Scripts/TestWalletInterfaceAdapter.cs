@@ -49,6 +49,7 @@ namespace UnitonConnect.Core.Demo
 
             _unitonSDK.OnWalletMessageSigned += WalletMessageSigned;
             _unitonSDK.OnWalletMessageSignFailed += WalletMessageSignFailed;
+            _unitonSDK.OnWalletMessageVerified += WalletMessagePayloadVerified;
 
             _unitonSDK.OnTonTransactionSended += TonTransactionSended;
             _unitonSDK.OnTonTransactionSendFailed += TonTransactionSendFailed;
@@ -73,6 +74,7 @@ namespace UnitonConnect.Core.Demo
 
             _unitonSDK.OnWalletMessageSigned -= WalletMessageSigned;
             _unitonSDK.OnWalletMessageSignFailed -= WalletMessageSignFailed;
+            _unitonSDK.OnWalletMessageVerified -= WalletMessagePayloadVerified;
 
             if (_walletModal != null)
             {
@@ -396,6 +398,15 @@ namespace UnitonConnect.Core.Demo
             Debug.LogError(message);
 
             _debugMessage.text = errorMessage;
+        }
+
+        private void WalletMessagePayloadVerified(bool isSuccess)
+        {
+            var message = $"Signed wallet message verified with status: {isSuccess}";
+
+            Debug.Log(message);
+
+            _debugMessage.text = message;
         }
 
         private void ModalClosed(ModalStatusTypes state)

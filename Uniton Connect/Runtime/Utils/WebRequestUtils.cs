@@ -18,7 +18,7 @@ namespace UnitonConnect.Core.Utils
         public const string HEADER_CONTENT_TYPE = "Content-Type";
         public const string HEADER_AUTHORIZATION = "Authorization";
 
-        public const string HEADER_VALUNE_CONTENT_TYPE_JSON = "application/json";
+        public const string HEADER_VALUE_CONTENT_TYPE_JSON = "application/json";
 
         public static void SetRequestHeader(UnityWebRequest webRequest,
             string header, string headerValue)

@@ -424,8 +424,6 @@ namespace UnitonConnect.Core
                 SignedMessageData>(signedPayload);
 
             OnWalletMessageSigned?.Invoke(payload);
-
-            OnWalletMessageSigned = null;
         }
 
         [MonoPInvokeCallback(typeof(Action<string>))]
@@ -434,9 +432,7 @@ namespace UnitonConnect.Core
             UnitonConnectLogger.LogWarning($"Failed to sign message " +
                 $"in wallet, reason: {errorMessage}");
 
-            OnWalletMessageSignFailed?.Invoke(errorMessage);
-
-            OnWalletMessageSignFailed = null;
+            OnWalletMessageSignFailed?.Invoke(errorMessage); 
         }
         #endregion
 

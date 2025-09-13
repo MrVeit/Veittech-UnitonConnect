@@ -63,6 +63,9 @@ namespace UnitonConnect.Core
         public UserAssets Assets { get; private set; }
         public WalletModal Modal { get; private set; }
 
+        public SignMessageData LastMessageForSign { get; private set; }
+        public SignedMessageData LastSignedMessage { get; private set; }
+
         public decimal TonBalance { get; private set; }
 
         public WalletConfig ConnectedWalletConfig => _connectedWalletConfig;
@@ -331,10 +334,41 @@ namespace UnitonConnect.Core
             TonConnectBridge.SignWalletMessage(
                 message, (signedPayload) =>
             {
+                LastMessageForSign = message;
+                LastSignedMessage = signedPayload;
+
                 UnitonConnectLogger.Log($"Wallet message successfully signed, " +
                     $"message: {message.Type}, signed payload: {signedPayload.Signature}");
 
                 OnWalletMessageSigned?.Invoke(signedPayload);
+
+                var signedMessagePayload = new MessagePayloadVerificationData()
+                {
+                    Signature = LastSignedMessage.Signature,
+                    Timestamp = LastSignedMessage.Timestamp,
+                    AppDomain = LastSignedMessage.AppDomain,
+                    MessagePayload = LastSignedMessage.Payload,
+                    WalletAddress = LastSignedMessage.Address,
+                    WalletPublicKey = Wallet.PublicKey,
+                    WalletStateInit = Wallet.StateInit
+                };
+
+                TonCenterApiBridge.VerifySignedMessagePayload(
+                    signedMessagePayload, (verifyStatus) =>
+                {
+                    if (verifyStatus == null)
+                    {
+                        UnitonConnectLogger.LogWarning("Signed message "+
+                            "verification process failed");
+
+                        OnWalletMessageVerified?.Invoke(false);
+                    }
+
+                    UnitonConnectLogger.Log($"Signed message verification process "+
+                        $"finished with result: {verifyStatus.IsVerified}");
+
+                    OnWalletMessageVerified?.Invoke(verifyStatus.IsVerified);
+                });
             },
             (error) =>
             {
@@ -359,8 +393,8 @@ namespace UnitonConnect.Core
 
                 if (_instance != null)
                 {
-                    UnitonConnectLogger.LogWarning($"Another instance is detected "+
-                        "on the scene, running delete...");
+                    UnitonConnectLogger.LogWarning($"Another instance is "+
+                        "detected on the scene, running delete...");
 
                     Destroy(gameObject);
                 }
@@ -374,7 +408,7 @@ namespace UnitonConnect.Core
             {
                 if (_confirmDelay <= 0)
                 {
-                    _confirmDelay = 15f;
+                    _confirmDelay = 10f;
                 }
 
                 UnitonConnectLogger.LogWarning($"Enabled a delay of {_confirmDelay} " +
