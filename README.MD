@@ -1011,8 +1011,9 @@ private void WalletMessagePayloadVerified(bool isVerified)
 
 ### Modal state
 
-Starting with `version 0.5.5`, the feature to load the current status of the SDK modal window has been added.
+Starting with `version 0.5.5`, a feature **for loading the state** of the SDK modal window has been added.
 
+```c#
 public sealed class LoadModalStateExample: MonoBehaviour
 {
     [SerializeField, Space] private Button _loadButton;
@@ -1023,6 +1024,8 @@ public sealed class LoadModalStateExample: MonoBehaviour
 
     private void OnDestroy()
     {
+        _unitonSDK.OnInitiliazed -= SdkInitialized;
+
         _walletModal.OnStateClaimed -= ModalStateClaimed;
         _walletModal.OnStateChanged -= ModalStateChanged;
     }
@@ -1064,6 +1067,7 @@ public sealed class LoadModalStateExample: MonoBehaviour
         Debug.Log($"Loaded changed modal state '{state}'");
     }
 }
+```
 
 P.S: In addition to getting the current state of the modal window, 
 you can subscribe to the `OnStateChanged` event and receive **the current state** if it has changed.
@@ -1073,6 +1077,7 @@ you can subscribe to the `OnStateChanged` event and receive **the current state*
 **Problem:**
 I added a new version of `Uniton Connect` to my project and did **not delete** the previous files. 
 The project refuses to build and crashes with an error. What should I do? :c
+
 **Solution:**
 When updating the library from a previous version to the current one, 
 **DELETE THE PREVIOUS** sdk files to avoid **build issues** or other conflicts between versions.
@@ -1080,6 +1085,7 @@ When updating the library from a previous version to the current one,
 **Problem:**
 I updated the library to the latest version, but I'm getting errors when compiling 
 the project related to non-existent methods in `TonConnectBridge.jslib`. What should I do? :c
+
 **Solution:**
 First, make sure you have the `Uniton Connect` build template selected in `Build Settings -> Player Settings -> Resolution and Presentation -> WebGL Template`.
 Once you have selected it and tried building again, everything will work without any problems!
