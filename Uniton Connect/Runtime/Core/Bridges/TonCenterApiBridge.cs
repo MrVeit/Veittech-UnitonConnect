@@ -154,7 +154,7 @@ namespace UnitonConnect.ThirdParty
             }
         }
 
-        internal static IEnumerator VerifySignedMessagePayload(
+        internal static IEnumerator VerifySignedPayload(
             MessagePayloadVerificationData payload,
             Action<VerifiedMessagePayloadData> payloadVerified)
         {

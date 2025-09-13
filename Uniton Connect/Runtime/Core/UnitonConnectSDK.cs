@@ -301,7 +301,7 @@ namespace UnitonConnect.Core
             }
 
             UnitonConnectLogger.Log($"Created a request to send a TON" +
-                    $" to the recipient: {recipientAddress} in amount {amount}");
+                $" to the recipient: {recipientAddress} in amount {amount}");
 
             TonConnectBridge.SendTon(recipientAddress, amount,
                 message, OnSendingTonFinish, OnSendingTonFail);
@@ -331,51 +331,8 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            TonConnectBridge.SignWalletMessage(
-                message, (signedPayload) =>
-            {
-                LastMessageForSign = message;
-                LastSignedMessage = signedPayload;
-
-                UnitonConnectLogger.Log($"Wallet message successfully signed, " +
-                    $"message: {message.Type}, signed payload: {signedPayload.Signature}");
-
-                OnWalletMessageSigned?.Invoke(signedPayload);
-
-                var signedMessagePayload = new MessagePayloadVerificationData()
-                {
-                    Signature = LastSignedMessage.Signature,
-                    Timestamp = LastSignedMessage.Timestamp,
-                    AppDomain = LastSignedMessage.AppDomain,
-                    MessagePayload = LastSignedMessage.Payload,
-                    WalletAddress = LastSignedMessage.Address,
-                    WalletPublicKey = Wallet.PublicKey,
-                    WalletStateInit = Wallet.StateInit
-                };
-
-                TonCenterApiBridge.VerifySignedMessagePayload(
-                    signedMessagePayload, (verifyStatus) =>
-                {
-                    if (verifyStatus == null)
-                    {
-                        UnitonConnectLogger.LogWarning("Signed message "+
-                            "verification process failed");
-
-                        OnWalletMessageVerified?.Invoke(false);
-                    }
-
-                    UnitonConnectLogger.Log($"Signed message verification process "+
-                        $"finished with result: {verifyStatus.IsVerified}");
-
-                    OnWalletMessageVerified?.Invoke(verifyStatus.IsVerified);
-                });
-            },
-            (error) =>
-            {
-                UnitonConnectLogger.LogError($"Failed to sign wallet message, reason: {error}");
-
-                OnWalletMessageSignFailed?.Invoke(error);
-            });
+            TonConnectBridge.SignWalletMessage(message,
+                OnWalletMessageSign, OnWalletMessageSigFail);
         }
 
         private void CreateInstance()
@@ -399,6 +356,38 @@ namespace UnitonConnect.Core
                     Destroy(gameObject);
                 }
             }
+        }
+
+        private IEnumerator VerifySignedPayload(
+            SignedMessageData signedPayload)
+        {
+            var signedMessagePayload = new MessagePayloadVerificationData()
+            {
+                Signature = signedPayload.Signature,
+                Timestamp = signedPayload.Timestamp,
+                AppDomain = signedPayload.AppDomain,
+                MessagePayload = signedPayload.Payload,
+                WalletAddress = signedPayload.Address,
+                WalletPublicKey = Wallet.PublicKey,
+                WalletStateInit = Wallet.StateInit
+            };
+
+            yield return TonCenterApiBridge.VerifySignedPayload(
+                signedMessagePayload, (verifyStatus) =>
+            {
+                if (verifyStatus == null)
+                {
+                    UnitonConnectLogger.LogWarning("Signed message " +
+                        "verification process failed");
+
+                    OnWalletMessageVerified?.Invoke(false);
+                }
+
+                UnitonConnectLogger.Log($"Signed message verification process " +
+                    $"finished with result: {verifyStatus.IsVerified}");
+
+                OnWalletMessageVerified?.Invoke(verifyStatus.IsVerified);
+            });
         }
 
         private IEnumerator ConfirmTonTransaction(
@@ -522,6 +511,26 @@ namespace UnitonConnect.Core
         private void OnSendingTonConfirm(SuccessTransactionData transactionData)
         {
             OnTonTransactionConfirmed?.Invoke(transactionData);
+        }
+
+        private void OnWalletMessageSign(SignedMessageData signedPayload)
+        {
+            LastMessageForSign = signedPayload.Payload;
+            LastSignedMessage = signedPayload;
+
+            UnitonConnectLogger.Log($"Wallet message successfully signed, message: "+
+                $"{LastMessageForSign.Type}, signed payload: {signedPayload.Signature}");
+
+            OnWalletMessageSigned?.Invoke(signedPayload);
+
+            StartCoroutine(VerifySignedPayload(LastSignedMessage));
+        }
+
+        private void OnWalletMessageSigFail(string error)
+        {
+            UnitonConnectLogger.LogError($"Failed to sign wallet message, reason: {error}");
+
+            OnWalletMessageSignFailed?.Invoke(error);
         }
     }
 }
