@@ -1072,6 +1072,18 @@ public sealed class LoadModalStateExample: MonoBehaviour
 P.S: In addition to getting the current state of the modal window, 
 you can subscribe to the `OnStateChanged` event and receive **the current state** if it has changed.
 
+# Possible errors
+
+**Error:**
+`Assertion failed on expression: 'm_LockCount == 0'`
+
+**Reason for appearance:**
+When replacing the library icon with your own instead of the default one.
+
+**Solution:**
+Enable the `Read/Write` property (under "Advanced") in the icon import settings 
+and disable compression by switching the "Format" field to `RGBA 32 bit`.
+
 # Update guidline
 
 **Problem:**
@@ -1081,6 +1093,7 @@ The project refuses to build and crashes with an error. What should I do? :c
 **Solution:**
 When updating the library from a previous version to the current one, 
 **DELETE THE PREVIOUS** sdk files to avoid **build issues** or other conflicts between versions.
+
 
 **Problem:**
 I updated the library to the latest version, but I'm getting errors when compiling 
