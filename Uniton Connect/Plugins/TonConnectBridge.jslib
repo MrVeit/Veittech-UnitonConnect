@@ -565,8 +565,7 @@ const tonConnectBridge = {
             const gasFee = UTF8ToString(gasFeeAmount);
             const transactionPayload = UTF8ToString(payload);
 
-            console.log(`[Uniton Connect] Parsed assets transaction `+
-                `payload: ${transactionPayload}`);
+            console.log(`[Uniton Connect] Parsed assets transaction payload: ${transactionPayload}`);
 
             try
             {
@@ -619,6 +618,11 @@ const tonConnectBridge = {
             }
             catch (error)
             {
+                var errorMessage = error.message || error;
+
+                console.error(`[Uniton Connect] Failed to send `+
+                    `JETTON/NFT transaction, reason:`, errorMessage);
+
                 const errorPtr = tonConnect.allocString("");
             
                 {{{ makeDynCall('vi', 'callback') }}}(errorPtr);
@@ -647,8 +651,10 @@ const tonConnectBridge = {
             const address = UTF8ToString(recipientAddress);
             const payloadMessage = UTF8ToString(message);
 
-            const transactionData = await tonConnect.getTonTransactionPayload(
-                nanotons, address, payloadMessage);
+            const transactionData = await tonConnect
+                .getTonTransactionPayload(nanotons, address, payloadMessage);
+
+            console.log(`[Uniton Connect] Parsed ton transaction payload: ${transactionData}`);
 
             try
             {
@@ -676,8 +682,8 @@ const tonConnectBridge = {
                 const hashBase64 = await tonConnect.convertBocToHashBase64(claimedBoc);
                 const hashPtr = tonConnect.allocString(hashBase64);
 
-                console.log(`[Uniton Connect] Parsed toncoin transaction `+
-                    `hash: ${JSON.stringify(hashBase64)}`);
+                console.log(`[Uniton Connect] Parsed toncoin `+
+                    `transaction hash: ${JSON.stringify(hashBase64)}`);
 
                 {{{ makeDynCall('vi', 'callback') }}}(hashPtr);
 
@@ -685,6 +691,11 @@ const tonConnectBridge = {
             }
             catch (error)
             {
+                var errorMessage = error.message || error;
+
+                console.error(`[Uniton Connect] Failed to send `+
+                    `JETTON/NFT transaction, reason:`, errorMessage);
+
                 const errorPtr = tonConnect.allocString("");
 
                 {{{ makeDynCall('vi', 'callback') }}}(errorPtr);

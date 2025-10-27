@@ -1,6 +1,6 @@
 {
     "name": "com.veittech.uniton.connect",
-    "version": "0.5.1",
+    "version": "0.5.6",
     "displayName": "Uniton Connect",
     "description": "A library for convenient work with the Ton ecosystem inside web applications on Unity.",
     "unity": "2020.3",
