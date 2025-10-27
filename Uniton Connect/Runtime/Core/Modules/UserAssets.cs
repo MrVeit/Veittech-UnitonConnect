@@ -41,8 +41,6 @@ namespace UnitonConnect.DeFi
                 _sdk = sdk;
             }
 
-            private string _walletAddress => _sdk.Wallet.ToString();
-
             public NftCollectionData LatestNftCollections { get; private set; }
             public NftCollectionData LatestTargetNftCollection { get; private set; }
 
@@ -141,8 +139,8 @@ namespace UnitonConnect.DeFi
                     return;
                 }
 
-                var ownerAddress = _sdk.Wallet.ToHex();
-                var recipientToHex = WalletConnectUtils.GetHEXAddress(recipient);
+                var ownerAddress = _sdk.Wallet.ToBounceable();
+                var recipientToHex = WalletConnectUtils.GetBounceableAddress(recipient);
 
                 if (WalletConnectUtils.IsAddressesMatch(recipient))
                 {
@@ -477,8 +475,8 @@ namespace UnitonConnect.DeFi
                         "has not been loaded, start parsing...");
                 }
 
-                var ownerAddress = _sdk.Wallet.ToHex();
-                var recipientToHex = WalletConnectUtils.GetHEXAddress(recipient);
+                var ownerAddress = _sdk.Wallet.ToBounceable();
+                var recipientToHex = WalletConnectUtils.GetBounceableAddress(recipient);
 
                 if (WalletConnectUtils.IsAddressesMatch(recipient))
                 {

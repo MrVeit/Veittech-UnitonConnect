@@ -290,9 +290,9 @@ namespace UnitonConnect.Core
                 return;
             }
 
-            var recipientToHex = WalletConnectUtils.GetHEXAddress(recipientAddress);
+            var convertedAddress = WalletConnectUtils.GetBounceableAddress(recipientAddress);
 
-            if (WalletConnectUtils.IsAddressesMatch(recipientToHex))
+            if (WalletConnectUtils.IsAddressesMatch(convertedAddress))
             {
                 UnitonConnectLogger.LogWarning("Transaction canceled because "+
                     "the recipient and sender addresses match");

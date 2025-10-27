@@ -565,7 +565,7 @@ const tonConnectBridge = {
             const gasFee = UTF8ToString(gasFeeAmount);
             const transactionPayload = UTF8ToString(payload);
 
-            console.log(`[Uniton Connect] Parsed assets transaction payload: ${transactionPayload}`);
+            console.log(`[Uniton Connect] Parsed assets transaction payload:`, transactionPayload);
 
             try
             {
@@ -582,8 +582,7 @@ const tonConnectBridge = {
                     ]
                 };
 
-                console.log(`[Uniton Connect] Parsed assets transaction `+
-                    `data: ${JSON.stringify(transactionData)}`);
+                console.log(`[Uniton Connect] Parsed assets transaction data:`, transactionData);
 
                 const result = await window.tonConnectUI.sendTransaction(transactionData, 
                 {
@@ -654,7 +653,7 @@ const tonConnectBridge = {
             const transactionData = await tonConnect
                 .getTonTransactionPayload(nanotons, address, payloadMessage);
 
-            console.log(`[Uniton Connect] Parsed ton transaction payload: ${transactionData}`);
+            console.log(`[Uniton Connect] Parsed ton transaction payload:`, transactionData);
 
             try
             {
@@ -694,7 +693,7 @@ const tonConnectBridge = {
                 var errorMessage = error.message || error;
 
                 console.error(`[Uniton Connect] Failed to send `+
-                    `JETTON/NFT transaction, reason:`, errorMessage);
+                    `TON transaction, reason:`, errorMessage);
 
                 const errorPtr = tonConnect.allocString("");
 
