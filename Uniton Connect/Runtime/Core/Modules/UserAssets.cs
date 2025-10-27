@@ -147,10 +147,12 @@ namespace UnitonConnect.DeFi
                     return;
                 }
 
-                _latestNftItemAddress = nftItemAddress;
+                var convertedNftAddress = WalletConnectUtils.GetBounceableAddress(nftItemAddress);
+
+                _latestNftItemAddress = convertedNftAddress;
 
                 _mono.StartCoroutine(CreateTransaction(recipientAddress,
-                    ownerAddress, nftItemAddress, gasFee));
+                    ownerAddress, convertedNftAddress, gasFee));
             }
 
             private IEnumerator CreateTransaction(string recipient,
@@ -493,7 +495,10 @@ namespace UnitonConnect.DeFi
                         return;
                     }
 
-                    LatestJettonWalletAddress = walletConfig.Address;
+                    var convertedMasterAddress = WalletConnectUtils
+                        .GetBounceableAddress(walletConfig.Address);
+
+                    LatestJettonWalletAddress = convertedMasterAddress;
 
                     _mono.StartCoroutine(CreateTransaction(type, amount,
                         gasFee, ownerAddress, recipientAddress, message));
@@ -520,7 +525,7 @@ namespace UnitonConnect.DeFi
                         feeInNano.ToString(), payload, (transactionHash) =>
                     {
                         UnitonConnectLogger.Log($"Jetton transaction with " +
-                        $"payload successfully sended: {transactionHash}");
+                            $"payload successfully sended: {transactionHash}");
 
                         _mono.StartCoroutine(LoadTransactionStatus(_mono,
                             transactionHash, _latestMasterAddress,
@@ -573,8 +578,8 @@ namespace UnitonConnect.DeFi
                     delay = 15f;
                 }
 
-                UnitonConnectLogger.LogWarning($"Enabled a delay of {delay} seconds " +
-                    "between attempts due to a failed last request");
+                UnitonConnectLogger.LogWarning($"Enabled a delay of {delay} "+
+                    "seconds between attempts due to a failed last request");
 
                 yield return new WaitForSeconds(delay);
             }
