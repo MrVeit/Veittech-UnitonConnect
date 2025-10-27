@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Newtonsoft.Json;
 
 namespace UnitonConnect.Core.Data
@@ -45,7 +44,7 @@ namespace UnitonConnect.Core.Data
         public InMessageData InMessage { get; set; }
 
         [JsonProperty("out_msgs")]
-        public List<OutMessageData> OutMessages { get; set; }
+        public OutMessageData[] OutMessages { get; set; }
 
         [JsonProperty("block")]
         public string Block { get; set; }
@@ -63,13 +62,13 @@ namespace UnitonConnect.Core.Data
         public TransactionStoragePhaseData StoragePhase { get; set; }
 
         [JsonProperty("credit_phase")]
-        public TransactionCreditPhaseData CreditPhase { get; set; }
+        public TransactionCreditPhaseData? CreditPhase { get; set; }
 
         [JsonProperty("action_phase")]
         public TransactionActionPhaseData ActionPhase { get; set; }
 
         [JsonProperty("bounce_phase")]
-        public string BouncePhase { get; set; }
+        public string? BouncePhase { get; set; }
 
         [JsonProperty("aborted")]
         public bool IsAborted { get; set; }

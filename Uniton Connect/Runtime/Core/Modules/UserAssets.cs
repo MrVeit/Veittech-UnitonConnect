@@ -41,8 +41,6 @@ namespace UnitonConnect.DeFi
                 _sdk = sdk;
             }
 
-            private string _walletAddress => _sdk.Wallet.ToString();
-
             public NftCollectionData LatestNftCollections { get; private set; }
             public NftCollectionData LatestTargetNftCollection { get; private set; }
 
@@ -141,18 +139,20 @@ namespace UnitonConnect.DeFi
                     return;
                 }
 
-                var ownerAddress = _sdk.Wallet.ToHex();
-                var recipientToHex = WalletConnectUtils.GetHEXAddress(recipient);
+                var ownerAddress = _sdk.Wallet.ToBounceable();
+                var recipientAddress = WalletConnectUtils.GetBounceableAddress(recipient);
 
-                if (WalletConnectUtils.IsAddressesMatch(recipient))
+                if (WalletConnectUtils.IsAddressesMatch(recipientAddress))
                 {
                     return;
                 }
 
-                _latestNftItemAddress = nftItemAddress;
+                var convertedNftAddress = WalletConnectUtils.GetBounceableAddress(nftItemAddress);
 
-                _mono.StartCoroutine(CreateTransaction(recipientToHex,
-                    ownerAddress, nftItemAddress, gasFee));
+                _latestNftItemAddress = convertedNftAddress;
+
+                _mono.StartCoroutine(CreateTransaction(recipientAddress,
+                    ownerAddress, convertedNftAddress, gasFee));
             }
 
             private IEnumerator CreateTransaction(string recipient,
@@ -477,10 +477,10 @@ namespace UnitonConnect.DeFi
                         "has not been loaded, start parsing...");
                 }
 
-                var ownerAddress = _sdk.Wallet.ToHex();
-                var recipientToHex = WalletConnectUtils.GetHEXAddress(recipient);
+                var ownerAddress = _sdk.Wallet.ToBounceable();
+                var recipientAddress = WalletConnectUtils.GetBounceableAddress(recipient);
 
-                if (WalletConnectUtils.IsAddressesMatch(recipient))
+                if (WalletConnectUtils.IsAddressesMatch(recipientAddress))
                 {
                     return;
                 }
@@ -495,10 +495,13 @@ namespace UnitonConnect.DeFi
                         return;
                     }
 
-                    LatestJettonWalletAddress = walletConfig.Address;
+                    var convertedMasterAddress = WalletConnectUtils
+                        .GetBounceableAddress(walletConfig.Address);
 
-                    _mono.StartCoroutine(CreateTransaction(type,
-                        amount, gasFee, ownerAddress, recipient, message));
+                    LatestJettonWalletAddress = convertedMasterAddress;
+
+                    _mono.StartCoroutine(CreateTransaction(type, amount,
+                        gasFee, ownerAddress, recipientAddress, message));
                 });
             }
 
@@ -522,7 +525,7 @@ namespace UnitonConnect.DeFi
                         feeInNano.ToString(), payload, (transactionHash) =>
                     {
                         UnitonConnectLogger.Log($"Jetton transaction with " +
-                        $"payload successfully sended: {transactionHash}");
+                            $"payload successfully sended: {transactionHash}");
 
                         _mono.StartCoroutine(LoadTransactionStatus(_mono,
                             transactionHash, _latestMasterAddress,
@@ -575,8 +578,8 @@ namespace UnitonConnect.DeFi
                     delay = 15f;
                 }
 
-                UnitonConnectLogger.LogWarning($"Enabled a delay of {delay} seconds " +
-                    "between attempts due to a failed last request");
+                UnitonConnectLogger.LogWarning($"Enabled a delay of {delay} "+
+                    "seconds between attempts due to a failed last request");
 
                 yield return new WaitForSeconds(delay);
             }

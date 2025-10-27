@@ -173,7 +173,8 @@ namespace UnitonConnect.Core.Demo
 
             if (transactionName != "TON")
             {
-                transactionHeader = transaction.OutMessages[0].DecodedOperationName.ToUpper();
+                transactionHeader = transaction.OutMessages[0]
+                    .DecodedOperationName.ToUpper();
             }
             else
             {

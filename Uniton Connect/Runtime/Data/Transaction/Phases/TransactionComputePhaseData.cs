@@ -8,7 +8,7 @@ namespace UnitonConnect.Core.Data
         public bool IsSkipped { get; set; }
 
         [JsonProperty("skip_reason")]
-        public string SkipReason { get; set; }
+        public string? SkipReason { get; set; }
 
         [JsonProperty("success")]
         public bool IsSuccess { get; set; }

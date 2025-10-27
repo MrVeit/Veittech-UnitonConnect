@@ -76,8 +76,8 @@ namespace UnitonConnect.Core.Demo
             var recipientAddress = transactionData.OutMessages[0].DecodedBody.RecipientAddress;
             var recipientBouceable = WalletConnectUtils.GetHEXAddress(recipientAddress);
 
-            _jettonWallet.GetLastTransactions(
-                TransactionTypes.Received, 10, recipientBouceable);
+            _jettonWallet.GetLastTransactions(TransactionTypes
+                .Received, 10, recipientBouceable);
         }
 
         private void LatestTransactionsLoaded(TransactionTypes type, 
