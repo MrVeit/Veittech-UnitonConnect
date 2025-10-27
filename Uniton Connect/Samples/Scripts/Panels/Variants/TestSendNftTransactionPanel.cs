@@ -13,7 +13,7 @@ namespace UnitonConnect.Core.Demo
         private const float START_GAS_FEE = 0.015f;
 
         private const string CREATOR_ADDRESS =
-            "0:cfc0493e72741711f15a68d557cb0a5b280094330551ba99205a386bfdfe14ae";
+            "EQDPwEk-cnQXEfFaaNVXywpbKACUMwVRupkgWjhr_f4UrpH_";
 
         public UserAssets.NFT NftStorage { get; private set; }
 

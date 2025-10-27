@@ -23,6 +23,6 @@ namespace UnitonConnect.Core.Data
         public decimal TotalFees { get; set; }
 
         [JsonProperty("result_code_description")]
-        public string ResultCodeDescription { get; set; }
+        public string? ResultCodeDescription { get; set; }
     }
 }

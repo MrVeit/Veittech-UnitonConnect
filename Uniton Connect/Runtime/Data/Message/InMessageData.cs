@@ -45,7 +45,7 @@ namespace UnitonConnect.Core.Data
         public long CreatedAt { get; set; }
 
         [JsonProperty("op_code")]
-        public string OpCode { get; set; }
+        public string? OpCode { get; set; }
 
         [JsonProperty("init")]
         public TransactionInitData InitData { get; set; }
@@ -54,13 +54,13 @@ namespace UnitonConnect.Core.Data
         public string Hash { get; set; }
 
         [JsonProperty("raw_body")]
-        public string RawBody { get; set; }
+        public string? RawBody { get; set; }
 
         [JsonProperty("decoded_op_name")]
-        public string DecodedOperationName { get; set; }
+        public string? DecodedOperationName { get; set; }
 
         [JsonProperty("decoded_body")]
-        public TransactionDecodedBodyData DecodedBody { get; set; }
+        public TransactionDecodedBodyData? DecodedBody { get; set; }
     }
 
     public sealed class TransactionInitData

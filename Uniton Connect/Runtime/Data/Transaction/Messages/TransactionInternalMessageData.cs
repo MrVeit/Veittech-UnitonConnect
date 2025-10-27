@@ -14,7 +14,7 @@ namespace UnitonConnect.Core.Data
         public bool IsBounced { get; set; }
 
         [JsonProperty("src")]
-        public string Sender { get; set; }
+        public string? Sender { get; set; }
 
         [JsonProperty("dest")]
         public string Recipient { get; set; }
@@ -35,7 +35,7 @@ namespace UnitonConnect.Core.Data
         public int CreatedAt { get; set; }
 
         [JsonProperty("init")]
-        public object Init { get; set; }
+        public object? Init { get; set; }
 
         [JsonProperty("body")]
         public TransactionBodyData Body { get; set; }

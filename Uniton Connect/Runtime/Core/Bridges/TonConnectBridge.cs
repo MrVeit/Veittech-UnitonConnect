@@ -685,8 +685,7 @@ namespace UnitonConnect.Core
 
             if (string.IsNullOrEmpty(message))
             {
-                SendTonTransaction(tonInNanotons,
-                    recipientAddress, OnTonTransactionSend);
+                SendTonTransaction(tonInNanotons, recipientAddress, OnTonTransactionSend);
 
                 return;
             }
@@ -703,8 +702,7 @@ namespace UnitonConnect.Core
 
             SubscribeToTransactionEvents(OnTransactionSuccessfullySign, OnTransactionSignFail);
 
-            SendTransactionWithPayload(senderJettonWalletContract, 
-                gasFee, payload, OnJettonTransactionSend);
+            SendTransactionWithPayload(senderJettonWalletContract, gasFee, payload, OnJettonTransactionSend);
         }
 
         private static void SendNftByParams(string nftItemAddress, string gasFee,
@@ -715,8 +713,7 @@ namespace UnitonConnect.Core
 
             SubscribeToTransactionEvents(OnTransactionSuccessfullySign, OnTransactionSignFail);
 
-            SendTransactionWithPayload(nftItemAddress,
-                gasFee, payload, OnNftTransactionSend);
+            SendTransactionWithPayload(nftItemAddress, gasFee, payload, OnNftTransactionSend);
         }
 
         private static bool IsSuccess(int statusCode)
