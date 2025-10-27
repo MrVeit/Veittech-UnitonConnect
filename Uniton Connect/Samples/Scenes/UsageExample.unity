@@ -1123,7 +1123,7 @@ MonoBehaviour:
   _testMode: 1
   _debugMode: 1
   _initializeOnAwake: 0
-  _confirmDelay: 0
+  _confirmDelay: 10
   _jettonStorage: {fileID: 11400000, guid: a7b6e10d62286724a802b407a76b868e, type: 2}
 --- !u!1 &147073027
 GameObject:

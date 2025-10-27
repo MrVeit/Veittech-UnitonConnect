@@ -301,9 +301,9 @@ namespace UnitonConnect.Core
             }
 
             UnitonConnectLogger.Log($"Created a request to send a TON" +
-                $" to the recipient: {recipientAddress} in amount {amount}");
+                $" to the recipient: {convertedAddress} in amount {amount}");
 
-            TonConnectBridge.SendTon(recipientAddress, amount,
+            TonConnectBridge.SendTon(convertedAddress, amount,
                 message, OnSendingTonFinish, OnSendingTonFail);
         }
 

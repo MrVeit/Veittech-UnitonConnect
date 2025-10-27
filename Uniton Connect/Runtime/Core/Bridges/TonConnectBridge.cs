@@ -679,22 +679,20 @@ namespace UnitonConnect.Core
             OnTonTransactionSended = transactionSended;
             OnTonTransactionSendFailed = transactionSendFailed;
 
-            SubscribeToTransactionEvents(
-                OnTransactionSuccessfullySign, OnTransactionSignFail);
+            SubscribeToTransactionEvents(OnTransactionSuccessfullySign, OnTransactionSignFail);
 
-            var targetAddress = WalletConnectUtils.GetHEXAddress(recipientAddress);
             var tonInNanotons = UserAssetsUtils.ToNanoton(tonAmount).ToString();
 
             if (string.IsNullOrEmpty(message))
             {
-                SendTonTransaction(tonInNanotons, 
-                    targetAddress, OnTonTransactionSend);
+                SendTonTransaction(tonInNanotons,
+                    recipientAddress, OnTonTransactionSend);
 
                 return;
             }
 
-            SendTonTransactionWithMessage(tonInNanotons, 
-                targetAddress, message, OnTonTransactionSend);
+            SendTonTransactionWithMessage(tonInNanotons,
+                recipientAddress, message, OnTonTransactionSend);
         }
 
         private static void SendJettonByParams(string senderJettonWalletContract, string gasFee,
@@ -703,8 +701,7 @@ namespace UnitonConnect.Core
             OnJettonTransactionSended = transactionSended;
             OnJettonTransactionSendFailed = transactionSendFailed;
 
-            SubscribeToTransactionEvents(
-                OnTransactionSuccessfullySign, OnTransactionSignFail);
+            SubscribeToTransactionEvents(OnTransactionSuccessfullySign, OnTransactionSignFail);
 
             SendTransactionWithPayload(senderJettonWalletContract, 
                 gasFee, payload, OnJettonTransactionSend);
@@ -716,8 +713,7 @@ namespace UnitonConnect.Core
             OnNftTransactionSended = transactionSended;
             OnNftTransactionSendFailed = transactionSendFailed;
 
-            SubscribeToTransactionEvents(
-                OnTransactionSuccessfullySign, OnTransactionSignFail);
+            SubscribeToTransactionEvents(OnTransactionSuccessfullySign, OnTransactionSignFail);
 
             SendTransactionWithPayload(nftItemAddress,
                 gasFee, payload, OnNftTransactionSend);
