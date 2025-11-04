@@ -1085,9 +1085,9 @@ Enable the `Read/Write` property (under "Advanced") in the icon import settings
 and disable compression by switching the "Format" field to `RGBA 32 bit`.
 
 **Error:**
-`Error: BitString overflow`
+`BitString overflow`
 
-**Cause:**
+**Reason for appearance:**
 When sending a TON transaction with a built-in message.
 
 **Solution:**
