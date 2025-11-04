@@ -1084,6 +1084,17 @@ When replacing the library icon with your own instead of the default one.
 Enable the `Read/Write` property (under "Advanced") in the icon import settings 
 and disable compression by switching the "Format" field to `RGBA 32 bit`.
 
+
+**Error:**
+`BitString overflow`
+
+**Reason for appearance:**
+When sending a TON transaction with a built-in message.
+
+**Solution:**
+Your message format is likely similar to `JSON/XML/CSV` or contains too many characters — in the TON blockchain, attempting to assemble an array of bytes from `something like this` **ALWAYS** results in an error and `memory allocation`.
+Please consider encrypting this type of message if such a signature is **NECESSARY**, or use a simpler option.
+
 # Update guidline
 
 **Problem:**
