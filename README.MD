@@ -1094,6 +1094,17 @@ When sending a TON transaction with a built-in message.
 Your message format is likely similar to `JSON/XML/CSV` or contains too many characters — in the TON blockchain, attempting to assemble an array of bytes from `something like this` **ALWAYS** results in an error and `memory allocation`.
 Please consider encrypting this type of message if such a signature is **NECESSARY**, or use a simpler option.
 
+**Error:**
+`TON returned to balance after sending`
+
+**Reason for appearance:**
+When sending a TON transaction with or without an built-in message.
+
+**Solution:**
+This is not an SDK error, but a feature of the TON blockchain!
+Tokens are returned if the recipient's wallet has **not yet been initialized**.
+To do this, you need to make one outgoing transaction. After a successful outgoing transaction, the wallet's smart contract will be deployed, and it will finally be able to accept tokens to its balance.
+
 # Update guidline
 
 **Problem:**
@@ -1113,15 +1124,6 @@ the project related to non-existent methods in `TonConnectBridge.jslib`. What sh
 First, make sure you have the `Uniton Connect` build template selected in `Build Settings -> Player Settings -> Resolution and Presentation -> WebGL Template`.
 Once you have selected it and tried building again, everything will work without any problems!
 If you are using your own **CUSTOM BUILD** template, compare the versions of the native libraries used to run `Uniton Connect` and make changes if they differ.
-
-
-**Problem:**
-I made a `TON transaction` via the SDK, but the tokens were **returned to the balance** of the connected wallet. How can I solve this problem? :/
-
-**Solution:**
-This is not an SDK error, but a feature of the TON blockchain!
-Tokens are returned if the recipient's wallet has **not yet been initialized**.
-To do this, you need to make one outgoing transaction. After a successful outgoing transaction, the wallet's smart contract will be deployed, and it will finally be able to accept tokens to its balance.
 
 # Build
 
