@@ -1114,6 +1114,15 @@ First, make sure you have the `Uniton Connect` build template selected in `Build
 Once you have selected it and tried building again, everything will work without any problems!
 If you are using your own **CUSTOM BUILD** template, compare the versions of the native libraries used to run `Uniton Connect` and make changes if they differ.
 
+
+**Problem:**
+I made a `TON transaction` via the SDK, but the tokens were **returned to the balance** of the connected wallet. How can I solve this problem? :/
+
+**Solution:**
+This is not an SDK error, but a feature of the TON blockchain!
+Tokens are returned if the recipient's wallet has **not yet been initialized**.
+To do this, you need to make one outgoing transaction. After a successful outgoing transaction, the wallet's smart contract will be deployed, and it will finally be able to accept tokens to its balance.
+
 # Build
 
 In order to create a project, you must first configure several settings in the `Player Settings` window:
